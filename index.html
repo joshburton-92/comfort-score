@@ -375,6 +375,15 @@ function drawGauge(id,score){
 function bc(lbl,val,det,valCol){
   return '<div class="bc"><div class="bc-lbl">'+lbl+'</div><div class="bc-val"'+(valCol?' style="color:'+valCol+'"':'')+'>'+val+'</div><div class="bc-det">'+det+'</div></div>';
 }
+function bcInfo(lbl,val,det,valCol,infoTitle,infoText){
+  var btn='<div class="ibtn" onclick="showInfo(''+infoTitle.replace(/'/g,"\'")+"','"+infoText.replace(/'/g,"\'")+'')">i</div>';
+  return '<div class="bc"><div class="bc-lbl" style="display:flex;align-items:center;justify-content:space-between;">'+lbl+btn+'</div><div class="bc-val"'+(valCol?' style="color:'+valCol+'"':'')+'>'+val+'</div><div class="bc-det">'+det+'</div></div>';
+}
+function showInfo(title,text){
+  document.getElementById('pop-ttl').textContent=title;
+  document.getElementById('pop-body').textContent=text;
+  document.getElementById('pop-ov').classList.add('open');
+}
 
 function renderScore(areaId,gaugeId,r,temp,effDP,wind){
   var score=r.score,tP=r.tP,hP=r.hP,iP=r.iP,wP=r.wP;
@@ -399,7 +408,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind){
     '<div class="bgrid">'+
     bc('Temperature',temp.toFixed(1)+'°C','−'+tP.toFixed(1)+' pts')+
     bc('Dew point',effDP.toFixed(1)+'°C','−'+hP.toFixed(1)+' pts')+
-    bc('Interaction',iP>0?'active':'inactive','−'+iP.toFixed(1)+' pts',iP>0?'#b06010':'')+
+    bcInfo('Interaction',iP>0?'active':'inactive','−'+iP.toFixed(1)+' pts',iP>0?'#b06010':'','Heat and humidity combined','When both temperature and dew point are above your comfortable range at the same time, this extra penalty fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.')+
     bc('Wind',wind.toFixed(0)+' km/h',wLabel)+
     '</div>';
   setTimeout(function(){drawGauge(gaugeId,score);},50);
@@ -476,38 +485,59 @@ function searchCity(){
   if(!city) return;
   document.getElementById('live-status').textContent='Searching...';
   document.getElementById('results-list').style.display='none';
-  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=8&language=en&format=json')
+  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(city)+'&format=json&limit=10&addressdetails=1',
+    {headers:{'Accept-Language':'en','User-Agent':'ComfortScoreApp/1.0'}})
     .then(function(r){return r.json();})
     .then(function(d){
-      if(!d.results||!d.results.length){
-        document.getElementById('live-status').textContent='No results found. Try adding a country name.';
+      if(!d||!d.length){
+        document.getElementById('live-status').textContent='No results found. Try a different spelling or add a country name.';
         return;
       }
-      if(d.results.length===1){
-        var p=d.results[0];
-        fetchWeather(p.latitude,p.longitude,[p.name,p.admin1,p.country].filter(Boolean).join(', '));
+      if(d.length===1){
+        var p=d[0];
+        var name=buildNominatimLabel(p);
+        fetchWeather(parseFloat(p.lat),parseFloat(p.lon),name);
         return;
       }
       document.getElementById('live-status').textContent='Multiple locations found — tap one:';
       var list=document.getElementById('results-list');
       list.style.display='block';
       var html='';
-      for(var i=0;i<d.results.length;i++){
-        var p=d.results[i];
-        var sub=[p.admin1,p.admin2,p.country].filter(Boolean).join(', ');
-        html+='<div class="result-item" onclick="selectResult('+i+')"><div>'+p.name+'</div><div class="result-sub">'+sub+'</div></div>';
+      for(var i=0;i<d.length;i++){
+        var label=buildNominatimLabel(d[i]);
+        var sub=buildNominatimSub(d[i]);
+        html+='<div class="result-item" onclick="selectResult('+i+')"><div>'+label+'</div><div class="result-sub">'+sub+'</div></div>';
       }
       list.innerHTML=html;
-      window._searchResults=d.results;
+      window._searchResults=d.map(function(p){
+        return{latitude:parseFloat(p.lat),longitude:parseFloat(p.lon),label:buildNominatimLabel(p)};
+      });
     })
     .catch(function(e){document.getElementById('live-status').textContent='Search failed: '+e.message;});
+}
+
+function buildNominatimLabel(p){
+  var a=p.address||{};
+  var name=a.suburb||a.town||a.village||a.city_district||a.city||a.municipality||a.county||p.display_name.split(',')[0];
+  var state=a.state||'';
+  var country=a.country||'';
+  return [name,state,country].filter(Boolean).join(', ');
+}
+
+function buildNominatimSub(p){
+  var a=p.address||{};
+  var parts=[];
+  if(a.suburb&&(a.city||a.municipality)) parts.push(a.city||a.municipality);
+  if(a.state) parts.push(a.state);
+  if(a.country) parts.push(a.country);
+  return parts.filter(Boolean).join(', ')||p.type;
 }
 
 function selectResult(i){
   document.getElementById('results-list').style.display='none';
   document.getElementById('live-status').textContent='';
   var p=window._searchResults[i];
-  fetchWeather(p.latitude,p.longitude,[p.name,p.admin1,p.country].filter(Boolean).join(', '));
+  fetchWeather(p.latitude,p.longitude,p.label);
 }
 
 function fetchWeather(lat,lon,label){
