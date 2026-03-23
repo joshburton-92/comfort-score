@@ -393,7 +393,7 @@ async function searchCity(){
     const p=d.results[0];
     await fetchWeather(p.latitude,p.longitude,[p.name,p.admin1,p.country].filter(Boolean).join(', '));
   }catch(e){
-    document.getElementById('live-status').textContent='Search failed. Check connection.';
+    document.getElementById('live-status').textContent='Search failed: '+e.message;
   }
 }
 
@@ -422,7 +422,7 @@ async function fetchWeather(lat,lon,label){
       `<span class="chip">Wind ${wind.toFixed(0)} km/h</span>`;
     renderScore('live-score-area','gauge-live',res,temp,effDP,wind);
   }catch(e){
-    document.getElementById('live-status').textContent='Weather fetch failed. Check connection.';
+    document.getElementById('live-status').textContent='Fetch failed: '+e.message;
   }
 }
 
