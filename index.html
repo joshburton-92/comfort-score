@@ -189,6 +189,7 @@
   </div>
 </div>
 
+
 <script>
 // ── Settings definition ────────────────────────────────────────────────────
 const SETTINGS=[
@@ -409,11 +410,6 @@ async function searchCity(){
 
 async function selectResult(i){
   document.getElementById('results-list').style.display='none';
-  document.getElementById('live-status').textContent='';
-  const p=window._searchResults[i];
-  await fetchWeather(p.latitude,p.longitude,[p.name,p.admin1,p.country].filter(Boolean).join(', '));
-}
-// removed stub.style.display='none';
   document.getElementById('live-status').textContent='';
   const p=window._searchResults[i];
   await fetchWeather(p.latitude,p.longitude,[p.name,p.admin1,p.country].filter(Boolean).join(', '));
