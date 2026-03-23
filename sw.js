@@ -1,52 +1,23 @@
-const CACHE = 'comfort-score-v2';
-const STATIC = ['/', '/index.html', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+// Minimal service worker — enables PWA install prompt only.
+// No caching — the app always loads fresh from the network.
+// This prevents stale cache issues after updates.
 
-// On install: cache only the static app shell
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(STATIC))
-      .catch(() => {})
-  );
+const VERSION = '3';
+
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-// On activate: clear old caches
 self.addEventListener('activate', e => {
+  // Clear ALL caches from previous versions
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// On fetch: ALWAYS go to network for external APIs, cache-first for app shell
+// Pass everything straight through to the network — no caching
 self.addEventListener('fetch', e => {
-  const url = e.request.url;
-
-  // Always fetch live from network — never cache these
-  const isExternal = url.includes('open-meteo.com') ||
-                     url.includes('nominatim.openstreetmap.org') ||
-                     url.includes('fonts.googleapis.com') ||
-                     url.includes('fonts.gstatic.com');
-
-  if (isExternal || e.request.method !== 'GET') {
-    e.respondWith(fetch(e.request));
-    return;
-  }
-
-  // App shell: cache-first
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(resp => {
-        if (resp && resp.status === 200) {
-          const clone = resp.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return resp;
-      });
-    })
-  );
+  e.respondWith(fetch(e.request));
 });
