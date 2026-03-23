@@ -416,7 +416,9 @@ function getAnnotations(temp, dp, wind, score, s, iP) {
   else if (wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6)
                               a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});
 
-  if (score>90) a.push({c:"ann-great",t:"feels great \u2728"});
+  // "feels great" when in ideal temp range, comfortable humidity, and no significant wind chill
+  var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
+  if (inIdeal||score>90) a.push({c:"ann-great",t:"feels great \u2728"});
 
   var seen={}, out=[];
   for (var i=0;i<a.length;i++) { if(!seen[a[i].t]){seen[a[i].t]=1;out.push(a[i]);} }
