@@ -447,6 +447,86 @@ window.addEventListener('appinstalled',()=>{
 });
 
 // ── Service worker registration ───────────────────────────────────────────
+
+function fmtTime(iso,tz){
+  try{return new Date(iso).toLocaleString('en-AU',{timeZone:tz,weekday:'short',hour:'numeric',minute:'2-digit',hour12:true}).replace(',','');}
+  catch(e){return new Date(iso).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit',hour12:true});}
+}
+function scoreInfo(s){
+  if(s>90)return{label:'Excellent',emoji:'😊',col:'#1a7a3a'};
+  if(s>75)return{label:'Good',emoji:'🙂',col:'#3a9a2a'};
+  if(s>55)return{label:'Moderate',emoji:'😐',col:'#7a7000'};
+  if(s>35)return{label:'Poor',emoji:'😓',col:'#b05010'};
+  return{label:'Very poor',emoji:'😰',col:'#a02020'};
+}
+function bc(lbl,val,det,valCol){
+  return`<div class="bc"><div class="bc-lbl">${lbl}</div><div class="bc-val"${valCol?` style="color:${valCol}"`:''} >${val}</div><div class="bc-det">${det}</div></div>`;
+}
+function drawGauge(id,score){
+  const c=document.getElementById(id);if(!c)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const W=200,H=115;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  const cx=100,cy=105,r=82;
+  SBANDS.forEach((band,i)=>{
+    const fs=i===0?0:SBANDS[i-1].max;
+    ctx.beginPath();ctx.arc(cx,cy,r,Math.PI+(fs/100)*Math.PI,Math.PI+(band.max/100)*Math.PI);
+    ctx.arc(cx,cy,r-16,Math.PI+(band.max/100)*Math.PI,Math.PI+(fs/100)*Math.PI,true);
+    ctx.fillStyle=band.col;ctx.fill();
+  });
+  const nc=SBANDS[bandForScore(score)].col.replace('0.92','1');
+  const a=Math.PI+(Math.min(100,Math.max(0,score))/100)*Math.PI;
+  ctx.beginPath();ctx.moveTo(cx-Math.cos(a)*10,cy-Math.sin(a)*10);ctx.lineTo(cx+Math.cos(a)*72,cy+Math.sin(a)*72);
+  ctx.strokeStyle=nc;ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fillStyle=nc;ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fill();
+}
+function renderScore(areaId,gaugeId,r,temp,effDP,wind){
+  const{score,tP,hP,iP,wP}=r;
+  const{label,emoji,col}=scoreInfo(score);
+  const s=gs();
+  const anns=getAnnotations(temp,effDP,wind,score,s,iP);
+  const annHtml=anns.length?`<div class="annotations">${anns.map(a=>`<span class="ann ${a.cls}">${a.text}</span>`).join('')}</div>`:'';
+  document.getElementById(areaId).innerHTML=`
+    <div class="score-area">
+      <canvas id="${gaugeId}"></canvas>
+      <div class="score-num" style="color:${col}">${score}</div>
+      <span class="score-emoji">${emoji}</span>
+      <div class="score-lbl" style="color:${col}">${label}</div>
+      ${annHtml}
+    </div>
+    <div class="bgrid">
+      ${bc('Temperature',temp.toFixed(1)+'°C','−'+tP.toFixed(1)+' pts')}
+      ${bc('Dew point',effDP.toFixed(1)+'°C','−'+hP.toFixed(1)+' pts')}
+      ${bc('Interaction',iP>0?'active':'inactive','−'+iP.toFixed(1)+' pts',iP>0?'#b06010':'')}
+      ${bc('Wind',wind.toFixed(0)+' km/h',wP<0?'+'+Math.abs(wP).toFixed(1)+' pts bonus':'−'+wP.toFixed(1)+' pts')}
+    </div>`;
+  setTimeout(()=>drawGauge(gaugeId,score),50);
+}
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');document.getElementById('page-'+tab).classList.add('active');
+}
+function toggleMode(){
+  const m=document.getElementById('m-mode').value;
+  document.getElementById('m-dp-row').style.display=m==='dp'?'flex':'none';
+  document.getElementById('m-rh-row').style.display=m==='rh'?'flex':'none';
+}
+function calcManual(){
+  const temp=parseFloat(document.getElementById('m-temp').value)||20;
+  const mode=document.getElementById('m-mode').value;
+  const effDP=mode==='dp'?parseFloat(document.getElementById('m-dp').value)||10:temp-((100-(parseFloat(document.getElementById('m-rh').value)||60))/5);
+  const wind=parseFloat(document.getElementById('m-wind').value)||0;
+  const r=calc(temp,effDP,wind);
+  document.getElementById('manual-result').style.display='block';
+  renderScore('manual-score-area','gauge-manual',r,temp,effDP,wind);
+}
+function toggleAdv(){
+  document.getElementById('adv-tog').classList.toggle('open');
+  document.getElementById('s-panel').classList.toggle('open');
+}
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
