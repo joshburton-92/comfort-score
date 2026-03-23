@@ -180,6 +180,10 @@ canvas{display:block;margin:0 auto}
     </div>
   </div>
 
+  <div style="text-align:center;padding:16px 0 4px">
+    <span onclick="clearAndReload()" style="font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;text-decoration:underline;font-family:var(--font)">Clear cache &amp; reload</span>
+  </div>
+
   <div class="card" style="margin-bottom:0">
     <div class="adv-tog" id="adv-tog" onclick="toggleAdv()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -577,6 +581,23 @@ function installApp(){
 window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
 
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+
+function clearAndReload(){
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      var promises=regs.map(function(r){return r.unregister();});
+      Promise.all(promises).then(function(){
+        caches.keys().then(function(keys){
+          Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){
+            window.location.reload(true);
+          });
+        });
+      });
+    });
+  } else {
+    window.location.reload(true);
+  }
+}
 
 buildSettings();
 </script>
