@@ -21,10 +21,13 @@
 html,body{height:100%;overflow-x:hidden}
 body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e0 100%);background-attachment:fixed;min-height:100vh;color:#1a3a4a}
 .app{max-width:480px;margin:0 auto;padding:max(env(safe-area-inset-top,12px),12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
-.header{padding:16px 0 14px;text-align:center}
+.header{padding:16px 0 14px;text-align:center;position:relative}
 .header-icon{width:48px;height:48px;margin:0 auto 8px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.9);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
 .header h1{font-size:clamp(18px,5.5vw,24px);font-weight:800;color:#1a5f7a;letter-spacing:-0.3px}
 .header p{font-size:clamp(11px,3vw,13px);color:#3a8fa8;margin-top:2px;font-weight:600}
+.unit-toggle{position:absolute;top:16px;right:0;display:flex;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.8);background:rgba(255,255,255,0.3)}
+.unit-btn{padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer;color:#3a8fa8;border:none;background:transparent}
+.unit-btn.active{background:rgba(255,255,255,0.85);color:#1a5f7a}
 .tabs{display:flex;gap:6px;margin-bottom:12px}
 .tab{flex:1;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,0.8);border-radius:10px;background:rgba(255,255,255,0.45);color:#2a7a94;text-align:center}
 .tab.active{background:rgba(255,255,255,0.85);color:#1a5f7a}
@@ -72,10 +75,33 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 .bc-lbl{font-size:clamp(10px,2.8vw,12px);color:#3a8fa8;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.04em;font-weight:700;display:flex;align-items:center;justify-content:space-between}
 .bc-val{font-size:clamp(16px,4.5vw,19px);font-weight:800;color:#1a3a4a}
 .bc-det{font-size:clamp(11px,2.8vw,12px);color:#5a9ab0;margin-top:2px;font-weight:600}
+.forecast-strip{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px;padding-bottom:4px}
+.forecast-strip::-webkit-scrollbar{height:3px}
+.forecast-strip::-webkit-scrollbar-track{background:rgba(255,255,255,0.2);border-radius:2px}
+.forecast-strip::-webkit-scrollbar-thumb{background:rgba(42,127,180,0.3);border-radius:2px}
+.forecast-row{display:flex;gap:8px;width:max-content;padding:2px}
+.fc-slot{background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.85);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:72px;cursor:pointer;transition:background 0.15s}
+.fc-slot:active{background:rgba(255,255,255,0.8)}
+.fc-slot.fc-now{border-color:rgba(42,127,180,0.5);background:rgba(255,255,255,0.75)}
+.fc-time{font-size:11px;font-weight:800;color:#3a8fa8;margin-bottom:4px}
+.fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
+.fc-lbl{font-size:10px;font-weight:700;color:#5a9ab0}
+.fc-temp{font-size:10px;font-weight:700;color:#7ab0c0;margin-top:3px}
 .irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .irow label{font-size:clamp(13px,3.5vw,14px);color:#2a6a80;flex:0 0 44%;font-weight:700}
 .irow input,.irow select{flex:1;min-width:0;padding:9px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid rgba(255,255,255,0.8);border-radius:10px;background:rgba(255,255,255,0.65);color:#1a3a4a}
 .unit{font-size:clamp(12px,3vw,13px);color:#5a9ab0;min-width:28px;flex-shrink:0;font-weight:700}
+.slider-card{background:rgba(255,255,255,0.72);border:1px solid rgba(255,255,255,0.9);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
+.slider-row{margin-bottom:18px}
+.slider-row:last-child{margin-bottom:0}
+.slider-lbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.slider-name{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:#1a5f7a}
+.slider-val{font-size:clamp(11px,3vw,12px);font-weight:700;color:#3a8fa8;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.9);border-radius:20px;padding:2px 9px}
+.slider-ends{display:flex;justify-content:space-between;margin-top:5px}
+.slider-end{font-size:clamp(10px,2.5vw,11px);font-weight:700;color:#5a9ab0}
+input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.7)}
+input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;cursor:pointer}
 .adv-tog{font-size:clamp(12px,3vw,14px);color:#3a8fa8;cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid rgba(255,255,255,0.5);font-weight:700}
 .adv-tog svg{transition:transform 0.2s;flex-shrink:0}
 .adv-tog.open svg{transform:rotate(90deg)}
@@ -88,18 +114,6 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 .sitem label{font-size:clamp(11px,2.8vw,12px);color:#3a7a90;flex:1;line-height:1.3;font-weight:700}
 .sitem input{width:100%;font-size:clamp(13px,3.5vw,14px);font-weight:700;border:1px solid rgba(255,255,255,0.8);border-radius:8px;padding:5px 8px;background:rgba(255,255,255,0.7);color:#1a3a4a}
 .ibtn{width:18px;height:18px;border-radius:50%;background:rgba(42,127,180,0.2);border:1px solid rgba(42,127,180,0.35);color:#2a7fa8;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
-.easy-settings{margin-bottom:12px}
-.slider-card{background:rgba(255,255,255,0.72);border:1px solid rgba(255,255,255,0.9);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
-.slider-row{margin-bottom:18px}
-.slider-row:last-child{margin-bottom:0}
-.slider-lbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
-.slider-name{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:#1a5f7a}
-.slider-val{font-size:clamp(11px,3vw,12px);font-weight:700;color:#3a8fa8;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.9);border-radius:20px;padding:2px 9px}
-.slider-ends{display:flex;justify-content:space-between;margin-top:5px}
-.slider-end{font-size:clamp(10px,2.5vw,11px);font-weight:700;color:#5a9ab0}
-input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:linear-gradient(to right,#2a9fd6 0%,#2a9fd6 50%,rgba(255,255,255,0.5) 50%,rgba(255,255,255,0.5) 100%);border:1px solid rgba(255,255,255,0.7)}
-input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
-input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;cursor:pointer}
 .install-banner{display:none;background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);border-radius:14px;padding:12px 14px;margin-bottom:10px;align-items:center;gap:10px}
 .install-banner.show{display:flex}
 .install-banner p{font-size:14px;font-weight:700;color:#2a6a80;flex:1;line-height:1.4}
@@ -113,15 +127,23 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .result-item{padding:11px 14px;background:rgba(255,255,255,0.65);cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.6);font-size:clamp(13px,3.5vw,14px);color:#1a3a4a;font-weight:600}
 .result-item:last-child{border-bottom:none}
 .result-sub{font-size:clamp(11px,2.8vw,12px);color:#5a9ab0;margin-top:2px;font-weight:600}
+.footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
+.sources-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
+.clear-btn{font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 canvas{display:block;margin:0 auto}
 </style>
 </head>
 <body>
 <div class="app">
+
   <div class="header">
-    <div class="header-icon">🌤️</div>
+    <div class="header-icon">&#127780;&#65039;</div>
     <h1>Comfort Score</h1>
     <p>Your personal weather comfort rating</p>
+    <div class="unit-toggle">
+      <div class="unit-btn active" id="btn-c" onclick="setUnit('C')">&#176;C</div>
+      <div class="unit-btn"        id="btn-f" onclick="setUnit('F')">&#176;F</div>
+    </div>
   </div>
 
   <div class="install-banner" id="install-banner">
@@ -143,13 +165,19 @@ canvas{display:block;margin:0 auto}
         <button class="btn" onclick="detectLocation()">Detect</button>
       </div>
       <div id="results-list" class="results-list" style="display:none"></div>
-      <div id="live-status" class="status">Press detect to use your location, or search a city.</div>
+      <div id="live-status" class="status">Detecting your location...</div>
     </div>
     <div class="card" id="live-result" style="display:none">
       <div class="loc-name" id="live-locname"></div>
       <div class="obs-time" id="live-obstime"></div>
       <div class="chips"    id="live-chips"></div>
       <div id="live-score-area"></div>
+      <div id="forecast-wrap" style="display:none">
+        <div class="sec-lbl" style="margin-top:14px">Next 24 hours</div>
+        <div class="forecast-strip">
+          <div class="forecast-row" id="forecast-row"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -159,7 +187,7 @@ canvas{display:block;margin:0 auto}
       <div class="irow">
         <label>Temperature</label>
         <input type="number" id="m-temp" value="25.5" step="0.1"/>
-        <span class="unit">C</span>
+        <span class="unit" id="unit-temp">&#176;C</span>
       </div>
       <div class="irow">
         <label>Humidity mode</label>
@@ -171,7 +199,7 @@ canvas{display:block;margin:0 auto}
       <div id="m-dp-row" class="irow">
         <label>Dew point</label>
         <input type="number" id="m-dp" value="16.1" step="0.1"/>
-        <span class="unit">C</span>
+        <span class="unit" id="unit-dp">&#176;C</span>
       </div>
       <div id="m-rh-row" class="irow" style="display:none">
         <label>Relative humidity</label>
@@ -194,7 +222,6 @@ canvas{display:block;margin:0 auto}
 
   <div class="slider-card">
     <div class="sec-lbl">Preferences</div>
-
     <div class="slider-row">
       <div class="slider-lbl-row">
         <span class="slider-name">Heat sensitivity</span>
@@ -203,7 +230,6 @@ canvas{display:block;margin:0 auto}
       <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
       <div class="slider-ends"><span class="slider-end">Love heat</span><span class="slider-end">Hate heat</span></div>
     </div>
-
     <div class="slider-row">
       <div class="slider-lbl-row">
         <span class="slider-name">Cold sensitivity</span>
@@ -212,7 +238,6 @@ canvas{display:block;margin:0 auto}
       <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
       <div class="slider-ends"><span class="slider-end">Love cold</span><span class="slider-end">Hate cold</span></div>
     </div>
-
     <div class="slider-row">
       <div class="slider-lbl-row">
         <span class="slider-name">Humidity tolerance</span>
@@ -221,7 +246,6 @@ canvas{display:block;margin:0 auto}
       <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
       <div class="slider-ends"><span class="slider-end">Prefer dry</span><span class="slider-end">Tolerant</span></div>
     </div>
-
     <div class="slider-row">
       <div class="slider-lbl-row">
         <span class="slider-name">Wind preference</span>
@@ -244,9 +268,12 @@ canvas{display:block;margin:0 auto}
       <div class="sgrid" id="sgrid"></div>
     </div>
   </div>
-  <div style="text-align:center;padding:20px 0 8px">
-    <span onclick="clearAndReload()" style="font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;text-decoration:underline;font-family:var(--font)">Clear cache &amp; reload</span>
+
+  <div class="footer-row">
+    <button class="sources-btn" onclick="showSources()">Sources &#9432;</button>
+    <button class="clear-btn"   onclick="clearAndReload()">Clear cache &amp; reload</button>
   </div>
+
 </div>
 
 <div class="pop-ov" id="pop-ov" onclick="closePop()">
@@ -258,6 +285,7 @@ canvas{display:block;margin:0 auto}
 </div>
 
 <script>
+// ── Constants ──────────────────────────────────────────────────────────────
 var SBANDS = [
   {max:35,  col:"rgba(190,50,50,0.92)"},
   {max:55,  col:"rgba(210,120,20,0.92)"},
@@ -265,35 +293,77 @@ var SBANDS = [
   {max:90,  col:"rgba(100,180,50,0.92)"},
   {max:100, col:"rgba(25,140,65,0.92)"}
 ];
-
 var INT_TITLE = "Heat and humidity combined";
 var INT_INFO  = "When both temperature and dew point are above your comfortable range at the same time, this extra penalty fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
 
+// ── Unit system ────────────────────────────────────────────────────────────
+var useFahrenheit = false;
+
+function toDisp(c)   { return useFahrenheit ? Math.round((c*9/5+32)*10)/10 : Math.round(c*10)/10; }
+function fromDisp(v) { return useFahrenheit ? Math.round(((v-32)*5/9)*10)/10 : v; }
+function unitSym()   { return useFahrenheit ? "\u00B0F" : "\u00B0C"; }
+
+function detectUnitFromLocale() {
+  var lang = navigator.language || navigator.userLanguage || "";
+  var region = lang.split("-")[1] || "";
+  var fCountries = ["US","LR","MM"];
+  return fCountries.indexOf(region.toUpperCase()) !== -1 ? "F" : "C";
+}
+
+function setUnit(unit) {
+  useFahrenheit = (unit === "F");
+  localStorage.setItem("comfort_unit", unit);
+  document.getElementById("btn-c").classList.toggle("active", !useFahrenheit);
+  document.getElementById("btn-f").classList.toggle("active",  useFahrenheit);
+  document.getElementById("unit-temp").textContent = unitSym();
+  document.getElementById("unit-dp").textContent   = unitSym();
+  if (window._LW) {
+    renderChips(window._LW.temp, window._LW.effDP, window._LW.rh, window._LW.wind);
+    renderScore("live-score-area", "gauge-live", window._LW.res, window._LW.temp, window._LW.effDP, window._LW.wind);
+    if (window._FC) renderForecast(window._FC);
+  }
+}
+
+function initUnit() {
+  var saved = localStorage.getItem("comfort_unit");
+  var unit = saved || detectUnitFromLocale();
+  setUnit(unit);
+}
+
+function renderChips(temp, effDP, rh, wind) {
+  document.getElementById("live-chips").innerHTML =
+    "<span class=\"chip\">" + toDisp(temp).toFixed(1) + unitSym() + "</span>"
+  + "<span class=\"chip\">" + rh + "% RH</span>"
+  + "<span class=\"chip\">DP " + toDisp(effDP).toFixed(1) + unitSym() + "</span>"
+  + "<span class=\"chip\">Wind " + Math.round(wind) + " km/h</span>";
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
 var SETTINGS = [
   {grp:"Temperature"},
-  {id:"s-tlo",   label:"Ideal temp low (C)",         val:18,   step:0.5,  title:"Ideal temperature — lower bound",       info:"The temperature below which it starts feeling uncomfortably cool to you. The score begins dropping as soon as the temperature falls below this point, with the penalty growing the further it drops."},
-  {id:"s-thi",   label:"Ideal temp high (C)",         val:22,   step:0.5,  title:"Ideal temperature — upper bound",       info:"The temperature above which it starts feeling too warm. The score drops as it climbs past this, with heat penalised more steeply than cold if your heat weight is above 1.0."},
-  {id:"s-hw",    label:"Heat penalty weight (x)",     val:1.2,  step:0.1,  title:"Heat sensitivity",                      info:"Controls whether heat or cold bothers you more. At 1.0 they are equal. Raise this if a hot day ruins your comfort more than a cold one would at the same distance from ideal."},
-  {id:"s-tmax",  label:"Temp max penalty (pts)",      val:70,   step:1,    title:"Temperature penalty ceiling",           info:"The maximum number of score points that temperature alone can take off. Raising this allows extreme heat or cold to push scores lower."},
+  {id:"s-tlo",   label:"Ideal temp low (C)",            val:18,   step:0.5,  title:"Ideal temperature — lower bound",       info:"The temperature below which it starts feeling uncomfortably cool to you. The score begins dropping as soon as the temperature falls below this point, with the penalty growing the further it drops."},
+  {id:"s-thi",   label:"Ideal temp high (C)",            val:22,   step:0.5,  title:"Ideal temperature — upper bound",       info:"The temperature above which it starts feeling too warm. The score drops as it climbs past this, with heat penalised more steeply than cold if your heat weight is above 1.0."},
+  {id:"s-hw",    label:"Heat penalty weight (x)",        val:1.2,  step:0.1,  title:"Heat sensitivity",                      info:"Controls whether heat or cold bothers you more. At 1.0 they are equal. Raise this if a hot day ruins your comfort more than a cold one would at the same distance from ideal."},
+  {id:"s-tmax",  label:"Temp max penalty (pts)",         val:70,   step:1,    title:"Temperature penalty ceiling",           info:"The maximum number of score points that temperature alone can take off. Raising this allows extreme heat or cold to push scores lower."},
   {grp:"Cold zone"},
-  {id:"s-coolmax",   label:"Cool zone max pts",       val:35,   step:1,    title:"Cool weather penalty (above freezing)", info:"How hard the score is penalised for cool-but-above-freezing temperatures. Below zero, an additional cold penalty stacks on top."},
-  {id:"s-coldfloor", label:"Cold floor (C)",          val:-15,  step:1,    title:"Extreme cold reference point",          info:"The temperature at which the sub-zero penalty reaches its maximum. Temperatures at or below this are treated as as cold as it gets."},
-  {id:"s-coldmax",   label:"Cold zone max pts",       val:100,  step:5,    title:"Sub-zero penalty ceiling",              info:"The maximum additional penalty for temperatures below 0C, stacked on top of the cool zone."},
-  {id:"s-coldexp",   label:"Cold curve exponent",     val:1.2,  step:0.1,  title:"Sub-zero penalty shape",                info:"Controls how the freezing penalty ramps up. Above 1.0 the penalty accelerates, so -10C hurts much more than twice -5C."},
+  {id:"s-coolmax",   label:"Cool zone max pts",          val:35,   step:1,    title:"Cool weather penalty (above freezing)", info:"How hard the score is penalised for cool-but-above-freezing temperatures. Below zero, an additional cold penalty stacks on top."},
+  {id:"s-coldfloor", label:"Cold floor (C)",             val:-15,  step:1,    title:"Extreme cold reference point",          info:"The temperature at which the sub-zero penalty reaches its maximum. Temperatures at or below this are treated as as cold as it gets."},
+  {id:"s-coldmax",   label:"Cold zone max pts",          val:100,  step:5,    title:"Sub-zero penalty ceiling",              info:"The maximum additional penalty for temperatures below 0C, stacked on top of the cool zone."},
+  {id:"s-coldexp",   label:"Cold curve exponent",        val:1.2,  step:0.1,  title:"Sub-zero penalty shape",                info:"Controls how the freezing penalty ramps up. Above 1.0 the penalty accelerates, so -10C hurts much more than twice -5C."},
   {grp:"Humidity"},
-  {id:"s-dp",        label:"DP threshold (C)",        val:12,   step:0.5,  title:"Humidity sensitivity threshold",        info:"The dew point above which you start noticing humidity. Raise it if you only mind humidity in tropical conditions. Lower it if even mild humidity bothers you."},
-  {id:"s-hmax",      label:"Humidity max penalty (pts)", val:50, step:1,   title:"Humidity penalty ceiling",              info:"The maximum score points humidity can take off. Raise this if humidity affects your comfort more than temperature does."},
-  {id:"s-hdp_ceil",  label:"Humidity DP ceiling (C)", val:26,   step:0.5,  title:"Extreme humidity reference point",      info:"The dew point at which humidity penalty reaches its maximum. Lower this if you want tropical-level dew points to hit maximum penalty sooner."},
-  {id:"s-hexp",      label:"Humidity curve exponent", val:0.6,  step:0.05, title:"Humidity penalty shape",                info:"Controls how the humidity penalty ramps up. Below 1.0, even mild humidity gets a meaningful penalty quickly, then levels off toward maximum."},
-  {id:"s-int",       label:"Interaction penalty (pts)", val:8,  step:0.5,  title:"Heat and humidity combined penalty",    info:"An extra penalty that only fires when both temperature AND humidity are above your comfortable range at the same time."},
-  {id:"s-iscale",    label:"Interaction scaling (x)", val:1.2,  step:0.1,  title:"Combined penalty aggressiveness",       info:"Controls how quickly the heat and humidity combined penalty reaches its maximum."},
+  {id:"s-dp",        label:"DP threshold (C)",           val:12,   step:0.5,  title:"Humidity sensitivity threshold",        info:"The dew point above which you start noticing humidity. Raise it if you only mind humidity in tropical conditions. Lower it if even mild humidity bothers you."},
+  {id:"s-hmax",      label:"Humidity max penalty (pts)", val:50,   step:1,    title:"Humidity penalty ceiling",              info:"The maximum score points humidity can take off. Raise this if humidity affects your comfort more than temperature does."},
+  {id:"s-hdp_ceil",  label:"Humidity DP ceiling (C)",    val:26,   step:0.5,  title:"Extreme humidity reference point",      info:"The dew point at which humidity penalty reaches its maximum. Lower this if you want tropical-level dew points to hit maximum penalty sooner."},
+  {id:"s-hexp",      label:"Humidity curve exponent",    val:0.6,  step:0.05, title:"Humidity penalty shape",                info:"Controls how the humidity penalty ramps up. Below 1.0, even mild humidity gets a meaningful penalty quickly, then levels off toward maximum."},
+  {id:"s-int",       label:"Interaction penalty (pts)",  val:8,    step:0.5,  title:"Heat and humidity combined penalty",    info:"An extra penalty that only fires when both temperature AND humidity are above your comfortable range at the same time."},
+  {id:"s-iscale",    label:"Interaction scaling (x)",    val:1.2,  step:0.1,  title:"Combined penalty aggressiveness",       info:"Controls how quickly the heat and humidity combined penalty reaches its maximum."},
   {grp:"Wind"},
-  {id:"s-wmax",          label:"Wind max penalty (pts)",       val:20,  step:1,   title:"Wind penalty ceiling",               info:"The maximum score points wind can take off. A gentle breeze in comfortable conditions can add a small bonus to the score."},
-  {id:"s-wchill_thresh", label:"Wind chill threshold (C)",     val:10,  step:0.5, title:"Wind chill activation temperature",  info:"Wind only adds a chill penalty when below this temperature. Lower this to make wind chill kick in only at genuinely cold temperatures."},
-  {id:"s-cws",           label:"Cold wind sensitivity (x)",    val:1.5, step:0.1, title:"Wind chill intensity",               info:"How aggressively wind amplifies cold discomfort below the threshold."},
-  {id:"s-pwlo",          label:"Pleasant wind low (km/h)",     val:10,  step:1,   title:"Comfortable breeze — lower end",     info:"The minimum wind speed that starts to feel like a pleasant breeze. Within this range a small score bonus applies near ideal temperatures."},
-  {id:"s-pwhi",          label:"Pleasant wind high (km/h)",    val:20,  step:1,   title:"Comfortable breeze — upper end",     info:"The maximum wind speed that still feels pleasant. Above this, wind starts becoming a nuisance."},
-  {id:"s-swt",           label:"Strong wind threshold (km/h)", val:35,  step:1,   title:"Strong wind threshold",              info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."}
+  {id:"s-wmax",          label:"Wind max penalty (pts)",      val:20,  step:1,   title:"Wind penalty ceiling",               info:"The maximum score points wind can take off. A gentle breeze in comfortable conditions can add a small bonus to the score."},
+  {id:"s-wchill_thresh", label:"Wind chill threshold (C)",    val:10,  step:0.5, title:"Wind chill activation temperature",  info:"Wind only adds a chill penalty when below this temperature. Lower this to make wind chill kick in only at genuinely cold temperatures."},
+  {id:"s-cws",           label:"Cold wind sensitivity (x)",   val:1.5, step:0.1, title:"Wind chill intensity",               info:"How aggressively wind amplifies cold discomfort below the threshold."},
+  {id:"s-pwlo",          label:"Pleasant wind low (km/h)",    val:10,  step:1,   title:"Comfortable breeze — lower end",     info:"The minimum wind speed that starts to feel like a pleasant breeze. Within this range a small score bonus applies near ideal temperatures."},
+  {id:"s-pwhi",          label:"Pleasant wind high (km/h)",   val:20,  step:1,   title:"Comfortable breeze — upper end",     info:"The maximum wind speed that still feels pleasant. Above this, wind starts becoming a nuisance."},
+  {id:"s-swt",           label:"Strong wind threshold (km/h)",val:35,  step:1,   title:"Strong wind threshold",              info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."}
 ];
 
 function showPop(title, text) {
@@ -301,8 +371,13 @@ function showPop(title, text) {
   document.getElementById("pop-body").textContent = text;
   document.getElementById("pop-ov").classList.add("open");
 }
-function closePop() {
-  document.getElementById("pop-ov").classList.remove("open");
+function closePop() { document.getElementById("pop-ov").classList.remove("open"); }
+
+function showSources() {
+  showPop(
+    "Data sources",
+    "Weather data: Open-Meteo (open-meteo.com) — free, open-source weather API with no key required.\n\nGeocoding & location search: Nominatim / OpenStreetMap (nominatim.openstreetmap.org) — free, open-source geocoding.\n\nAll data is fetched live and never stored on any server. Your settings are saved locally on your device only."
+  );
 }
 
 function buildSettings() {
@@ -317,14 +392,29 @@ function buildSettings() {
           + "<label for=\"" + s.id + "\">" + s.label + "</label>"
           + "<div class=\"ibtn\" onclick=\"showPop(SETTINGS[" + i + "].title,SETTINGS[" + i + "].info)\">i</div>"
           + "</div>"
-          + "<input type=\"number\" id=\"" + s.id + "\" value=\"" + v + "\" step=\"" + s.step + "\" onchange=\"saveSettings()\"/>"
+          + "<input type=\"number\" id=\"" + s.id + "\" value=\"" + v + "\" step=\"" + s.step + "\" onchange=\"onAdvChange()\"/>"
           + "</div>";
   }
   document.getElementById("sgrid").innerHTML = html;
 }
 
+function saveSettings() {
+  var out = {};
+  for (var i = 0; i < SETTINGS.length; i++) {
+    if (!SETTINGS[i].id) continue;
+    var el = document.getElementById(SETTINGS[i].id);
+    if (el) out[SETTINGS[i].id] = parseFloat(el.value);
+  }
+  localStorage.setItem("comfort_settings", JSON.stringify(out));
+}
 
+function onAdvChange() {
+  saveSettings();
+  syncSlidersFromAdv();
+  reRenderLive();
+}
 
+// ── Get settings ───────────────────────────────────────────────────────────
 function gs() {
   function v(id) { var el = document.getElementById(id); return el ? (parseFloat(el.value) || 0) : 0; }
   return {
@@ -337,6 +427,7 @@ function gs() {
   };
 }
 
+// ── Score calculation ──────────────────────────────────────────────────────
 function calc(temp, dp, wind) {
   var s = gs();
   var tP = 0;
@@ -365,7 +456,7 @@ function calc(temp, dp, wind) {
   }
   var wChill = 0;
   if (temp < s.wchill_thresh) {
-    var cf2 = Math.min(1,(s.wchill_thresh-temp)/Math.max(1,s.wchill_thresh-s.coldfloor));
+    var cf2=Math.min(1,(s.wchill_thresh-temp)/Math.max(1,s.wchill_thresh-s.coldfloor));
     wChill = cf2*Math.min(1,wind/50)*s.wmax*s.cws;
   }
   var evap = (temp>s.thi&&dp<s.dp) ? Math.min(3,(temp-s.thi)/5*(s.dp-dp)/5) : 0;
@@ -374,6 +465,7 @@ function calc(temp, dp, wind) {
   return { score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP))), tP:tP, hP:hP, iP:iP, wP:wP };
 }
 
+// ── Gauge & score display ──────────────────────────────────────────────────
 function bandForScore(s) {
   var v = Math.min(100,Math.max(0,s));
   for (var i=0;i<SBANDS.length;i++) if (v<=SBANDS[i].max) return i;
@@ -381,43 +473,42 @@ function bandForScore(s) {
 }
 
 function scoreInfo(s) {
-  if (s>90) return {label:"Excellent",emoji:"😊",col:"#1a7a3a"};
-  if (s>75) return {label:"Good",     emoji:"🙂",col:"#3a9a2a"};
-  if (s>55) return {label:"Moderate", emoji:"😐",col:"#7a7000"};
-  if (s>35) return {label:"Poor",     emoji:"😓",col:"#b05010"};
-  return          {label:"Very poor",emoji:"😰",col:"#a02020"};
+  if (s>90) return {label:"Excellent",emoji:"\uD83D\uDE0A",col:"#1a7a3a"};
+  if (s>75) return {label:"Good",     emoji:"\uD83D\uDE42",col:"#3a9a2a"};
+  if (s>55) return {label:"Moderate", emoji:"\uD83D\uDE10",col:"#7a7000"};
+  if (s>35) return {label:"Poor",     emoji:"\uD83D\uDE13",col:"#b05010"};
+  return          {label:"Very poor", emoji:"\uD83D\uDE30",col:"#a02020"};
 }
 
-function getAnnotations(temp, dp, wind, score, s, iP) {
+function getAnnotations(temp, dp, wind, score, s, iP, wP) {
   var a = [];
-  if      (temp<-15)   a.push({c:"ann-bitter",t:"bitterly cold \u2744\uFE0F"});
-  else if (temp<0)     a.push({c:"ann-freeze",t:"freezing cold \uD83E\uDD76"});
-  else if (temp<5)     a.push({c:"ann-vcold", t:"very cold \uD83E\uDDCA"});
-  else if (temp<10)    a.push({c:"ann-cold",  t:"cold \uD83E\uDDE5"});
-  else if (temp<15)    a.push({c:"ann-chilly",t:"a bit chilly \uD83E\uDDE5"});
-  else if (temp<s.tlo) a.push({c:"ann-cool",  t:"cool \uD83C\uDF2C\uFE0F"});
+  if      (temp<-15)    a.push({c:"ann-bitter",t:"bitterly cold \u2744\uFE0F"});
+  else if (temp<0)      a.push({c:"ann-freeze",t:"freezing cold \uD83E\uDD76"});
+  else if (temp<5)      a.push({c:"ann-vcold", t:"very cold \uD83E\uDDCA"});
+  else if (temp<10)     a.push({c:"ann-cold",  t:"cold \uD83E\uDDE5"});
+  else if (temp<15)     a.push({c:"ann-chilly",t:"a bit chilly \uD83E\uDDE5"});
+  else if (temp<s.tlo)  a.push({c:"ann-cool",  t:"cool \uD83C\uDF2C\uFE0F"});
   else if (temp<=s.thi) {}
-  else if (temp<25)    a.push({c:"ann-warm",  t:"mildly warm \u2600\uFE0F"});
-  else if (temp<30)    a.push({c:"ann-warm",  t:"warm \u2600\uFE0F"});
-  else if (temp<35)    a.push({c:"ann-hot",   t:"hot \uD83D\uDD25"});
-  else if (temp<40)    a.push({c:"ann-vhot",  t:"very hot \uD83E\uDD75"});
-  else                 a.push({c:"ann-xhot",  t:"extremely hot \uD83C\uDF0B"});
+  else if (temp<25)     a.push({c:"ann-warm",  t:"mildly warm \u2600\uFE0F"});
+  else if (temp<30)     a.push({c:"ann-warm",  t:"warm \u2600\uFE0F"});
+  else if (temp<35)     a.push({c:"ann-hot",   t:"hot \uD83D\uDD25"});
+  else if (temp<40)     a.push({c:"ann-vhot",  t:"very hot \uD83E\uDD75"});
+  else                  a.push({c:"ann-xhot",  t:"extremely hot \uD83C\uDF0B"});
 
-  if      (dp>s.dp+10) a.push({c:"ann-steamy",t:"oppressively humid \uD83C\uDF0A"});
-  else if (dp>s.dp+5)  a.push({c:"ann-humid", t:"humid & sticky \uD83D\uDCA7"});
-  else if (dp>14)      a.push({c:"ann-muggy", t:"a little muggy \uD83D\uDCA6"});
-  if      (dp<0)       a.push({c:"ann-vdry",  t:"very dry air \uD83C\uDFDC\uFE0F"});
-  else if (dp<4)       a.push({c:"ann-dry",   t:"dry air \uD83C\uDF35"});
+  if      (dp>s.dp+10)  a.push({c:"ann-steamy",t:"oppressively humid \uD83C\uDF0A"});
+  else if (dp>s.dp+5)   a.push({c:"ann-humid", t:"humid & sticky \uD83D\uDCA7"});
+  else if (dp>14)       a.push({c:"ann-muggy", t:"a little muggy \uD83D\uDCA6"});
+  if      (dp<0)        a.push({c:"ann-vdry",  t:"very dry air \uD83C\uDFDC\uFE0F"});
+  else if (dp<4)        a.push({c:"ann-dry",   t:"dry air \uD83C\uDF35"});
 
   if (iP>3) a.push({c:"ann-steamy",t:"hot & steamy \uD83E\uDD2F"});
 
-  if      (temp<0&&wind>=15)  a.push({c:"ann-chill", t:"wind chill \uD83C\uDF2C\uFE0F"});
-  else if (wind>s.swt)        a.push({c:"ann-windy", t:"strong wind \uD83D\uDCA8"});
+  if      (temp<0&&wind>=15) a.push({c:"ann-chill", t:"wind chill \uD83C\uDF2C\uFE0F"});
+  else if (wind>s.swt)       a.push({c:"ann-windy", t:"strong wind \uD83D\uDCA8"});
   else if (wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6)
-                              a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});
+                             a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});
 
-  // "feels great" when in ideal temp range, comfortable humidity, and no significant wind chill
-  var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
+  var inIdeal = (temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
   if (inIdeal||score>90) a.push({c:"ann-great",t:"feels great \u2728"});
 
   var seen={}, out=[];
@@ -426,7 +517,7 @@ function getAnnotations(temp, dp, wind, score, s, iP) {
 }
 
 function drawGauge(id, score) {
-  var c = document.getElementById(id); if (!c) return;
+  var c=document.getElementById(id); if(!c) return;
   var dpr=Math.min(window.devicePixelRatio||1,2), W=200, H=115;
   c.width=W*dpr; c.height=H*dpr; c.style.width=W+"px"; c.style.height=H+"px";
   var ctx=c.getContext("2d"); ctx.scale(dpr,dpr);
@@ -449,24 +540,17 @@ function drawGauge(id, score) {
 function renderScore(areaId, gaugeId, r, temp, effDP, wind) {
   var score=r.score, tP=r.tP, hP=r.hP, iP=r.iP, wP=r.wP;
   var si=scoreInfo(score), s=gs();
-  var anns=getAnnotations(temp,effDP,wind,score,s,iP);
+  var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP);
   var annHtml="";
   for (var i=0;i<anns.length;i++) annHtml+="<span class=\"ann "+anns[i].c+"\">"+anns[i].t+"</span>";
   if (annHtml) annHtml="<div class=\"annotations\">"+annHtml+"</div>";
-
   var wLabel=(wP<0)?"+"+Math.abs(wP).toFixed(1)+" pts bonus":"\u2212"+wP.toFixed(1)+" pts";
-
   var intCard="<div class=\"bc\">"
     +"<div class=\"bc-lbl\"><span>Interaction</span>"
     +"<div class=\"ibtn\" onclick=\"showPop(INT_TITLE,INT_INFO)\">i</div></div>"
     +"<div class=\"bc-val\""+(iP>0?" style=\"color:#b06010\"":"")+">"+(iP>0?"active":"inactive")+"</div>"
-    +"<div class=\"bc-det\">\u2212"+iP.toFixed(1)+" pts</div>"
-    +"</div>";
-
-  function bc(l,v,d) {
-    return "<div class=\"bc\"><div class=\"bc-lbl\">"+l+"</div><div class=\"bc-val\">"+v+"</div><div class=\"bc-det\">"+d+"</div></div>";
-  }
-
+    +"<div class=\"bc-det\">\u2212"+iP.toFixed(1)+" pts</div></div>";
+  function bc(l,v,d){return "<div class=\"bc\"><div class=\"bc-lbl\">"+l+"</div><div class=\"bc-val\">"+v+"</div><div class=\"bc-det\">"+d+"</div></div>";}
   document.getElementById(areaId).innerHTML=
     "<div class=\"score-area\">"
     +"<canvas id=\""+gaugeId+"\"></canvas>"
@@ -475,15 +559,84 @@ function renderScore(areaId, gaugeId, r, temp, effDP, wind) {
     +"<div class=\"score-lbl\" style=\"color:"+si.col+"\">"+si.label+"</div>"
     +annHtml+"</div>"
     +"<div class=\"bgrid\">"
-    +bc("Temperature",temp.toFixed(1)+"C","\u2212"+tP.toFixed(1)+" pts")
-    +bc("Dew point",effDP.toFixed(1)+"C","\u2212"+hP.toFixed(1)+" pts")
+    +bc("Temperature", toDisp(temp).toFixed(1)+unitSym(), "\u2212"+tP.toFixed(1)+" pts")
+    +bc("Dew point",   toDisp(effDP).toFixed(1)+unitSym(), "\u2212"+hP.toFixed(1)+" pts")
     +intCard
-    +bc("Wind",wind.toFixed(0)+" km/h",wLabel)
+    +bc("Wind", Math.round(wind)+" km/h", wLabel)
     +"</div>";
-
   setTimeout(function(){drawGauge(gaugeId,score);},50);
 }
 
+// ── Forecast strip ─────────────────────────────────────────────────────────
+function renderForecast(fc) {
+  window._FC = fc;
+  var times=fc.hourly.time, temps=fc.hourly.temperature_2m;
+  var dps=fc.hourly.dew_point_2m, winds=fc.hourly.wind_speed_10m;
+  var tz=fc.timezone;
+
+  // Find current hour index
+  var now=new Date();
+  var nowStr=now.toISOString().slice(0,13); // "2025-03-25T14"
+  var curIdx=0;
+  for (var i=0;i<times.length;i++) {
+    if (times[i].slice(0,13)===nowStr) { curIdx=i; break; }
+  }
+
+  var html="";
+  for (var slot=0;slot<8;slot++) {
+    var idx=curIdx+(slot*3);
+    if (idx>=times.length) break;
+    var t=temps[idx], dp=dps[idx], w=winds[idx];
+    var r=calc(t,dp,w);
+    var si=scoreInfo(r.score);
+    var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
+    var timeStr="";
+    try {
+      var d=new Date(times[idx]);
+      timeStr=d.toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).replace(" ","").toLowerCase();
+    } catch(e){ timeStr=times[idx].slice(11,16); }
+    var isNow=slot===0;
+    html+="<div class=\"fc-slot"+(isNow?" fc-now":"")+"\" onclick=\"showForecastSlot("+idx+")\">"
+         +"<div class=\"fc-time\">"+(isNow?"Now":timeStr)+"</div>"
+         +"<div class=\"fc-score\" style=\"color:"+nc+"\">"+r.score+"</div>"
+         +"<div class=\"fc-lbl\" style=\"color:"+nc+"\">"+si.label+"</div>"
+         +"<div class=\"fc-temp\">"+toDisp(t).toFixed(1)+unitSym()+"</div>"
+         +"</div>";
+  }
+  document.getElementById("forecast-row").innerHTML=html;
+  document.getElementById("forecast-wrap").style.display="block";
+}
+
+function showForecastSlot(idx) {
+  if (!window._FC) return;
+  var fc=window._FC;
+  var t=fc.hourly.temperature_2m[idx];
+  var dp=fc.hourly.dew_point_2m[idx];
+  var w=fc.hourly.wind_speed_10m[idx];
+  var r=calc(t,dp,w);
+  var si=scoreInfo(r.score);
+  var s=gs();
+  var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP);
+  var annText="";
+  for (var i=0;i<anns.length;i++) annText+=(i>0?", ":"")+anns[i].t;
+  var timeStr="";
+  try {
+    timeStr=new Date(fc.hourly.time[idx]).toLocaleString("en-AU",{timeZone:fc.timezone,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
+  } catch(e){ timeStr=fc.hourly.time[idx].slice(11,16); }
+  showPop(
+    timeStr+" — Score "+r.score+" ("+si.label+")",
+    toDisp(t).toFixed(1)+unitSym()+" | DP "+toDisp(dp).toFixed(1)+unitSym()+" | Wind "+Math.round(w)+" km/h"+(annText?"\n\n"+annText:"")
+  );
+}
+
+function reRenderLive() {
+  if (!window._LW) return;
+  var w=window._LW;
+  renderScore("live-score-area","gauge-live",w.res,w.temp,w.effDP,w.wind);
+  if (window._FC) renderForecast(window._FC);
+}
+
+// ── UI interactions ────────────────────────────────────────────────────────
 function switchTab(tab) {
   document.getElementById("tab-live").classList.toggle("active",   tab==="live");
   document.getElementById("tab-manual").classList.toggle("active", tab==="manual");
@@ -498,11 +651,15 @@ function toggleMode() {
 }
 
 function calcManual() {
-  var temp=parseFloat(document.getElementById("m-temp").value)||20;
+  var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
+  var temp=fromDisp(tempDisp);
   var mode=document.getElementById("m-mode").value;
-  var effDP=(mode==="dp")
-    ?(parseFloat(document.getElementById("m-dp").value)||10)
-    :temp-((100-(parseFloat(document.getElementById("m-rh").value)||60))/5);
+  var effDP;
+  if (mode==="dp") {
+    effDP=fromDisp(parseFloat(document.getElementById("m-dp").value)||10);
+  } else {
+    effDP=temp-((100-(parseFloat(document.getElementById("m-rh").value)||60))/5);
+  }
   var wind=parseFloat(document.getElementById("m-wind").value)||0;
   var r=calc(temp,effDP,wind);
   document.getElementById("manual-result").style.display="block";
@@ -514,12 +671,70 @@ function toggleAdv() {
   document.getElementById("s-panel").classList.toggle("open");
 }
 
-function fmtTime(iso,tz) {
-  try { return new Date(iso).toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",",""); }
-  catch(e) { return new Date(iso).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit",hour12:true}); }
+// ── Sliders ────────────────────────────────────────────────────────────────
+var SLIDER_MAPS = {
+  heat:{labels:["Love heat","Comfortable","Sensitive","Hate heat"],thr:[25,50,75],
+    apply:function(t){setAdv("s-thi",Math.round(lerp(28,18,t)*2)/2);setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);}},
+  cold:{labels:["Love cold","Comfortable","Sensitive","Hate cold"],thr:[25,50,75],
+    apply:function(t){setAdv("s-tlo",Math.round(lerp(10,24,t)*2)/2);setAdv("s-coolmax",Math.round(lerp(20,50,t)));setAdv("s-coldmax",Math.round(lerp(60,140,t)/5)*5);}},
+  hum:{labels:["Prefer dry","Mild","Moderate","Tolerant"],thr:[25,50,75],
+    apply:function(t){setAdv("s-dp",Math.round(lerp(6,18,t)*2)/2);setAdv("s-hmax",Math.round(lerp(70,30,t)));setAdv("s-hexp",Math.round(lerp(0.4,0.9,t)*20)/20);setAdv("s-hdp_ceil",Math.round(lerp(20,32,t)*2)/2);}},
+  wind:{labels:["Love wind","Like it","Neutral","Hate wind"],thr:[25,50,75],
+    apply:function(t){setAdv("s-wmax",Math.round(lerp(8,30,t)));setAdv("s-cws",Math.round(lerp(0.5,2.5,t)*10)/10);setAdv("s-pwhi",Math.round(lerp(40,10,t)));setAdv("s-pwlo",Math.round(lerp(5,15,t)));}}
+};
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function setAdv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
+
+function sliderLabel(key,pos){
+  var m=SLIDER_MAPS[key];
+  if(pos<=m.thr[0])return m.labels[0];
+  if(pos<=m.thr[1])return m.labels[1];
+  if(pos<=m.thr[2])return m.labels[2];
+  return m.labels[3];
 }
 
-function revGeo(lat,lon) {
+function updateTrack(id,val){
+  var el=document.getElementById(id);
+  if(el) el.style.background="linear-gradient(to right,#2a9fd6 "+val+"%,rgba(255,255,255,0.5) "+val+"%)";
+}
+
+function onSlider(key){
+  var el=document.getElementById("sl-"+key); if(!el)return;
+  var pos=parseInt(el.value), t=pos/100;
+  SLIDER_MAPS[key].apply(t);
+  document.getElementById(key+"-val").textContent=sliderLabel(key,pos);
+  updateTrack("sl-"+key,pos);
+  saveSettings();
+  reRenderLive();
+}
+
+function advToSlider(key){
+  var t=0.5;
+  if     (key==="heat"){var thi=parseFloat(document.getElementById("s-thi").value)||22;t=1-(thi-18)/(28-18);}
+  else if(key==="cold"){var tlo=parseFloat(document.getElementById("s-tlo").value)||18;t=(tlo-10)/(24-10);}
+  else if(key==="hum") {var dp=parseFloat(document.getElementById("s-dp").value)||12;t=(dp-6)/(18-6);}
+  else if(key==="wind"){var wmax=parseFloat(document.getElementById("s-wmax").value)||20;t=(wmax-8)/(30-8);}
+  return Math.round(Math.max(0,Math.min(1,t))*100);
+}
+
+function syncSlidersFromAdv(){
+  var keys=["heat","cold","hum","wind"];
+  for(var i=0;i<keys.length;i++){
+    var key=keys[i], pos=advToSlider(key);
+    var el=document.getElementById("sl-"+key); if(el)el.value=pos;
+    var lbl=document.getElementById(key+"-val"); if(lbl)lbl.textContent=sliderLabel(key,pos);
+    updateTrack("sl-"+key,pos);
+  }
+}
+
+// ── Geocoding & weather ────────────────────────────────────────────────────
+function fmtTime(iso,tz){
+  try{return new Date(iso).toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");}
+  catch(e){return new Date(iso).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit",hour12:true});}
+}
+
+function revGeo(lat,lon){
   return fetch("https://nominatim.openstreetmap.org/reverse?lat="+lat+"&lon="+lon+"&format=json&zoom=10",
     {headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}})
   .then(function(r){return r.json();})
@@ -535,45 +750,43 @@ function revGeo(lat,lon) {
   .catch(function(){return null;});
 }
 
-function nomLabel(p) {
+function nomLabel(p){
   var a=p.address||{};
   var name=a.suburb||a.town||a.village||a.city_district||a.city||a.municipality||a.county||p.display_name.split(",")[0].trim();
   return [name,a.state||"",a.country||""].filter(Boolean).join(", ");
 }
-
-function nomSub(p) {
-  var a=p.address||{}, parts=[];
-  if(a.suburb&&(a.city||a.municipality)) parts.push(a.city||a.municipality);
-  if(a.state)   parts.push(a.state);
-  if(a.country) parts.push(a.country);
+function nomSub(p){
+  var a=p.address||{},parts=[];
+  if(a.suburb&&(a.city||a.municipality))parts.push(a.city||a.municipality);
+  if(a.state)parts.push(a.state);
+  if(a.country)parts.push(a.country);
   return parts.filter(Boolean).join(", ")||(p.type||"");
 }
 
-function detectLocation() {
+function detectLocation(){
   document.getElementById("live-status").textContent="Detecting location...";
-  if(!navigator.geolocation){document.getElementById("live-status").textContent="Geolocation not supported.";return;}
+  if(!navigator.geolocation){document.getElementById("live-status").textContent="Location not available — search a city instead.";return;}
   navigator.geolocation.getCurrentPosition(
     function(pos){
       var lat=pos.coords.latitude,lon=pos.coords.longitude;
-      document.getElementById("live-status").textContent="Looking up location name...";
-      revGeo(lat,lon).then(function(name){fetchWeather(lat,lon,name||(lat.toFixed(2)+"°, "+lon.toFixed(2)+"°"));});
+      document.getElementById("live-status").textContent="Looking up location...";
+      revGeo(lat,lon).then(function(name){fetchWeather(lat,lon,name||(lat.toFixed(2)+"\u00B0, "+lon.toFixed(2)+"\u00B0"));});
     },
-    function(){document.getElementById("live-status").textContent="Location access denied. Try searching a city instead.";}
+    function(){document.getElementById("live-status").textContent="Location access denied. Try searching a city.";}
   );
 }
 
-function searchCity() {
-  var city=document.getElementById("city-input").value.trim();
-  if(!city) return;
+function searchCity(){
+  var city=document.getElementById("city-input").value.trim(); if(!city)return;
   document.getElementById("live-status").textContent="Searching...";
   document.getElementById("results-list").style.display="none";
   fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(city)+"&format=json&limit=10&addressdetails=1",
     {headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}})
   .then(function(r){return r.json();})
   .then(function(d){
-    if(!d||!d.length){document.getElementById("live-status").textContent="No results found. Try a different spelling or add a country name.";return;}
+    if(!d||!d.length){document.getElementById("live-status").textContent="No results found. Try adding a country name.";return;}
     if(d.length===1){fetchWeather(parseFloat(d[0].lat),parseFloat(d[0].lon),nomLabel(d[0]));return;}
-    document.getElementById("live-status").textContent="Multiple locations found — tap one:";
+    document.getElementById("live-status").textContent="Multiple results — tap one:";
     var list=document.getElementById("results-list"),html="";
     for(var i=0;i<d.length;i++){
       html+="<div class=\"result-item\" onclick=\"selectResult("+i+")\"><div>"+nomLabel(d[i])+"</div><div class=\"result-sub\">"+nomSub(d[i])+"</div></div>";
@@ -584,191 +797,70 @@ function searchCity() {
   .catch(function(e){document.getElementById("live-status").textContent="Search failed: "+e.message;});
 }
 
-function selectResult(i) {
+function selectResult(i){
   document.getElementById("results-list").style.display="none";
   document.getElementById("live-status").textContent="";
   var p=window._SR[i];
   fetchWeather(parseFloat(p.lat),parseFloat(p.lon),nomLabel(p));
 }
 
-function fetchWeather(lat,lon,label) {
+function fetchWeather(lat,lon,label){
   document.getElementById("live-status").textContent="Fetching weather...";
-  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m&wind_speed_unit=kmh&timezone=auto")
+  var url="https://api.open-meteo.com/v1/forecast"
+    +"?latitude="+lat+"&longitude="+lon
+    +"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m"
+    +"&hourly=temperature_2m,dew_point_2m,wind_speed_10m"
+    +"&wind_speed_unit=kmh&timezone=auto&forecast_days=2";
+  fetch(url)
   .then(function(r){return r.json();})
   .then(function(d){
-    var c=d.current,temp=c.temperature_2m,effDP=c.dew_point_2m,rh=c.relative_humidity_2m,wind=c.wind_speed_10m;
+    var cur=d.current;
+    var temp=cur.temperature_2m, effDP=cur.dew_point_2m, rh=cur.relative_humidity_2m, wind=cur.wind_speed_10m;
     var res=calc(temp,effDP,wind);
+    window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,res:res};
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
-    document.getElementById("live-obstime").textContent="Observed "+fmtTime(c.time,d.timezone);
-    document.getElementById("live-chips").innerHTML=
-      "<span class=\"chip\">"+temp.toFixed(1)+"C</span>"
-      +"<span class=\"chip\">"+rh+"% RH</span>"
-      +"<span class=\"chip\">DP "+effDP.toFixed(1)+"C</span>"
-      +"<span class=\"chip\">Wind "+wind.toFixed(0)+" km/h</span>";
+    document.getElementById("live-obstime").textContent="Observed "+fmtTime(cur.time,d.timezone);
+    renderChips(temp,effDP,rh,wind);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind);
+    renderForecast(d);
   })
   .catch(function(e){document.getElementById("live-status").textContent="Fetch failed: "+e.message;});
 }
 
+// ── PWA install ────────────────────────────────────────────────────────────
 var deferredPrompt=null;
 window.addEventListener("beforeinstallprompt",function(e){
   e.preventDefault(); deferredPrompt=e;
   document.getElementById("install-banner").classList.add("show");
 });
 function installApp(){
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(){deferredPrompt=null;document.getElementById("install-banner").classList.remove("show");});
-  }
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;document.getElementById("install-banner").classList.remove("show");});}
 }
 window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
 
-if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
-
-// ── Slider two-way sync ────────────────────────────────────────────────────
-
-// Linear interpolation helper
-function lerp(a,b,t){return a+(b-a)*t;}
-
-// Maps slider 0-100 -> advanced setting values, then writes to inputs
-var SLIDER_MAPS={
-  heat:{
-    label:["Love heat","Comfortable","Sensitive","Hate heat"],
-    thresholds:[25,50,75],
-    apply:function(t){
-      // t = 0..1
-      setAdv("s-thi",  Math.round(lerp(28,18,t)*2)/2);  // 28->18
-      setAdv("s-hw",   Math.round(lerp(0.8,2.0,t)*10)/10); // 0.8->2.0
-    }
-  },
-  cold:{
-    label:["Love cold","Comfortable","Sensitive","Hate cold"],
-    thresholds:[25,50,75],
-    apply:function(t){
-      setAdv("s-tlo",     Math.round(lerp(10,24,t)*2)/2);  // 10->24
-      setAdv("s-coolmax", Math.round(lerp(20,50,t)));        // 20->50
-      setAdv("s-coldmax", Math.round(lerp(60,140,t)/5)*5);  // 60->140
-    }
-  },
-  hum:{
-    label:["Prefer dry","Mild","Moderate","Tolerant"],
-    thresholds:[25,50,75],
-    apply:function(t){
-      setAdv("s-dp",      Math.round(lerp(6,18,t)*2)/2);    // 6->18
-      setAdv("s-hmax",    Math.round(lerp(70,30,t)));        // 70->30
-      setAdv("s-hexp",    Math.round(lerp(0.4,0.9,t)*20)/20); // 0.4->0.9
-      setAdv("s-hdp_ceil",Math.round(lerp(20,32,t)*2)/2);   // 20->32
-    }
-  },
-  wind:{
-    label:["Love wind","Like it","Neutral","Hate wind"],
-    thresholds:[25,50,75],
-    apply:function(t){
-      setAdv("s-wmax", Math.round(lerp(8,30,t)));            // 8->30
-      setAdv("s-cws",  Math.round(lerp(0.5,2.5,t)*10)/10);  // 0.5->2.5
-      setAdv("s-pwhi", Math.round(lerp(40,10,t)));           // 40->10
-      setAdv("s-pwlo", Math.round(lerp(5,15,t)));            // 5->15 (hate wind = even gentle breezes register)
-    }
-  }
-};
-
-function setAdv(id,val){
-  var el=document.getElementById(id);
-  if(el){el.value=val;}
-}
-
-function sliderLabel(key,pos){
-  var labels=SLIDER_MAPS[key].label;
-  var thr=SLIDER_MAPS[key].thresholds;
-  if(pos<=thr[0]) return labels[0];
-  if(pos<=thr[1]) return labels[1];
-  if(pos<=thr[2]) return labels[2];
-  return labels[3];
-}
-
-function updateSliderTrack(id,val){
-  var el=document.getElementById(id);
-  if(el) el.style.background="linear-gradient(to right,#2a9fd6 0%,#2a9fd6 "+val+"%,rgba(255,255,255,0.5) "+val+"%,rgba(255,255,255,0.5) 100%)";
-}
-
-function onSlider(key){
-  var el=document.getElementById("sl-"+key);
-  if(!el) return;
-  var pos=parseInt(el.value);
-  var t=pos/100;
-  SLIDER_MAPS[key].apply(t);
-  document.getElementById(key+"-val").textContent=sliderLabel(key,pos);
-  updateSliderTrack("sl-"+key,pos);
-  saveSettings();
-}
-
-// Two-way: read advanced values -> compute best-fit slider position
-function advToSlider(key){
-  var t=0;
-  if(key==="heat"){
-    var thi=parseFloat(document.getElementById("s-thi").value)||22;
-    t=1-(thi-18)/(28-18); // invert: higher thi = lower sensitivity
-    t=Math.max(0,Math.min(1,t));
-  } else if(key==="cold"){
-    var tlo=parseFloat(document.getElementById("s-tlo").value)||18;
-    t=(tlo-10)/(24-10);
-    t=Math.max(0,Math.min(1,t));
-  } else if(key==="hum"){
-    var dp=parseFloat(document.getElementById("s-dp").value)||12;
-    t=(dp-6)/(18-6);
-    t=Math.max(0,Math.min(1,t));
-  } else if(key==="wind"){
-    var wmax=parseFloat(document.getElementById("s-wmax").value)||20;
-    t=(wmax-8)/(30-8);
-    t=Math.max(0,Math.min(1,t));
-  }
-  return Math.round(t*100);
-}
-
-function syncSlidersFromAdv(){
-  ["heat","cold","hum","wind"].forEach(function(key){
-    var pos=advToSlider(key);
-    var el=document.getElementById("sl-"+key);
-    if(el) el.value=pos;
-    var lbl=document.getElementById(key+"-val");
-    if(lbl) lbl.textContent=sliderLabel(key,pos);
-    updateSliderTrack("sl-"+key,pos);
-  });
-}
-
-// Call syncSlidersFromAdv whenever an advanced field changes
-function saveSettings(){
-  var out={};
-  for(var i=0;i<SETTINGS.length;i++){
-    if(!SETTINGS[i].id) continue;
-    var el=document.getElementById(SETTINGS[i].id);
-    if(el) out[SETTINGS[i].id]=parseFloat(el.value);
-  }
-  localStorage.setItem("comfort_settings",JSON.stringify(out));
-  syncSlidersFromAdv();
-}
-
+// ── Cache clear ────────────────────────────────────────────────────────────
 function clearAndReload(){
   if("serviceWorker" in navigator){
     navigator.serviceWorker.getRegistrations().then(function(regs){
-      var promises=regs.map(function(r){return r.unregister();});
-      Promise.all(promises).then(function(){
+      Promise.all(regs.map(function(r){return r.unregister();})).then(function(){
         caches.keys().then(function(keys){
-          Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){
-            window.location.reload(true);
-          });
+          Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});
         });
       });
     });
-  } else {
-    window.location.reload(true);
-  }
+  } else { window.location.reload(true); }
 }
 
+// ── Service worker ─────────────────────────────────────────────────────────
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+
+// ── Init ───────────────────────────────────────────────────────────────────
 buildSettings();
 syncSlidersFromAdv();
+initUnit();
+detectLocation();
 </script>
 </body>
 </html>
