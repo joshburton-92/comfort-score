@@ -28,6 +28,8 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 .unit-toggle{position:absolute;top:16px;right:0;display:flex;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.8);background:rgba(255,255,255,0.3)}
 .unit-btn{padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer;color:#3a8fa8;border:none;background:transparent}
 .unit-btn.active{background:rgba(255,255,255,0.85);color:#1a5f7a}
+.star-btn{position:absolute;top:16px;left:0;width:34px;height:28px;border-radius:20px;border:1px solid rgba(255,255,255,0.8);background:rgba(255,255,255,0.3);color:#3a8fa8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.star-btn:active{background:rgba(255,255,255,0.6)}
 .tabs{display:flex;gap:6px;margin-bottom:12px}
 .tab{flex:1;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,0.8);border-radius:10px;background:rgba(255,255,255,0.45);color:#2a7a94;text-align:center}
 .tab.active{background:rgba(255,255,255,0.85);color:#1a5f7a}
@@ -41,15 +43,18 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 .btn:active{opacity:0.75}
 .btn-p{background:linear-gradient(135deg,#2a9fd6,#1a7ab0);color:#fff;border-color:rgba(255,255,255,0.4)}
 .status{font-size:clamp(12px,3vw,14px);color:#3a8fa8;padding:4px 0;font-weight:600}
-.loc-name{font-size:clamp(15px,4.5vw,18px);font-weight:800;color:#1a3a4a;margin-bottom:2px}
+.loc-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.loc-name{font-size:clamp(15px,4.5vw,18px);font-weight:800;color:#1a3a4a;flex:1}
+.loc-star{font-size:18px;cursor:pointer;color:#3a8fa8;flex-shrink:0;background:none;border:none;padding:0}
 .obs-time{font-size:clamp(11px,3vw,13px);color:#5a9ab0;margin-bottom:10px;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.85);border-radius:20px;color:#1a5f7a}
-.score-area{text-align:center;padding:4px 0 12px}
+/* Score area with min-height to prevent layout bounce */
+.score-area{text-align:center;padding:4px 0 12px;min-height:260px}
 .score-num{font-size:clamp(60px,18vw,80px);font-weight:800;line-height:1;margin:4px 0;letter-spacing:-2px}
 .score-emoji{font-size:clamp(26px,7vw,32px);display:block;margin-bottom:4px}
 .score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;margin-bottom:8px}
-.annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px}
+.annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:32px}
 .ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
 .ann-great{background:rgba(30,140,65,0.15);color:#0d6030;border-color:rgba(30,140,65,0.3)}
 .ann-warm{background:rgba(255,160,20,0.18);color:#8a4a00;border-color:rgba(255,160,20,0.35)}
@@ -70,27 +75,25 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 .ann-chill{background:rgba(40,100,200,0.2);color:#0a1a5a;border-color:rgba(40,100,200,0.4)}
 .ann-dry{background:rgba(180,130,60,0.15);color:#5a3a00;border-color:rgba(180,130,60,0.3)}
 .ann-vdry{background:rgba(160,100,30,0.18);color:#4a2000;border-color:rgba(160,100,30,0.35)}
-.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
-.bc{background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.85);border-radius:12px;padding:10px 12px}
-.bc-lbl{font-size:clamp(10px,2.8vw,12px);color:#3a8fa8;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.04em;font-weight:700;display:flex;align-items:center;justify-content:space-between}
-.bc-val{font-size:clamp(16px,4.5vw,19px);font-weight:800;color:#1a3a4a}
-.bc-det{font-size:clamp(11px,2.8vw,12px);color:#5a9ab0;margin-top:2px;font-weight:600}
+.ann-info{cursor:pointer}
+/* Forecast strip */
 .forecast-strip{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px;padding-bottom:4px}
 .forecast-strip::-webkit-scrollbar{height:3px}
 .forecast-strip::-webkit-scrollbar-track{background:rgba(255,255,255,0.2);border-radius:2px}
 .forecast-strip::-webkit-scrollbar-thumb{background:rgba(42,127,180,0.3);border-radius:2px}
 .forecast-row{display:flex;gap:8px;width:max-content;padding:2px}
-.fc-slot{background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.85);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:72px;cursor:pointer;transition:background 0.15s}
+.fc-slot{background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.85);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:72px;cursor:pointer}
 .fc-slot:active{background:rgba(255,255,255,0.8)}
-.fc-slot.fc-now{border-color:rgba(42,127,180,0.5);background:rgba(255,255,255,0.75)}
 .fc-time{font-size:11px;font-weight:800;color:#3a8fa8;margin-bottom:4px}
 .fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
 .fc-lbl{font-size:10px;font-weight:700;color:#5a9ab0}
 .fc-temp{font-size:10px;font-weight:700;color:#7ab0c0;margin-top:3px}
+/* Manual input */
 .irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .irow label{font-size:clamp(13px,3.5vw,14px);color:#2a6a80;flex:0 0 44%;font-weight:700}
 .irow input,.irow select{flex:1;min-width:0;padding:9px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid rgba(255,255,255,0.8);border-radius:10px;background:rgba(255,255,255,0.65);color:#1a3a4a}
 .unit{font-size:clamp(12px,3vw,13px);color:#5a9ab0;min-width:28px;flex-shrink:0;font-weight:700}
+/* Sliders */
 .slider-card{background:rgba(255,255,255,0.72);border:1px solid rgba(255,255,255,0.9);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
 .slider-row{margin-bottom:18px}
 .slider-row:last-child{margin-bottom:0}
@@ -102,6 +105,7 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.7)}
 input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;cursor:pointer}
+/* Advanced settings */
 .adv-tog{font-size:clamp(12px,3vw,14px);color:#3a8fa8;cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid rgba(255,255,255,0.5);font-weight:700}
 .adv-tog svg{transition:transform 0.2s;flex-shrink:0}
 .adv-tog.open svg{transform:rotate(90deg)}
@@ -114,19 +118,34 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .sitem label{font-size:clamp(11px,2.8vw,12px);color:#3a7a90;flex:1;line-height:1.3;font-weight:700}
 .sitem input{width:100%;font-size:clamp(13px,3.5vw,14px);font-weight:700;border:1px solid rgba(255,255,255,0.8);border-radius:8px;padding:5px 8px;background:rgba(255,255,255,0.7);color:#1a3a4a}
 .ibtn{width:18px;height:18px;border-radius:50%;background:rgba(42,127,180,0.2);border:1px solid rgba(42,127,180,0.35);color:#2a7fa8;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+/* Install banner */
 .install-banner{display:none;background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);border-radius:14px;padding:12px 14px;margin-bottom:10px;align-items:center;gap:10px}
 .install-banner.show{display:flex}
 .install-banner p{font-size:14px;font-weight:700;color:#2a6a80;flex:1;line-height:1.4}
+/* Popups */
 .pop-ov{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,60,80,0.35);padding:20px;align-items:center;justify-content:center}
 .pop-ov.open{display:flex}
 .pop{background:rgba(238,250,255,0.97);border:1px solid rgba(120,200,230,0.6);border-radius:18px;padding:18px;max-width:320px;width:100%}
 .pop-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:#1a5f7a;margin-bottom:8px}
 .pop-body{font-size:clamp(13px,3.2vw,14px);color:#2a5a70;line-height:1.65;font-weight:600}
 .pop-close{font-size:clamp(12px,3vw,13px);color:#5a9ab0;margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid rgba(180,220,235,0.5);font-weight:700}
+/* Starred locations popup */
+.stars-pop{background:rgba(238,250,255,0.97);border:1px solid rgba(120,200,230,0.6);border-radius:18px;padding:18px;max-width:320px;width:100%}
+.stars-list{margin-top:8px;max-height:260px;overflow-y:auto}
+.star-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(255,255,255,0.6);border-radius:12px;margin-bottom:6px;cursor:pointer}
+.star-item:hover{background:rgba(255,255,255,0.9)}
+.star-item-name{flex:1;font-size:14px;font-weight:700;color:#1a3a4a}
+.star-item-del{font-size:16px;color:#aaa;cursor:pointer;padding:2px 4px;background:none;border:none;line-height:1}
+.star-item-del:hover{color:#e05050}
+.star-empty{font-size:13px;color:#7ab0c0;font-weight:600;text-align:center;padding:16px 0}
+.star-save-row{display:flex;gap:8px;margin-top:10px;border-top:1px solid rgba(180,220,235,0.5);padding-top:10px}
+.star-save-row input{flex:1;padding:8px 10px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,0.8);border-radius:10px;background:rgba(255,255,255,0.65);color:#1a3a4a}
+/* Results list */
 .results-list{margin-top:4px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.8)}
 .result-item{padding:11px 14px;background:rgba(255,255,255,0.65);cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.6);font-size:clamp(13px,3.5vw,14px);color:#1a3a4a;font-weight:600}
 .result-item:last-child{border-bottom:none}
 .result-sub{font-size:clamp(11px,2.8vw,12px);color:#5a9ab0;margin-top:2px;font-weight:600}
+/* Footer */
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
 .sources-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 .clear-btn{font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
@@ -137,6 +156,7 @@ canvas{display:block;margin:0 auto}
 <div class="app">
 
   <div class="header">
+    <button class="star-btn" id="star-btn" onclick="openStars()" title="Saved locations">&#9733;</button>
     <div class="header-icon">&#127780;&#65039;</div>
     <h1>Comfort Score</h1>
     <p>Your personal weather comfort rating</p>
@@ -168,7 +188,10 @@ canvas{display:block;margin:0 auto}
       <div id="live-status" class="status">Detecting your location...</div>
     </div>
     <div class="card" id="live-result" style="display:none">
-      <div class="loc-name" id="live-locname"></div>
+      <div class="loc-row">
+        <div class="loc-name" id="live-locname"></div>
+        <button class="loc-star" id="loc-star-btn" onclick="promptSaveLoc()" title="Save location">&#9733;</button>
+      </div>
       <div class="obs-time" id="live-obstime"></div>
       <div class="chips"    id="live-chips"></div>
       <div id="live-score-area"></div>
@@ -276,11 +299,25 @@ canvas{display:block;margin:0 auto}
 
 </div>
 
+<!-- Info popup -->
 <div class="pop-ov" id="pop-ov" onclick="closePop()">
   <div class="pop" onclick="event.stopPropagation()">
     <div class="pop-ttl"  id="pop-ttl"></div>
     <div class="pop-body" id="pop-body"></div>
     <span class="pop-close" onclick="closePop()">Tap to close</span>
+  </div>
+</div>
+
+<!-- Starred locations popup -->
+<div class="pop-ov" id="stars-ov" onclick="closeStars()">
+  <div class="stars-pop" onclick="event.stopPropagation()">
+    <div class="pop-ttl">Saved locations</div>
+    <div class="stars-list" id="stars-list"></div>
+    <div class="star-save-row" id="star-save-row" style="display:none">
+      <input type="text" id="star-name-input" placeholder="Name this location..."/>
+      <button class="btn btn-p" onclick="confirmSaveLoc()">Save</button>
+    </div>
+    <span class="pop-close" onclick="closeStars()">Tap to close</span>
   </div>
 </div>
 
@@ -293,8 +330,12 @@ var SBANDS = [
   {max:90,  col:"rgba(100,180,50,0.92)"},
   {max:100, col:"rgba(25,140,65,0.92)"}
 ];
-var INT_TITLE = "Heat and humidity combined";
-var INT_INFO  = "When both temperature and dew point are above your comfortable range at the same time, this extra penalty fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
+
+var STEAMY_INFO_TITLE = "Hot & steamy";
+var STEAMY_INFO_TEXT  = "When both temperature and dew point are above your comfortable range at the same time, this condition fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone. The hotter and more humid, the worse the combined effect.";
+
+// Fixed 3-hour forecast slots (always on the clock)
+var FC_SLOTS = [0, 3, 6, 9, 12, 15, 18, 21];
 
 // ── Unit system ────────────────────────────────────────────────────────────
 var useFahrenheit = false;
@@ -304,10 +345,9 @@ function fromDisp(v) { return useFahrenheit ? Math.round(((v-32)*5/9)*10)/10 : v
 function unitSym()   { return useFahrenheit ? "\u00B0F" : "\u00B0C"; }
 
 function detectUnitFromLocale() {
-  var lang = navigator.language || navigator.userLanguage || "";
+  var lang = navigator.language || "";
   var region = lang.split("-")[1] || "";
-  var fCountries = ["US","LR","MM"];
-  return fCountries.indexOf(region.toUpperCase()) !== -1 ? "F" : "C";
+  return ["US","LR","MM"].indexOf(region.toUpperCase()) !== -1 ? "F" : "C";
 }
 
 function setUnit(unit) {
@@ -319,7 +359,7 @@ function setUnit(unit) {
   document.getElementById("unit-dp").textContent   = unitSym();
   if (window._LW) {
     renderChips(window._LW.temp, window._LW.effDP, window._LW.rh, window._LW.wind);
-    renderScore("live-score-area", "gauge-live", window._LW.res, window._LW.temp, window._LW.effDP, window._LW.wind);
+    reRenderLive();
     if (window._FC) renderForecast(window._FC);
   }
 }
@@ -327,15 +367,62 @@ function setUnit(unit) {
 function initUnit() {
   var saved = localStorage.getItem("comfort_unit");
   var unit = saved || detectUnitFromLocale();
-  setUnit(unit);
+  useFahrenheit = (unit === "F");
+  document.getElementById("btn-c").classList.toggle("active", !useFahrenheit);
+  document.getElementById("btn-f").classList.toggle("active",  useFahrenheit);
+  document.getElementById("unit-temp").textContent = unitSym();
+  document.getElementById("unit-dp").textContent   = unitSym();
 }
 
 function renderChips(temp, effDP, rh, wind) {
   document.getElementById("live-chips").innerHTML =
-    "<span class=\"chip\">" + toDisp(temp).toFixed(1) + unitSym() + "</span>"
-  + "<span class=\"chip\">" + rh + "% RH</span>"
-  + "<span class=\"chip\">DP " + toDisp(effDP).toFixed(1) + unitSym() + "</span>"
-  + "<span class=\"chip\">Wind " + Math.round(wind) + " km/h</span>";
+    "<span class='chip'>" + toDisp(temp).toFixed(1) + unitSym() + "</span>"
+  + "<span class='chip'>" + rh + "% RH</span>"
+  + "<span class='chip'>DP " + toDisp(effDP).toFixed(1) + unitSym() + "</span>"
+  + "<span class='chip'>Wind " + Math.round(wind) + " km/h</span>";
+}
+
+// ── Time helpers ───────────────────────────────────────────────────────────
+// Open-Meteo returns times like "2025-03-26T13:00" in the location's LOCAL timezone.
+// new Date("2025-03-26T13:00") is ambiguous — browsers may parse as local or UTC.
+// Safest: parse manually, then interpret in the given tz using Intl.
+
+function parseOMTime(s) {
+  // s = "2025-03-26T13:00" — split into parts
+  var parts = s.split("T");
+  var d = parts[0].split("-");
+  var t = parts[1].split(":");
+  // Create a Date as if it were UTC, then we'll adjust for tz comparison
+  return new Date(Date.UTC(parseInt(d[0]),parseInt(d[1])-1,parseInt(d[2]),parseInt(t[0]),parseInt(t[1]),0));
+}
+
+function getTZOffset(tz) {
+  // Returns the current UTC offset in minutes for the given tz
+  try {
+    var now = new Date();
+    var utcStr = now.toLocaleString("en-CA", {timeZone:"UTC", hour12:false,
+      year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    var locStr = now.toLocaleString("en-CA", {timeZone:tz, hour12:false,
+      year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    var utcD = new Date(utcStr.replace(",","") + " UTC");
+    var locD = new Date(locStr.replace(",","") + " UTC");
+    return (locD - utcD) / 60000; // minutes ahead of UTC
+  } catch(e) { return 0; }
+}
+
+function fmtObsTime(timeStr, tz) {
+  // timeStr = "2025-03-26T13:00" local to tz
+  // We want to display it as "Tue 1:00 pm" in that tz
+  try {
+    var tzOff = getTZOffset(tz); // minutes
+    var d = parseOMTime(timeStr);
+    // d is "13:00 UTC" but real time is 13:00 local = 13:00 UTC - tzOff minutes
+    var realUTC = new Date(d.getTime() - tzOff * 60000);
+    return realUTC.toLocaleString("en-AU", {
+      timeZone: tz,
+      weekday: "short", hour: "numeric", minute: "2-digit", hour12: true
+    }).replace(",", "");
+  } catch(e) { return timeStr.slice(11, 16); }
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
@@ -374,9 +461,8 @@ function showPop(title, text) {
 function closePop() { document.getElementById("pop-ov").classList.remove("open"); }
 
 function showSources() {
-  showPop(
-    "Data sources",
-    "Weather data: Open-Meteo (open-meteo.com) — free, open-source weather API with no key required.\n\nGeocoding & location search: Nominatim / OpenStreetMap (nominatim.openstreetmap.org) — free, open-source geocoding.\n\nAll data is fetched live and never stored on any server. Your settings are saved locally on your device only."
+  showPop("Data sources",
+    "Weather data: Open-Meteo (open-meteo.com) — free, open-source weather API, no key required.\n\nGeocoding & location search: Nominatim / OpenStreetMap (nominatim.openstreetmap.org) — free, open-source geocoding.\n\nAll data is fetched live and never stored on any server. Your settings and saved locations are stored locally on your device only."
   );
 }
 
@@ -385,14 +471,14 @@ function buildSettings() {
   var html = "";
   for (var i = 0; i < SETTINGS.length; i++) {
     var s = SETTINGS[i];
-    if (s.grp) { html += "<div class=\"sgrp-title\">" + s.grp + "</div>"; continue; }
+    if (s.grp) { html += "<div class='sgrp-title'>" + s.grp + "</div>"; continue; }
     var v = (saved[s.id] !== undefined) ? saved[s.id] : s.val;
-    html += "<div class=\"sitem\">"
-          + "<div class=\"sitem-hdr\">"
-          + "<label for=\"" + s.id + "\">" + s.label + "</label>"
-          + "<div class=\"ibtn\" onclick=\"showPop(SETTINGS[" + i + "].title,SETTINGS[" + i + "].info)\">i</div>"
+    html += "<div class='sitem'>"
+          + "<div class='sitem-hdr'>"
+          + "<label for='" + s.id + "'>" + s.label + "</label>"
+          + "<div class='ibtn' onclick='showPop(SETTINGS[" + i + "].title,SETTINGS[" + i + "].info)'>i</div>"
           + "</div>"
-          + "<input type=\"number\" id=\"" + s.id + "\" value=\"" + v + "\" step=\"" + s.step + "\" onchange=\"onAdvChange()\"/>"
+          + "<input type='number' id='" + s.id + "' value='" + v + "' step='" + s.step + "' onchange='onAdvChange()'/>"
           + "</div>";
   }
   document.getElementById("sgrid").innerHTML = html;
@@ -411,7 +497,7 @@ function saveSettings() {
 function onAdvChange() {
   saveSettings();
   syncSlidersFromAdv();
-  reRenderLive();
+  reRenderAll();
 }
 
 // ── Get settings ───────────────────────────────────────────────────────────
@@ -436,17 +522,14 @@ function calc(temp, dp, wind) {
   else if (temp >= 0)     { tP = ((s.tlo-temp)/Math.max(1,s.tlo))*s.coolmax; }
   else { var cf=Math.min(1,Math.abs(temp)/Math.max(1,Math.abs(s.coldfloor))); tP=s.coolmax+Math.pow(cf,s.coldexp)*s.coldmax; }
   tP = Math.min(s.tmax, tP);
-
   var hP = 0;
   if (dp < s.dp) { hP = Math.max(0,(dp+5))*0.5/Math.max(1,s.dp+5); }
   else { var hf=Math.min(1,(dp-s.dp)/Math.max(1,s.hdp_ceil-s.dp)); hP=Math.pow(hf,s.hexp)*s.hmax; }
   hP = Math.min(s.hmax, hP);
-
   var iP = 0;
   if (temp > s.thi && dp > s.dp) {
     iP = Math.min(s.int, s.int*Math.min(1,(temp-s.thi)/10)*Math.min(1,(dp-s.dp)/10)*s.iscale);
   }
-
   var mid = (s.tlo+s.thi)/2;
   var wBase = 0;
   if (wind >= s.pwlo) {
@@ -461,17 +544,15 @@ function calc(temp, dp, wind) {
   }
   var evap = (temp>s.thi&&dp<s.dp) ? Math.min(3,(temp-s.thi)/5*(s.dp-dp)/5) : 0;
   var wP = Math.max(-5, Math.min(s.wmax*2.5, wBase+wChill-evap));
-
   return { score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP))), tP:tP, hP:hP, iP:iP, wP:wP };
 }
 
-// ── Gauge & score display ──────────────────────────────────────────────────
+// ── Gauge ──────────────────────────────────────────────────────────────────
 function bandForScore(s) {
-  var v = Math.min(100,Math.max(0,s));
+  var v=Math.min(100,Math.max(0,s));
   for (var i=0;i<SBANDS.length;i++) if (v<=SBANDS[i].max) return i;
   return SBANDS.length-1;
 }
-
 function scoreInfo(s) {
   if (s>90) return {label:"Excellent",emoji:"\uD83D\uDE0A",col:"#1a7a3a"};
   if (s>75) return {label:"Good",     emoji:"\uD83D\uDE42",col:"#3a9a2a"};
@@ -501,7 +582,8 @@ function getAnnotations(temp, dp, wind, score, s, iP, wP) {
   if      (dp<0)        a.push({c:"ann-vdry",  t:"very dry air \uD83C\uDFDC\uFE0F"});
   else if (dp<4)        a.push({c:"ann-dry",   t:"dry air \uD83C\uDF35"});
 
-  if (iP>3) a.push({c:"ann-steamy",t:"hot & steamy \uD83E\uDD2F"});
+  // "hot & steamy" replaces the old "interaction active" — carries the info button
+  if (iP>3)             a.push({c:"ann-steamy ann-info",t:"hot & steamy \uD83E\uDD2F \u2139\uFE0F", info:true});
 
   if      (temp<0&&wind>=15) a.push({c:"ann-chill", t:"wind chill \uD83C\uDF2C\uFE0F"});
   else if (wind>s.swt)       a.push({c:"ann-windy", t:"strong wind \uD83D\uDCA8"});
@@ -509,8 +591,9 @@ function getAnnotations(temp, dp, wind, score, s, iP, wP) {
                              a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});
 
   var inIdeal = (temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
-  if (inIdeal||score>90) a.push({c:"ann-great",t:"feels great \u2728"});
+  if (inIdeal||score>90)     a.push({c:"ann-great", t:"feels great \u2728"});
 
+  // Deduplicate
   var seen={}, out=[];
   for (var i=0;i<a.length;i++) { if(!seen[a[i].t]){seen[a[i].t]=1;out.push(a[i]);} }
   return out;
@@ -538,13 +621,18 @@ function drawGauge(id, score) {
 }
 
 function renderScore(areaId, gaugeId, r, temp, effDP, wind) {
-  var score=r.score, tP=r.tP, hP=r.hP, iP=r.iP, wP=r.wP;
+  var score=r.score, iP=r.iP, wP=r.wP;
   var si=scoreInfo(score), s=gs();
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP);
   var annHtml="";
-  for (var i=0;i<anns.length;i++) annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t+"</span>";
-  // Interaction info pill
-  if (iP>0) annHtml+="<span class='ann ann-steamy' style='cursor:pointer' onclick='showPop(INT_TITLE,INT_INFO)'>interaction active ℹ️</span>";
+  for (var i=0;i<anns.length;i++) {
+    var ann=anns[i];
+    if (ann.info) {
+      annHtml+="<span class='ann "+ann.c+"' onclick='showPop(STEAMY_INFO_TITLE,STEAMY_INFO_TEXT)'>"+ann.t+"</span>";
+    } else {
+      annHtml+="<span class='ann "+ann.c+"'>"+ann.t+"</span>";
+    }
+  }
   if (annHtml) annHtml="<div class='annotations'>"+annHtml+"</div>";
   document.getElementById(areaId).innerHTML=
     "<div class='score-area'>"
@@ -556,7 +644,6 @@ function renderScore(areaId, gaugeId, r, temp, effDP, wind) {
   setTimeout(function(){drawGauge(gaugeId,score);},50);
 }
 
-
 // ── Forecast strip ─────────────────────────────────────────────────────────
 function renderForecast(fc) {
   window._FC = fc;
@@ -564,64 +651,71 @@ function renderForecast(fc) {
   var dps=fc.hourly.dew_point_2m, winds=fc.hourly.wind_speed_10m;
   var tz=fc.timezone;
 
-  // Find the next 3-hour forecast slot after now
-  // Convert now to epoch, then find first times[i] slot >= now
-  // Open-Meteo times are local strings like "2025-03-26T13:00" — append tz offset
-  var nowEpoch=Date.now();
-  // Get UTC offset for the location timezone in minutes
-  var tzOffset=0;
-  try {
-    var d1=new Date();
-    var localStr=d1.toLocaleString("en-CA",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"});
-    // localStr like "2025-03-26, 13:46:00" — parse it
-    var cleaned=localStr.replace(",","");
-    var localDate=new Date(cleaned+" UTC");
-    tzOffset=(localDate.getTime()-d1.getTime())/60000; // minutes
-  } catch(e){}
-  // Convert each Open-Meteo time string to epoch using the tz offset
-  function timeToEpoch(s){
-    // s = "2025-03-26T13:00" — treat as UTC then subtract tzOffset
-    return new Date(s+"Z").getTime() - tzOffset*60000;
-  }
-  // Find first index whose epoch is >= now
-  var curIdx=times.length-1;
-  for (var i=0;i<times.length;i++) {
-    if (timeToEpoch(times[i])>=nowEpoch) { curIdx=i; break; }
-  }
-  // Round up to next 3-hour slot (hours are 0,1,2,...,23 — snap to 0,3,6,9,12,15,18,21)
-  var slotHour=parseInt(times[curIdx].slice(11,13));
-  var nextSlotHour=Math.ceil(slotHour/3)*3;
-  if(nextSlotHour===slotHour) nextSlotHour=slotHour+3; // already on boundary, go to next
-  if(nextSlotHour>=24) nextSlotHour=nextSlotHour-24;
-  // Find the index for that next slot hour on the same or next day
-  var targetIdx=curIdx;
-  for (var i=curIdx;i<Math.min(curIdx+6,times.length);i++) {
-    var h=parseInt(times[i].slice(11,13));
-    if(h===nextSlotHour || (nextSlotHour>=24&&h===nextSlotHour-24)) { targetIdx=i; break; }
-  }
-  curIdx=targetIdx;
-  if(curIdx>=times.length-24) curIdx=times.length-24;
+  // Get tzOffset to convert Open-Meteo "local" times to real UTC
+  var tzOff = getTZOffset(tz);
 
-  var html="";
-  for (var slot=0;slot<8;slot++) {
-    var idx=curIdx+(slot*3);  // curIdx already points to next 3h boundary
-    if (idx>=times.length) break;
-    var t=temps[idx], dp=dps[idx], w=winds[idx];
-    var r=calc(t,dp,w);
-    var si=scoreInfo(r.score);
-    var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
-    var timeStr="";
-    try {
-      var d=new Date(times[idx]);
-      timeStr=d.toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).replace(" ","").toLowerCase();
-    } catch(e){ timeStr=times[idx].slice(11,16); }
-    var isNow=false;
-    html+="<div class=\"fc-slot"+(isNow?" fc-now":"")+"\" onclick=\"showForecastSlot("+idx+")\">"
-         +"<div class=\"fc-time\">"+(isNow?"Now":timeStr)+"</div>"
-         +"<div class=\"fc-score\" style=\"color:"+nc+"\">"+r.score+"</div>"
-         +"<div class=\"fc-lbl\" style=\"color:"+nc+"\">"+si.label+"</div>"
-         +"<div class=\"fc-temp\">"+toDisp(t).toFixed(1)+unitSym()+"</div>"
-         +"</div>";
+  // Get current UTC epoch
+  var nowEpoch = Date.now();
+
+  // Find the next fixed 3-hour slot (0,3,6,9,12,15,18,21) after now
+  // Convert each times[i] to real UTC epoch
+  function slotEpoch(i) {
+    var d = parseOMTime(times[i]);
+    return d.getTime() - tzOff * 60000;
+  }
+
+  // Get current local hour in tz
+  var nowLocalHour = 0;
+  try {
+    var nowStr = new Date().toLocaleString("en-CA", {timeZone:tz, hour:"2-digit", hour12:false});
+    nowLocalHour = parseInt(nowStr.replace(",","").trim()) || 0;
+  } catch(e) {}
+
+  // Find the next FC_SLOT hour >= current hour + 1
+  var nextHour = nowLocalHour + 1;
+  var startHour = -1;
+  for (var si=0; si<FC_SLOTS.length; si++) {
+    if (FC_SLOTS[si] >= nextHour) { startHour = FC_SLOTS[si]; break; }
+  }
+  if (startHour === -1) startHour = FC_SLOTS[0]; // wrap to next day's first slot
+
+  // Find the first index in times[] that has this hour and is in the future
+  var startIdx = -1;
+  for (var i=0; i<times.length; i++) {
+    var h = parseInt(times[i].slice(11,13));
+    if (h === startHour && slotEpoch(i) > nowEpoch) {
+      startIdx = i; break;
+    }
+  }
+  if (startIdx === -1) startIdx = 0;
+
+  // Build 8 slots stepping through FC_SLOTS from startIdx
+  var html = "";
+  var slotsAdded = 0;
+  var idx = startIdx;
+  while (slotsAdded < 8 && idx < times.length) {
+    var h = parseInt(times[idx].slice(11,13));
+    if (FC_SLOTS.indexOf(h) !== -1) {
+      var t=temps[idx], dp=dps[idx], w=winds[idx];
+      var res=calc(t,dp,w);
+      var si2=scoreInfo(res.score);
+      var nc=SBANDS[bandForScore(res.score)].col.replace("0.92","1");
+      // Format time display
+      var timeDisp = "";
+      try {
+        var d=parseOMTime(times[idx]);
+        var realUTC=new Date(d.getTime()-tzOff*60000);
+        timeDisp=realUTC.toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).replace(" ","").toLowerCase();
+      } catch(e){ timeDisp=times[idx].slice(11,16); }
+      html+="<div class='fc-slot' onclick='showForecastSlot("+idx+")'>"
+           +"<div class='fc-time'>"+timeDisp+"</div>"
+           +"<div class='fc-score' style='color:"+nc+"'>"+res.score+"</div>"
+           +"<div class='fc-lbl' style='color:"+nc+"'>"+si2.label+"</div>"
+           +"<div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"
+           +"</div>";
+      slotsAdded++;
+    }
+    idx++;
   }
   document.getElementById("forecast-row").innerHTML=html;
   document.getElementById("forecast-wrap").style.display="block";
@@ -629,7 +723,7 @@ function renderForecast(fc) {
 
 function showForecastSlot(idx) {
   if (!window._FC) return;
-  var fc=window._FC;
+  var fc=window._FC, tz=fc.timezone;
   var t=fc.hourly.temperature_2m[idx];
   var dp=fc.hourly.dew_point_2m[idx];
   var w=fc.hourly.wind_speed_10m[idx];
@@ -638,24 +732,40 @@ function showForecastSlot(idx) {
   var s=gs();
   var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP);
   var annText="";
-  for (var i=0;i<anns.length;i++) annText+=(i>0?", ":"")+anns[i].t;
+  for (var i=0;i<anns.length;i++) {
+    var txt=anns[i].t.replace(" \u2139\uFE0F","");
+    annText+=(i>0?", ":"")+txt;
+  }
   var timeStr="";
   try {
-    timeStr=new Date(fc.hourly.time[idx]).toLocaleString("en-AU",{timeZone:fc.timezone,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
+    var tzOff=getTZOffset(tz);
+    var d=parseOMTime(fc.hourly.time[idx]);
+    var realUTC=new Date(d.getTime()-tzOff*60000);
+    timeStr=realUTC.toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
   } catch(e){ timeStr=fc.hourly.time[idx].slice(11,16); }
   showPop(
-    timeStr+" — Score "+r.score+" ("+si.label+")",
-    toDisp(t).toFixed(1)+unitSym()+" | DP "+toDisp(dp).toFixed(1)+unitSym()+" | Wind "+Math.round(w)+" km/h"+(annText?"\n\n"+annText:"")
+    timeStr+" \u2014 Score "+r.score+" ("+si.label+")",
+    toDisp(t).toFixed(1)+unitSym()+" | DP "+toDisp(dp).toFixed(1)+unitSym()+" | Wind "+Math.round(w)+" km/h"+(annText?" | "+annText:"")
   );
 }
 
+// ── Re-render helpers ──────────────────────────────────────────────────────
 function reRenderLive() {
   if (!window._LW) return;
   var w=window._LW;
-  // Recalculate with current settings (not cached res)
   var res=calc(w.temp,w.effDP,w.wind);
   window._LW.res=res;
   renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind);
+}
+
+function reRenderManual() {
+  if (document.getElementById("manual-result").style.display==="none") return;
+  calcManual();
+}
+
+function reRenderAll() {
+  reRenderLive();
+  reRenderManual();
   if (window._FC) renderForecast(window._FC);
 }
 
@@ -729,7 +839,7 @@ function onSlider(key){
   document.getElementById(key+"-val").textContent=sliderLabel(key,pos);
   updateTrack("sl-"+key,pos);
   saveSettings();
-  reRenderLive();
+  reRenderAll();
 }
 
 function advToSlider(key){
@@ -752,19 +862,6 @@ function syncSlidersFromAdv(){
 }
 
 // ── Geocoding & weather ────────────────────────────────────────────────────
-function fmtTime(iso,tz){
-  // Open-Meteo current time strings are already local time without timezone offset
-  // e.g. "2025-03-25T07:45" — parse as UTC offset to the location's timezone
-  try{
-    // Append Z only if no offset present, so browser doesn't apply local tz
-    var s=iso;
-    if(s.length===16) s=s+":00";  // ensure seconds
-    // Parse the string as a date in the location's timezone using the tz offset
-    var d=new Date(s);
-    return d.toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
-  } catch(e){return iso.slice(11,16);}
-}
-
 function revGeo(lat,lon){
   return fetch("https://nominatim.openstreetmap.org/reverse?lat="+lat+"&lon="+lon+"&format=json&zoom=10",
     {headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}})
@@ -820,7 +917,7 @@ function searchCity(){
     document.getElementById("live-status").textContent="Multiple results — tap one:";
     var list=document.getElementById("results-list"),html="";
     for(var i=0;i<d.length;i++){
-      html+="<div class=\"result-item\" onclick=\"selectResult("+i+")\"><div>"+nomLabel(d[i])+"</div><div class=\"result-sub\">"+nomSub(d[i])+"</div></div>";
+      html+="<div class='result-item' onclick='selectResult("+i+")'><div>"+nomLabel(d[i])+"</div><div class='result-sub'>"+nomSub(d[i])+"</div></div>";
     }
     list.innerHTML=html; list.style.display="block";
     window._SR=d;
@@ -837,6 +934,7 @@ function selectResult(i){
 
 function fetchWeather(lat,lon,label){
   document.getElementById("live-status").textContent="Fetching weather...";
+  window._currentLat=lat; window._currentLon=lon; window._currentLabel=label;
   var url="https://api.open-meteo.com/v1/forecast"
     +"?latitude="+lat+"&longitude="+lon
     +"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m"
@@ -852,12 +950,88 @@ function fetchWeather(lat,lon,label){
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
-    document.getElementById("live-obstime").textContent="Observed "+fmtTime(cur.time,d.timezone);
+    document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind);
     renderForecast(d);
   })
   .catch(function(e){document.getElementById("live-status").textContent="Fetch failed: "+e.message;});
+}
+
+// ── Starred locations ──────────────────────────────────────────────────────
+function loadStars(){
+  return JSON.parse(localStorage.getItem("comfort_stars")||"[]");
+}
+function saveStars(stars){
+  localStorage.setItem("comfort_stars",JSON.stringify(stars));
+}
+
+function openStars(){
+  document.getElementById("star-save-row").style.display="none";
+  document.getElementById("star-name-input").value="";
+  renderStarsList();
+  document.getElementById("stars-ov").classList.add("open");
+}
+function closeStars(){
+  document.getElementById("stars-ov").classList.remove("open");
+}
+
+function renderStarsList(){
+  var stars=loadStars();
+  var html="";
+  if(!stars.length){
+    html="<div class='star-empty'>No saved locations yet.<br/>Search a location then tap \u2605 to save it.</div>";
+  } else {
+    for(var i=0;i<stars.length;i++){
+      html+="<div class='star-item' onclick='loadStar("+i+")'>"
+           +"<div class='star-item-name'>\u2605 "+stars[i].name+"</div>"
+           +"<button class='star-item-del' onclick='deleteStar(event,"+i+")'>&#10005;</button>"
+           +"</div>";
+    }
+  }
+  document.getElementById("stars-list").innerHTML=html;
+}
+
+function loadStar(i){
+  var stars=loadStars();
+  var s=stars[i];
+  closeStars();
+  fetchWeather(s.lat,s.lon,s.name);
+}
+
+function deleteStar(e,i){
+  e.stopPropagation();
+  var stars=loadStars();
+  stars.splice(i,1);
+  saveStars(stars);
+  renderStarsList();
+}
+
+function promptSaveLoc(){
+  if(!window._currentLabel){return;}
+  document.getElementById("star-name-input").value=window._currentLabel.split(",")[0];
+  document.getElementById("star-save-row").style.display="flex";
+  renderStarsList();
+  document.getElementById("stars-ov").classList.add("open");
+  setTimeout(function(){document.getElementById("star-name-input").focus();},100);
+}
+
+function confirmSaveLoc(){
+  var name=document.getElementById("star-name-input").value.trim();
+  if(!name||!window._currentLat)return;
+  var stars=loadStars();
+  // Check for duplicate
+  for(var i=0;i<stars.length;i++){
+    if(Math.abs(stars[i].lat-window._currentLat)<0.001&&Math.abs(stars[i].lon-window._currentLon)<0.001){
+      stars[i].name=name; saveStars(stars);
+      document.getElementById("star-save-row").style.display="none";
+      renderStarsList(); return;
+    }
+  }
+  stars.push({name:name,lat:window._currentLat,lon:window._currentLon});
+  saveStars(stars);
+  document.getElementById("star-save-row").style.display="none";
+  renderStarsList();
 }
 
 // ── PWA install ────────────────────────────────────────────────────────────
