@@ -542,30 +542,20 @@ function renderScore(areaId, gaugeId, r, temp, effDP, wind) {
   var si=scoreInfo(score), s=gs();
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP);
   var annHtml="";
-  for (var i=0;i<anns.length;i++) annHtml+="<span class=\"ann "+anns[i].c+"\">"+anns[i].t+"</span>";
-  if (annHtml) annHtml="<div class=\"annotations\">"+annHtml+"</div>";
-  var wLabel=(wP<0)?"+"+Math.abs(wP).toFixed(1)+" pts bonus":"\u2212"+wP.toFixed(1)+" pts";
-  var intCard="<div class=\"bc\">"
-    +"<div class=\"bc-lbl\"><span>Interaction</span>"
-    +"<div class=\"ibtn\" onclick=\"showPop(INT_TITLE,INT_INFO)\">i</div></div>"
-    +"<div class=\"bc-val\""+(iP>0?" style=\"color:#b06010\"":"")+">"+(iP>0?"active":"inactive")+"</div>"
-    +"<div class=\"bc-det\">\u2212"+iP.toFixed(1)+" pts</div></div>";
-  function bc(l,v,d){return "<div class=\"bc\"><div class=\"bc-lbl\">"+l+"</div><div class=\"bc-val\">"+v+"</div><div class=\"bc-det\">"+d+"</div></div>";}
+  for (var i=0;i<anns.length;i++) annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t+"</span>";
+  // Interaction info pill
+  if (iP>0) annHtml+="<span class='ann ann-steamy' style='cursor:pointer' onclick='showPop(INT_TITLE,INT_INFO)'>interaction active ℹ️</span>";
+  if (annHtml) annHtml="<div class='annotations'>"+annHtml+"</div>";
   document.getElementById(areaId).innerHTML=
-    "<div class=\"score-area\">"
-    +"<canvas id=\""+gaugeId+"\"></canvas>"
-    +"<div class=\"score-num\" style=\"color:"+si.col+"\">"+score+"</div>"
-    +"<span class=\"score-emoji\">"+si.emoji+"</span>"
-    +"<div class=\"score-lbl\" style=\"color:"+si.col+"\">"+si.label+"</div>"
-    +annHtml+"</div>"
-    +"<div class=\"bgrid\">"
-    +bc("Temperature", toDisp(temp).toFixed(1)+unitSym(), "\u2212"+tP.toFixed(1)+" pts")
-    +bc("Dew point",   toDisp(effDP).toFixed(1)+unitSym(), "\u2212"+hP.toFixed(1)+" pts")
-    +intCard
-    +bc("Wind", Math.round(wind)+" km/h", wLabel)
-    +"</div>";
+    "<div class='score-area'>"
+    +"<canvas id='"+gaugeId+"'></canvas>"
+    +"<div class='score-num' style='color:"+si.col+"'>"+score+"</div>"
+    +"<span class='score-emoji'>"+si.emoji+"</span>"
+    +"<div class='score-lbl' style='color:"+si.col+"'>"+si.label+"</div>"
+    +annHtml+"</div>";
   setTimeout(function(){drawGauge(gaugeId,score);},50);
 }
+
 
 // ── Forecast strip ─────────────────────────────────────────────────────────
 function renderForecast(fc) {
@@ -574,17 +564,33 @@ function renderForecast(fc) {
   var dps=fc.hourly.dew_point_2m, winds=fc.hourly.wind_speed_10m;
   var tz=fc.timezone;
 
-  // Find current hour index
+  // Find the next upcoming 3-hour slot in local timezone
+  // Open-Meteo times are local timezone strings like "2025-03-25T07:00"
+  // We compare against current local time formatted the same way
   var now=new Date();
-  var nowStr=now.toISOString().slice(0,13); // "2025-03-25T14"
+  // Format now as local time in the location's timezone to match Open-Meteo strings
+  var nowLocal;
+  try {
+    var fmt=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    var parts=fmt.formatToParts(now);
+    var p={};
+    for(var pi=0;pi<parts.length;pi++) p[parts[pi].type]=parts[pi].value;
+    nowLocal=p.year+"-"+p.month+"-"+p.day+"T"+p.hour+":"+p.minute;
+  } catch(e) {
+    nowLocal=now.toISOString().slice(0,16);
+  }
+  // Find first hourly index that is >= now
   var curIdx=0;
   for (var i=0;i<times.length;i++) {
-    if (times[i].slice(0,13)===nowStr) { curIdx=i; break; }
+    if (times[i]>=nowLocal) { curIdx=i; break; }
   }
+  // Round up to next 3-hour boundary
+  curIdx=Math.ceil(curIdx/3)*3;
+  if(curIdx>=times.length) curIdx=times.length-3;
 
   var html="";
   for (var slot=0;slot<8;slot++) {
-    var idx=curIdx+(slot*3);
+    var idx=curIdx+(slot*3);  // curIdx already points to next 3h boundary
     if (idx>=times.length) break;
     var t=temps[idx], dp=dps[idx], w=winds[idx];
     var r=calc(t,dp,w);
@@ -632,7 +638,10 @@ function showForecastSlot(idx) {
 function reRenderLive() {
   if (!window._LW) return;
   var w=window._LW;
-  renderScore("live-score-area","gauge-live",w.res,w.temp,w.effDP,w.wind);
+  // Recalculate with current settings (not cached res)
+  var res=calc(w.temp,w.effDP,w.wind);
+  window._LW.res=res;
+  renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind);
   if (window._FC) renderForecast(window._FC);
 }
 
@@ -730,8 +739,16 @@ function syncSlidersFromAdv(){
 
 // ── Geocoding & weather ────────────────────────────────────────────────────
 function fmtTime(iso,tz){
-  try{return new Date(iso).toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");}
-  catch(e){return new Date(iso).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit",hour12:true});}
+  // Open-Meteo current time strings are already local time without timezone offset
+  // e.g. "2025-03-25T07:45" — parse as UTC offset to the location's timezone
+  try{
+    // Append Z only if no offset present, so browser doesn't apply local tz
+    var s=iso;
+    if(s.length===16) s=s+":00";  // ensure seconds
+    // Parse the string as a date in the location's timezone using the tz offset
+    var d=new Date(s);
+    return d.toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
+  } catch(e){return iso.slice(11,16);}
 }
 
 function revGeo(lat,lon){
