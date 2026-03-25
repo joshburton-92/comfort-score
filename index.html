@@ -564,29 +564,43 @@ function renderForecast(fc) {
   var dps=fc.hourly.dew_point_2m, winds=fc.hourly.wind_speed_10m;
   var tz=fc.timezone;
 
-  // Find the next upcoming 3-hour slot in local timezone
-  // Open-Meteo times are local timezone strings like "2025-03-25T07:00"
-  // We compare against current local time formatted the same way
-  var now=new Date();
-  // Format now as local time in the location's timezone to match Open-Meteo strings
-  var nowLocal;
+  // Find the next 3-hour forecast slot after now
+  // Convert now to epoch, then find first times[i] slot >= now
+  // Open-Meteo times are local strings like "2025-03-26T13:00" — append tz offset
+  var nowEpoch=Date.now();
+  // Get UTC offset for the location timezone in minutes
+  var tzOffset=0;
   try {
-    var fmt=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-    var parts=fmt.formatToParts(now);
-    var p={};
-    for(var pi=0;pi<parts.length;pi++) p[parts[pi].type]=parts[pi].value;
-    nowLocal=p.year+"-"+p.month+"-"+p.day+"T"+p.hour+":"+p.minute;
-  } catch(e) {
-    nowLocal=now.toISOString().slice(0,16);
+    var d1=new Date();
+    var localStr=d1.toLocaleString("en-CA",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    // localStr like "2025-03-26, 13:46:00" — parse it
+    var cleaned=localStr.replace(",","");
+    var localDate=new Date(cleaned+" UTC");
+    tzOffset=(localDate.getTime()-d1.getTime())/60000; // minutes
+  } catch(e){}
+  // Convert each Open-Meteo time string to epoch using the tz offset
+  function timeToEpoch(s){
+    // s = "2025-03-26T13:00" — treat as UTC then subtract tzOffset
+    return new Date(s+"Z").getTime() - tzOffset*60000;
   }
-  // Find first hourly index that is >= now
-  var curIdx=0;
+  // Find first index whose epoch is >= now
+  var curIdx=times.length-1;
   for (var i=0;i<times.length;i++) {
-    if (times[i]>=nowLocal) { curIdx=i; break; }
+    if (timeToEpoch(times[i])>=nowEpoch) { curIdx=i; break; }
   }
-  // Round up to next 3-hour boundary
-  curIdx=Math.ceil(curIdx/3)*3;
-  if(curIdx>=times.length) curIdx=times.length-3;
+  // Round up to next 3-hour slot (hours are 0,1,2,...,23 — snap to 0,3,6,9,12,15,18,21)
+  var slotHour=parseInt(times[curIdx].slice(11,13));
+  var nextSlotHour=Math.ceil(slotHour/3)*3;
+  if(nextSlotHour===slotHour) nextSlotHour=slotHour+3; // already on boundary, go to next
+  if(nextSlotHour>=24) nextSlotHour=nextSlotHour-24;
+  // Find the index for that next slot hour on the same or next day
+  var targetIdx=curIdx;
+  for (var i=curIdx;i<Math.min(curIdx+6,times.length);i++) {
+    var h=parseInt(times[i].slice(11,13));
+    if(h===nextSlotHour || (nextSlotHour>=24&&h===nextSlotHour-24)) { targetIdx=i; break; }
+  }
+  curIdx=targetIdx;
+  if(curIdx>=times.length-24) curIdx=times.length-24;
 
   var html="";
   for (var slot=0;slot<8;slot++) {
@@ -601,7 +615,7 @@ function renderForecast(fc) {
       var d=new Date(times[idx]);
       timeStr=d.toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).replace(" ","").toLowerCase();
     } catch(e){ timeStr=times[idx].slice(11,16); }
-    var isNow=slot===0;
+    var isNow=false;
     html+="<div class=\"fc-slot"+(isNow?" fc-now":"")+"\" onclick=\"showForecastSlot("+idx+")\">"
          +"<div class=\"fc-time\">"+(isNow?"Now":timeStr)+"</div>"
          +"<div class=\"fc-score\" style=\"color:"+nc+"\">"+r.score+"</div>"
