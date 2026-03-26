@@ -48,13 +48,14 @@ body{background:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e
 .obs-time{font-size:clamp(11px,3vw,13px);color:#5a9ab0;margin-bottom:10px;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.85);border-radius:20px;color:#1a5f7a}
-/* Fixed-height score area to prevent layout bounce */
-.score-outer{min-height:300px}
+/* Score area — all heights locked to prevent layout bounce */
+.score-outer{min-height:320px}
 .score-area{text-align:center;padding:4px 0 12px}
-.score-num{font-size:clamp(60px,18vw,80px);font-weight:800;line-height:1;margin:4px 0;letter-spacing:-2px}
-.score-emoji{font-size:clamp(26px,7vw,32px);display:block;margin-bottom:4px}
-.score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;margin-bottom:8px}
-.annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:34px}
+canvas#gauge-live,canvas#gauge-manual{height:115px;width:200px}
+.score-num{font-size:clamp(60px,18vw,80px);font-weight:800;line-height:1;height:86px;display:flex;align-items:center;justify-content:center;letter-spacing:-2px}
+.score-emoji{font-size:clamp(26px,7vw,32px);display:block;height:36px;line-height:36px;margin-bottom:0}
+.score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;height:34px;display:flex;align-items:center;justify-content:center;margin-bottom:0}
+.annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:60px;align-content:flex-start}
 .ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
 .ann-great{background:rgba(30,140,65,0.15);color:#0d6030;border-color:rgba(30,140,65,0.3)}
 .ann-warm{background:rgba(255,160,20,0.18);color:#8a4a00;border-color:rgba(255,160,20,0.35)}
@@ -538,7 +539,12 @@ function saveWuKey(){
   localStorage.setItem("wu_api_key",document.getElementById("wu-api-key").value.trim());
 }
 
-function onAdvChange(){saveSettings();syncSlidersFromAdv();reRenderAll();}
+var _renderTimer=null;
+function onAdvChange(){saveSettings();syncSlidersFromAdv();scheduleRender();}
+function scheduleRender(){
+  if(_renderTimer)clearTimeout(_renderTimer);
+  _renderTimer=setTimeout(function(){reRenderAll();_renderTimer=null;},120);
+}
 
 // ── Get settings ───────────────────────────────────────────────────────────
 function gs(){
@@ -796,7 +802,7 @@ function onSlider(key){
   document.getElementById(key+"-val").textContent=sliderLabel(key,pos);
   updateTrack("sl-"+key,pos);
   saveSettings();
-  reRenderAll();
+  scheduleRender();
 }
 function advToSlider(key){
   var t=0.5;
