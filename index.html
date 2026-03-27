@@ -461,23 +461,32 @@ function localHourInTZ(tz){
 }
 
 // ── Score history — snap to nearest FC_SLOT ────────────────────────────────
-function loadHistory(){return JSON.parse(localStorage.getItem("comfort_history")||"[]");}
-function saveHistory(h){localStorage.setItem("comfort_history",JSON.stringify(h));}
+function histKey(){
+  // Key by location: rounded lat/lon or WU station ID
+  if(window._currentWU) return "hist_wu_"+window._currentWU.stationId;
+  if(window._currentLat) return "hist_"+Math.round(window._currentLat*100)+"_"+Math.round(window._currentLon*100);
+  return "hist_default";
+}
+function loadHistory(){return JSON.parse(localStorage.getItem(histKey())||"[]");}
+function saveHistory(h){localStorage.setItem(histKey(),JSON.stringify(h));}
 function pushHistory(entry,tz){
   // Only store if current time is within 15 min of an FC_SLOT hour
   var nowHour=localHourInTZ(tz||"UTC");
   var nowMin=0;
   try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",hour12:false,minute:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});nowMin=parseInt(parts.minute)||0;}catch(e){}
-  // Check if we're within 15 min after an FC_SLOT
   var nearSlot=false;
   for(var i=0;i<FC_SLOTS.length;i++){
     if(FC_SLOTS[i]===nowHour&&nowMin<=15){nearSlot=true;break;}
   }
   if(!nearSlot)return;
+  // slotDay: YYYYMMDD string in location tz for duplicate check
+  var slotDay="";
+  try{var dp2={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).forEach(function(p){dp2[p.type]=p.value;});slotDay=dp2.year+dp2.month+dp2.day;}catch(e){slotDay=new Date().toISOString().slice(0,10).replace(/-/g,"");}
   var h=loadHistory();
-  // Avoid duplicates within same FC_SLOT hour
-  if(h.length&&h[h.length-1].slotHour===nowHour&&h[h.length-1].slotDay===entry.slotDay)return;
+  // Avoid duplicates within same FC_SLOT hour on same day
+  if(h.length&&h[h.length-1].slotHour===nowHour&&h[h.length-1].slotDay===slotDay)return;
   entry.slotHour=nowHour;
+  entry.slotDay=slotDay;
   h.push(entry);
   if(h.length>MAX_HISTORY)h=h.slice(h.length-MAX_HISTORY);
   saveHistory(h);
@@ -809,7 +818,19 @@ function fetchWU(stationId,apiKey,label,cb){
     if(cb)cb();
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
-function fetchForecastOnly(lat,lon){fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&hourly=temperature_2m,dew_point_2m,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2").then(function(r){return r.json();}).then(function(d){renderForecast(d);}).catch(function(){});}
+function fetchForecastOnly(lat,lon){
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2")
+  .then(function(r){return r.json();})
+  .then(function(d){
+    // Apply weather_code to current WU display
+    if(d.current&&d.current.weather_code!==undefined&&window._LW){
+      window._LW.wxCode=d.current.weather_code;
+      var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
+      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode);
+    }
+    renderForecast(d);
+  }).catch(function(){});
+}
 function showStatusWU(msg){var el=document.getElementById("wu-status");el.textContent=msg;el.style.display=msg?"":"none";}
 
 // ── Stars ──────────────────────────────────────────────────────────────────
