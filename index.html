@@ -138,7 +138,12 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
   .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
 }
 /* Forecast strip */
-.forecast-strip{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:4px;padding-bottom:4px}
+.forecast-wrap-inner{position:relative}
+.fc-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:32px;height:44px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text-sec);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none}
+.fc-nav:active{opacity:0.7}
+.fc-nav-l{left:0}
+.fc-nav-r{right:0}
+.forecast-strip{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:4px;padding:2px 36px 4px}
 .forecast-strip::-webkit-scrollbar{height:3px}
 .forecast-strip::-webkit-scrollbar-track{background:rgba(255,255,255,0.1);border-radius:2px}
 .forecast-strip::-webkit-scrollbar-thumb{background:rgba(42,127,180,0.3);border-radius:2px}
@@ -277,7 +282,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="share-row"><button class="share-btn" onclick="shareScore()">Share &#8599;</button></div>
       <div id="forecast-wrap" style="display:none">
         <div class="sec-lbl" style="margin-top:10px">Recent &amp; upcoming</div>
-        <div class="forecast-strip"><div class="forecast-row" id="forecast-row"></div></div>
+        <div class="forecast-wrap-inner">
+          <button class="fc-nav fc-nav-l" onclick="fcScroll(-1)" aria-label="Scroll left">&#8249;</button>
+          <div class="forecast-strip" id="forecast-strip"><div class="forecast-row" id="forecast-row"></div></div>
+          <button class="fc-nav fc-nav-r" onclick="fcScroll(1)" aria-label="Scroll right">&#8250;</button>
+        </div>
       </div>
     </div>
   </div>
@@ -854,6 +863,12 @@ function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWork
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
 
 // ── Init ───────────────────────────────────────────────────────────────────
+function fcScroll(dir){
+  var strip=document.getElementById("forecast-strip");
+  if(!strip)return;
+  strip.scrollBy({left:dir*220,behavior:"smooth"});
+}
+
 buildSettings();
 syncSlidersFromAdv();
 initUnit();
