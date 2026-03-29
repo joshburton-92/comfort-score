@@ -222,6 +222,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .result-item{padding:11px 14px;background:var(--result-item);cursor:pointer;border-bottom:1px solid var(--divider);font-size:clamp(13px,3.5vw,14px);color:var(--text);font-weight:600}
 .result-item:last-child{border-bottom:none}
 .result-sub{font-size:clamp(11px,2.8vw,12px);color:var(--text-muted);margin-top:2px;font-weight:600}
+.washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
 .sources-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 .clear-btn{font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
@@ -279,7 +280,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </div>
       <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
-      <div class="share-row"><button class="share-btn" onclick="shareScore()">Share &#8599;</button></div>
+      <div class="share-row"><button class="share-btn" onclick="shareScore()">Share &#8599;</button><button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? 🧺</button></div>
+
       <div id="forecast-wrap" style="display:none">
         <div class="sec-lbl" style="margin-top:10px">Recent &amp; upcoming</div>
         <div class="forecast-wrap-inner">
@@ -660,6 +662,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
 // ── Forecast + history ─────────────────────────────────────────────────────
 function renderForecast(fc){
   window._FC=fc;
+  console.log("renderForecast called, window._FC set to:", window._FC);
   var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
   function slotEpoch(i){var p=parseLocalTimeStr(times[i]);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
@@ -783,7 +786,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=2";
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
@@ -791,7 +794,8 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     pushHistory({ts:Date.now(),temp:temp,dp:effDP,wind:wind},d.timezone);
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
-    document.getElementById("live-locname").textContent=label;
+        document.getElementById("live-locname").textContent=label;
+    document.getElementById("washing-btn").style.display="inline-block";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
@@ -861,6 +865,102 @@ function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.
 window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
 function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){Promise.all(regs.map(function(r){return r.unregister();})).then(function(){caches.keys().then(function(keys){Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});});});});}else{window.location.reload(true);}}
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+
+function checkWashing(){
+  if(!window._FC){console.log("ERROR: _FC is undefined");return;}
+  var fc=window._FC,tz=fc.timezone,tzOff=getTZOffsetMin(tz);
+  console.log("sunrise:", fc.daily.sunrise);
+  console.log("sunset:", fc.daily.sunset);
+  var temp=window._LW.temp;
+  var rh=window._LW.rh;
+  var wind=window._LW.wind;
+  function toEpoch(s){
+  console.log("toEpoch called with:", s, "type:", typeof s);
+  var p=parseLocalTimeStr(s);
+  return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
+}
+var now=Date.now();
+
+// Sunrise / sunset
+var sunriseStr=fc.daily.sunrise[0];
+var sunsetStr=fc.daily.sunset[0];
+var sunsetEpoch=toEpoch(sunsetStr);
+
+if(sunsetEpoch < now){
+  sunriseStr=fc.daily.sunrise[0];
+  sunsetStr=fc.daily.sunset[0];
+  sunriseEpoch=toEpoch(sunriseStr);
+  sunsetEpoch=toEpoch(sunsetStr);
+} else {
+  sunriseEpoch=toEpoch(sunriseStr);
+}
+
+  // Night checks
+  if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn't risen yet 🌙","Hang it out after sunrise for best results.","#5a8aa8");
+  if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun's down 🌙","Hang it out tomorrow morning when there's a full day of drying ahead.","#5a8aa8");
+
+  var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
+
+  // Scan hourly forecast for rain before sunset
+  var now=Date.now();  
+  var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
+  var rainInHours=null;
+  for(var i=0;i<times.length;i++){
+    var slotMs=toEpoch(times[i]);
+    if(slotMs<now)continue;
+    if(sunsetEpoch&&slotMs>sunsetEpoch)break;
+    if((wxCodes[i]||0)>=51){rainInHours=Math.round((slotMs-now)/3600000);break;}
+  }
+
+  // VPD drying index
+  var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
+  var avp=svp*(rh/100);
+  var vpd=svp-avp;
+  var wMult=1+Math.min(1.5,wind/20);
+  var tFact=Math.max(0.3,Math.min(1.0,(temp-5)/20));
+  var dryIdx=vpd*wMult*tFact;
+
+  // Drying time estimate
+  var dryHours,dryLabel;
+  if(dryIdx>1.8){dryHours=0.75;dryLabel="30–60 minutes";}
+  else if(dryIdx>1.2){dryHours=1.5;dryLabel="1–2 hours";}
+  else if(dryIdx>0.7){dryHours=3;dryLabel="2–4 hours";}
+  else if(dryIdx>0.3){dryHours=5;dryLabel="4–6 hours";}
+  else{dryHours=999;dryLabel=null;}
+
+  // Reason string
+  var rsns=[];
+  if(vpd<0.3)rsns.push("the air is quite humid");else if(vpd>1.2)rsns.push("low humidity");
+  if(wind<5)rsns.push("not much wind");else if(wind>=20)rsns.push("a good breeze");
+  if(temp>25)rsns.push("warm temperature");else if(temp<12)rsns.push("cool temperature");
+  var rsn=rsns.length?(rsns.charAt(0).toUpperCase()+rsns.slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
+  "Conditions look reasonable.";
+
+  // Rain?
+  if(rainInHours!==null){
+    if(rainInHours<=1)return washingPop("Rain on the way 🌧️","Rain expected within the hour. Best to dry inside today.","#c03020");
+    return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" ⚠️","You might get some drying in, but it's risky. "+rsn,"#b06010");
+  }
+
+  // Too bad to dry?
+  if(dryHours===999)return washingPop("Probably not today ❌","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
+
+  // Not enough daylight?
+  if(dryHours>hoursLeft+0.5){
+    return washingPop("Cutting it close ⚠️","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn,"#b06010");
+  }
+
+  // Good to go
+  var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
+  var emoji=dryHours<=1.5?"☀️":dryHours<=3?"👍":"🤷";
+  return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn,col);
+}
+function washingPop(title,reason,colour){
+  document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
+  document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"+reason+"</div>";
+  document.getElementById("pop-ov").classList.add("open");
+}
+
 
 // ── Init ───────────────────────────────────────────────────────────────────
 function fcScroll(dir){
