@@ -832,7 +832,7 @@ function fetchWU(stationId,apiKey,label,cb){
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
-  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m&wind_speed_unit=kmh&timezone=auto&forecast_days=2")
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=2")
   .then(function(r){return r.json();})
   .then(function(d){
     // Apply weather_code to current WU display
@@ -865,6 +865,28 @@ function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.
 window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
 function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){Promise.all(regs.map(function(r){return r.unregister();})).then(function(){caches.keys().then(function(keys){Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});});});});}else{window.location.reload(true);}}
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+
+function checkConditions(temp, dew, wind, wxCode){
+  var issues=[];
+  if(temp<5)issues.push("too cold");
+  if(dew>temp-4)issues.push("too humid");
+  if(wind>15)issues.push("too windy");
+  if(wxCode!==null&&(wxCode===51||wxCode===53||wxCode===55||wxCode===61||wxCode===63||wxCode===65||wxCode===71||wxCode===73||wxCode===75||wxCode===77||wxCode===80||wxCode===81||wxCode===82))issues.push("rain");
+  return issues;
+}
+
+function findBetterWindow(currentHour){
+  if(!window._FC||!window._FC.hourly)return null;
+  var h=window._FC.hourly,temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  var startIdx=currentHour+1,endIdx=Math.min(currentHour+12,temps.length);
+  for(var i=startIdx;i<endIdx;i++){
+    var t=temps[i],d=dews[i],w=winds[i],c=codes[i];
+    if(t===null||d===null||w===null)continue;
+    var res=calc(t,d,w),issues=checkConditions(t,d,w,c);
+    if(!issues.length&&res.score>=75)return {hour:i,score:res.score,temp:t,dew:d,wind:w};
+  }
+  return null;
+}
 
 function checkWashing(){
   if(!window._FC){console.log("ERROR: _FC is undefined");return;}
@@ -933,8 +955,14 @@ if(sunsetEpoch < now){
   if(vpd<0.3)rsns.push("the air is quite humid");else if(vpd>1.2)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");else if(wind>=20)rsns.push("a good breeze");
   if(temp>25)rsns.push("warm temperature");else if(temp<12)rsns.push("cool temperature");
-  var rsn=rsns.length?(rsns.charAt(0).toUpperCase()+rsns.slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
+  var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
   "Conditions look reasonable.";
+  if(rsns.length){
+  var better=findBetterWindow(new Date().getHours());
+  if(better){
+    rsn+=" Try again around "+better.hour+":00 ("+better.temp+"°C, score "+better.score+").";
+  }
+}
 
   // Rain?
   if(rainInHours!==null){
