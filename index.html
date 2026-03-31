@@ -875,48 +875,67 @@ function checkConditions(temp, dew, wind, wxCode){
   return issues;
 }
 
-function findBetterWindow(currentHour){
-  if(!window._FC||!window._FC.hourly)return null;
-  var h=window._FC.hourly,temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
-  var startIdx=currentHour+1,endIdx=Math.min(currentHour+12,temps.length);
-  for(var i=startIdx;i<endIdx;i++){
-    var t=temps[i],d=dews[i],w=winds[i],c=codes[i];
-    if(t===null||d===null||w===null)continue;
-    var res=calc(t,d,w),issues=checkConditions(t,d,w,c);
-    if(!issues.length&&res.score>=75)return {hour:i,score:res.score,temp:t,dew:d,wind:w};
-  }
-  return null;
+function formatHour(h){
+  var ampm=h>=12?"pm":"am";
+  var h12=h%12||12;
+  return h12+":00 "+ampm;
 }
 
-function checkWashing(){
-  if(!window._FC){console.log("ERROR: _FC is undefined");return;}
-  var fc=window._FC,tz=fc.timezone,tzOff=getTZOffsetMin(tz);
-  console.log("sunrise:", fc.daily.sunrise);
-  console.log("sunset:", fc.daily.sunset);
-  var temp=window._LW.temp;
-  var rh=window._LW.rh;
-  var wind=window._LW.wind;
-  function toEpoch(s){
+function toEpoch(s,tzOff){
   console.log("toEpoch called with:", s, "type:", typeof s);
   var p=parseLocalTimeStr(s);
   return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
 }
-var now=Date.now();
 
-// Sunrise / sunset
-var sunriseStr=fc.daily.sunrise[0];
-var sunsetStr=fc.daily.sunset[0];
-var sunsetEpoch=toEpoch(sunsetStr);
-
-if(sunsetEpoch < now){
-  sunriseStr=fc.daily.sunrise[0];
-  sunsetStr=fc.daily.sunset[0];
-  sunriseEpoch=toEpoch(sunriseStr);
-  sunsetEpoch=toEpoch(sunsetStr);
-} else {
-  sunriseEpoch=toEpoch(sunriseStr);
+function findBetterWindow(currentHour){
+  if(!window._FC||!window._FC.hourly){console.log("No FC or hourly");return null;}
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  console.log("Times length:", times.length, "Temps length:", temps.length);
+  
+  var now=Date.now(),startIdx=0;
+  for(var i=0;i<times.length;i++){
+    var slotMs=toEpoch(times[i],window._tzOff);
+    if(slotMs>=now){startIdx=i;break;}
+  }
+  console.log("Start index:", startIdx);
+  
+  var endIdx=Math.min(startIdx+12,temps.length);
+  for(var i=startIdx+1;i<endIdx;i++){
+    var t=temps[i],d=dews[i],w=winds[i],c=codes[i];
+    if(t===null||d===null||w===null)continue;
+    var res=calc(t,d,w),issues=checkConditions(t,d,w,c);
+    var slotEpoch=toEpoch(times[i],window._tzOff);
+    if(window._sunsetEpoch&&slotEpoch>window._sunsetEpoch)continue;
+    console.log("Hour", i, "score:", res.score, "issues:", issues.length);
+    if(!issues.length&&res.score>75)return {hour:new Date(slotEpoch).getHours(),score:res.score,temp:t,dew:d,wind:w};
+  }
+  console.log("No better window found");
+  return null;
 }
 
+function checkWashing(){
+  console.log("checkWashing started");
+  if(!window._FC){console.log("ERROR: _FC is undefined");return;}
+  var fc=window._FC;
+  var tz=fc.timezone;
+  window._tzOff=getTZOffsetMin(tz);
+  var tzOff=window._tzOff;
+  var temp=window._LW.temp;
+  var rh=window._LW.rh;
+  var wind=window._LW.wind;
+  var now=Date.now();
+
+  // Sunrise / sunset
+  var sunriseEpoch=toEpoch(fc.daily.sunrise[0],tzOff);
+  var sunsetEpoch=toEpoch(fc.daily.sunset[0],tzOff);
+  window._sunsetEpoch=sunsetEpoch;
+
+  if(sunsetEpoch < now){
+    sunriseEpoch=toEpoch(fc.daily.sunrise[1],tzOff);
+    sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
+    window._sunsetEpoch=sunsetEpoch;
+  }
+  
   // Night checks
   if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn't risen yet 🌙","Hang it out after sunrise for best results.","#5a8aa8");
   if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun's down 🌙","Hang it out tomorrow morning when there's a full day of drying ahead.","#5a8aa8");
@@ -924,11 +943,10 @@ if(sunsetEpoch < now){
   var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
 
   // Scan hourly forecast for rain before sunset
-  var now=Date.now();  
   var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
   var rainInHours=null;
   for(var i=0;i<times.length;i++){
-    var slotMs=toEpoch(times[i]);
+    var slotMs=toEpoch(times[i],tzOff);
     if(slotMs<now)continue;
     if(sunsetEpoch&&slotMs>sunsetEpoch)break;
     if((wxCodes[i]||0)>=51){rainInHours=Math.round((slotMs-now)/3600000);break;}
@@ -955,12 +973,18 @@ if(sunsetEpoch < now){
   if(vpd<0.3)rsns.push("the air is quite humid");else if(vpd>1.2)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");else if(wind>=20)rsns.push("a good breeze");
   if(temp>25)rsns.push("warm temperature");else if(temp<12)rsns.push("cool temperature");
+  console.log("rsns:", rsns, typeof rsns);
   var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
   "Conditions look reasonable.";
-  if(rsns.length){
+var effDP=window._LW.effDP;
+var res=calc(temp,effDP,wind);
+var currentScore=res.score;
+var currentIssues=checkConditions(temp,effDP,wind,window._LW.wxCode||0);
+var conditionsArePoor=currentScore<75||currentIssues.length>0;
+if(conditionsArePoor){
   var better=findBetterWindow(new Date().getHours());
-  if(better){
-    rsn+=" Try again around "+better.hour+":00 ("+better.temp+"°C, score "+better.score+").";
+  if(better&&better.score>=75&&better.score>currentScore+10){
+    rsn+=" Might be worth waiting until "+formatHour(better.hour)+" ("+better.temp+"°C, score "+better.score+").";
   }
 }
 
