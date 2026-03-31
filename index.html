@@ -161,7 +161,14 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .slider-lbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
 .slider-name{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head)}
 .slider-val{font-size:clamp(11px,3vw,12px);font-weight:700;color:var(--text-sec);background:var(--card-inner);border:1px solid var(--card-border);border-radius:20px;padding:2px 9px}
+.slider-lock-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:10px;gap:6px}
+.slider-lock-btn{font-size:12px;font-weight:700;color:var(--text-sec);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 12px;cursor:pointer}
+input[type=range].locked{pointer-events:none;opacity:0.5}
 .slider-ends{display:flex;justify-content:space-between;margin-top:5px}
+.temp-input-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.temp-input-row label{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head);flex:1}
+.temp-input-row input{width:80px;padding:6px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:700;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text);text-align:center}
+.temp-input-unit{font-size:13px;font-weight:700;color:var(--text-muted);min-width:28px}
 .slider-end{font-size:clamp(10px,2.5vw,11px);font-weight:700;color:var(--text-muted)}
 input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:var(--range-bg);border:1px solid var(--card-border)}
 input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
@@ -302,17 +309,30 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </div>
 
   <div class="slider-card">
-    <div class="sec-lbl">Preferences</div>
-    <div class="slider-row">
-      <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
-      <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
-      <div class="slider-ends"><span class="slider-end">Love heat</span><span class="slider-end">Hate heat</span></div>
-    </div>
-    <div class="slider-row">
-      <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
-      <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
-      <div class="slider-ends"><span class="slider-end">Love cold</span><span class="slider-end">Hate cold</span></div>
-    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+  <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
+  <button class="slider-lock-btn" id="slider-lock-btn" onclick="toggleSliderLock()">🔓 Unlocked</button>
+</div>
+   <div class="temp-input-row">
+  <label>I feel hot above</label>
+  <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
+  <span class="temp-input-unit" id="pref-thi-unit">°C</span>
+</div>
+<div class="slider-row">
+  <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
+  <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
+  <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+</div>
+<div class="temp-input-row" style="margin-top:10px">
+  <label>I feel cold below</label>
+  <input type="number" id="pref-tlo" value="15" step="1" onchange="onTempPref()"/>
+  <span class="temp-input-unit" id="pref-tlo-unit">°C</span>
+</div>
+<div class="slider-row">
+  <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
+  <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
+  <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+</div>
     <div class="slider-row">
       <div class="slider-lbl-row"><span class="slider-name">Humidity tolerance</span><span class="slider-val" id="hum-val">Moderate</span></div>
       <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
@@ -379,6 +399,8 @@ var STEAMY_TITLE="Hot & steamy";
 var STEAMY_TEXT="When both temperature and dew point are above your comfortable range at the same time, this condition fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
 var FC_SLOTS=[0,3,6,9,12,15,18,21];
 var MAX_HISTORY=5;
+var _tlo=18;
+var _thi=22;
 
 // ── WMO weather code pill ──────────────────────────────────────────────────
 function wxFromCode(code){
@@ -431,6 +453,7 @@ function setUnit(unit){
   document.getElementById("unit-dp").textContent=unitSym();
   if(window._LW)renderChips(window._LW.temp,window._LW.effDP,window._LW.rh,window._LW.wind);
   reRenderAll();
+  initTempPrefs();
 }
 function initUnit(){
   var unit=localStorage.getItem("comfort_unit")||detectUnitFromLocale();
@@ -491,13 +514,8 @@ function pushHistory(entry,tz){
 // ── Settings ───────────────────────────────────────────────────────────────
 var SETTINGS=[
   {grp:"Temperature"},
-  {id:"s-tlo",label:"Ideal temp low (C)",val:18,step:0.5,title:"Ideal temperature — lower bound",info:"The temperature below which it starts feeling uncomfortably cool to you. The score begins dropping as soon as the temperature falls below this point, with the penalty growing the further it drops."},
-  {id:"s-thi",label:"Ideal temp high (C)",val:22,step:0.5,title:"Ideal temperature — upper bound",info:"The temperature above which it starts feeling too warm. The score drops as it climbs past this, with heat penalised more steeply than cold if your heat weight is above 1.0."},
   {id:"s-hw",label:"Heat penalty weight (x)",val:1.2,step:0.1,title:"Heat sensitivity",info:"Controls whether heat or cold bothers you more. At 1.0 they are equal. Raise this if a hot day ruins your comfort more than a cold one would at the same distance from ideal."},
   {id:"s-tmax",label:"Temp max penalty (pts)",val:70,step:1,title:"Temperature penalty ceiling",info:"The maximum number of score points that temperature alone can take off. Raising this allows extreme heat or cold to push scores lower."},
-  {grp:"Cold zone"},
-  {id:"s-coolmax",label:"Cool zone max pts",val:35,step:1,title:"Cool weather penalty (above freezing)",info:"How hard the score is penalised for cool-but-above-freezing temperatures. Below zero, an additional cold penalty stacks on top."},
-  {id:"s-coldfloor",label:"Cold floor (C)",val:-15,step:1,title:"Extreme cold reference point",info:"The temperature at which the sub-zero penalty reaches its maximum. Temperatures at or below this are treated as as cold as it gets."},
   {id:"s-coldmax",label:"Cold zone max pts",val:100,step:5,title:"Sub-zero penalty ceiling",info:"The maximum additional penalty for temperatures below 0C, stacked on top of the cool zone."},
   {id:"s-coldexp",label:"Cold curve exponent",val:1.2,step:0.1,title:"Sub-zero penalty shape",info:"Controls how the freezing penalty ramps up. Above 1.0 the penalty accelerates, so -10C hurts much more than twice -5C."},
   {grp:"Humidity"},
@@ -533,18 +551,36 @@ function scheduleRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTime
 // ── Get settings ───────────────────────────────────────────────────────────
 function gs(){
   function v(id){var el=document.getElementById(id);return el?(parseFloat(el.value)||0):0;}
-  return{tlo:v("s-tlo")||18,thi:v("s-thi")||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:v("s-coolmax")||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,int:v("s-int")||8,iscale:v("s-iscale")||1.2,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
+  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:v("s-coolmax")||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,int:v("s-int")||8,iscale:v("s-iscale")||1.2,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
 }
 
 // ── Calc ───────────────────────────────────────────────────────────────────
 function calc(temp,dp,wind){
   var s=gs();
   var tP=0;
-  if(temp>=s.thi)tP=Math.min(1,(temp-s.thi)/Math.max(1,45-s.thi))*s.tmax*s.hw;
-  else if(temp>=s.tlo)tP=0;
-  else if(temp>=0)tP=((s.tlo-temp)/Math.max(1,s.tlo))*s.coolmax;
+if(temp>=s.thi){
+  tP=Math.min(1,(temp-s.thi)/Math.max(1,45-s.thi))*s.tmax*s.hw;
+} else if(temp>=s.tlo){
+  tP=0;
+} else if(s.tlo>=0){
+  // Normal case: tlo is above freezing, cool zone then cold zone
+  if(temp>=0){tP=((s.tlo-temp)/Math.max(1,s.tlo))*s.coolmax;}
   else{var cf=Math.min(1,Math.abs(temp)/Math.max(1,Math.abs(s.coldfloor)));tP=s.coolmax+Math.pow(cf,s.coldexp)*s.coldmax;}
-  tP=Math.min(s.tmax,tP);
+} else {
+  // tlo is below freezing — add a transition zone just below tlo
+  // to avoid the cliff from 0 penalty to full cold zone in one step
+  var transWidth=Math.min(5,Math.abs(s.tlo)*0.5+2);
+  var transBottom=s.tlo-transWidth;
+  if(temp>=transBottom){
+    // Gentle transition slope
+    tP=((s.tlo-temp)/transWidth)*s.coolmax*0.5;
+  } else {
+    // Full cold zone below transition
+    var cf=Math.min(1,Math.abs(temp-transBottom)/Math.max(1,Math.abs(s.coldfloor)-transWidth));
+    tP=s.coolmax*0.5+Math.pow(cf,s.coldexp)*s.coldmax;
+  }
+}
+tP=Math.min(s.tmax,tP);
   var hP=0;
   if(dp<s.dp)hP=Math.max(0,(dp+5))*0.5/Math.max(1,s.dp+5);
   else{var hf=Math.min(1,(dp-s.dp)/Math.max(1,s.hdp_ceil-s.dp));hP=Math.pow(hf,s.hexp)*s.hmax;}
@@ -738,8 +774,8 @@ function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open")
 
 // ── Sliders ────────────────────────────────────────────────────────────────
 var SLIDER_MAPS={
-  heat:{labels:["Love heat","Comfortable","Sensitive","Hate heat"],thr:[25,50,75],apply:function(t){setAdv("s-thi",Math.round(lerp(28,18,t)*2)/2);setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);}},
-  cold:{labels:["Love cold","Comfortable","Sensitive","Hate cold"],thr:[25,50,75],apply:function(t){setAdv("s-tlo",Math.round(lerp(10,24,t)*2)/2);setAdv("s-coolmax",Math.round(lerp(20,50,t)));setAdv("s-coldmax",Math.round(lerp(60,140,t)/5)*5);}},
+ heat:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);setAdv("s-tmax",Math.round(lerp(50,90,t)));}},
+ cold:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-coolmax",Math.round(lerp(15,55,t)));setAdv("s-coldmax",Math.round(lerp(50,150,t)/5)*5);}},
   hum:{labels:["Prefer dry","Mild","Moderate","Tolerant"],thr:[25,50,75],apply:function(t){setAdv("s-dp",Math.round(lerp(6,18,t)*2)/2);setAdv("s-hmax",Math.round(lerp(70,30,t)));setAdv("s-hexp",Math.round(lerp(0.4,0.9,t)*20)/20);setAdv("s-hdp_ceil",Math.round(lerp(20,32,t)*2)/2);}},
   wind:{labels:["Love wind","Like it","Neutral","Hate wind"],thr:[25,50,75],apply:function(t){setAdv("s-wmax",Math.round(lerp(8,30,t)));setAdv("s-cws",Math.round(lerp(0.5,2.5,t)*10)/10);setAdv("s-pwhi",Math.round(lerp(40,10,t)));setAdv("s-pwlo",Math.round(lerp(5,15,t)));}}
 };
@@ -747,8 +783,79 @@ function lerp(a,b,t){return a+(b-a)*t;}
 function setAdv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
 function sliderLabel(key,pos){var m=SLIDER_MAPS[key];if(pos<=m.thr[0])return m.labels[0];if(pos<=m.thr[1])return m.labels[1];if(pos<=m.thr[2])return m.labels[2];return m.labels[3];}
 function updateTrack(id,val){var el=document.getElementById(id);if(el)el.style.background="linear-gradient(to right,var(--range-fill) "+val+"%,var(--range-bg) "+val+"%)";}
+var slidersLocked=localStorage.getItem("sliders_locked")==="1";
+function toggleSliderLock(){
+  slidersLocked=!slidersLocked;
+  localStorage.setItem("sliders_locked",slidersLocked?"1":"0");
+  applySliderLock();
+}
+function applySliderLock(){
+  var btn=document.getElementById("slider-lock-btn");
+  var sliders=document.querySelectorAll(".slider-card input[type=range]");
+  for(var i=0;i<sliders.length;i++){
+    sliders[i].classList.toggle("locked",slidersLocked);
+  }
+  if(btn)btn.textContent=slidersLocked?"\uD83D\uDD12 Locked":"\uD83D\uDD13 Unlocked";
+}
+
+function onTempPref(){
+  var thiEl=document.getElementById("pref-thi");
+  var tloEl=document.getElementById("pref-tlo");
+  if(!thiEl||!tloEl)return;
+  var thiVal=parseFloat(thiEl.value);
+  var tloVal=parseFloat(tloEl.value);
+  // Convert to Celsius for storage
+  var thiC=useFahrenheit?fromDisp(thiVal):thiVal;
+  var tloC=useFahrenheit?fromDisp(tloVal):tloVal;
+  // Sanity check — cold threshold must be below hot threshold
+  if(tloC>=thiC){tloC=thiC-3;tloEl.value=Math.round(useFahrenheit?toDisp(tloC):tloC);}
+  // Set the thresholds
+  setAdv("s-thi",Math.round(thiC*2)/2);
+  setAdv("s-tlo",Math.round(tloC*2)/2);
+  _tlo=Math.round(tloC*2)/2;
+  _thi=Math.round(thiC*2)/2;
+  // Recalibrate cold zone relative to cold threshold
+  // coldfloor is always 20C below the cold threshold — scales with tolerance
+  var coldFloor=Math.round(tloC-20);
+  setAdv("s-coldfloor",coldFloor);
+  // coolmax stays modest — the cool zone (0C to tlo) is narrow for cold-tolerant people
+  // and the cold threshold slider handles severity above that via coldmax/coldexp
+  var coolMax=Math.max(10,Math.min(40,Math.round((18-tloC)*1.5)));
+  setAdv("s-coolmax",coolMax);
+  saveSettings();
+  scheduleRender();
+}
+
+function initTempPrefs(){
+  // Load saved thi/tlo and populate the number inputs in display units
+  var thi=parseFloat(document.getElementById("s-thi").value)||22;
+  var tlo=parseFloat(document.getElementById("s-tlo").value)||18;
+  _tlo=useFahrenheit?fromDisp(parseFloat(document.getElementById("pref-tlo").value)||18):parseFloat(document.getElementById("pref-tlo").value)||18;
+  _thi=useFahrenheit?fromDisp(parseFloat(document.getElementById("pref-thi").value)||22):parseFloat(document.getElementById("pref-thi").value)||22;
+  var thiEl=document.getElementById("pref-thi");
+  var tloEl=document.getElementById("pref-tlo");
+  if(thiEl)thiEl.value=useFahrenheit?toDisp(thi):thi;
+  if(tloEl)tloEl.value=useFahrenheit?toDisp(tlo):tlo;
+  var unit=unitSym();
+  var thiU=document.getElementById("pref-thi-unit");
+  var tloU=document.getElementById("pref-tlo-unit");
+  if(thiU)thiU.textContent=unit;
+  if(tloU)tloU.textContent=unit;
+  // Recalibrate cold zone to match saved threshold
+  onTempPref();
+}
 function onSlider(key){var el=document.getElementById("sl-"+key);if(!el)return;var pos=parseInt(el.value),t=pos/100;SLIDER_MAPS[key].apply(t);document.getElementById(key+"-val").textContent=sliderLabel(key,pos);updateTrack("sl-"+key,pos);saveSettings();scheduleRender();}
-function advToSlider(key){var t=0.5;if(key==="heat"){var thi=parseFloat(document.getElementById("s-thi").value)||22;t=1-(thi-18)/(28-18);}else if(key==="cold"){var tlo=parseFloat(document.getElementById("s-tlo").value)||18;t=(tlo-10)/(24-10);}else if(key==="hum"){var dp=parseFloat(document.getElementById("s-dp").value)||12;t=(dp-6)/(18-6);}else if(key==="wind"){var wmax=parseFloat(document.getElementById("s-wmax").value)||20;t=(wmax-8)/(30-8);}return Math.round(Math.max(0,Math.min(1,t))*100);}
+
+function advToSlider(key){
+  function gv(id,def){var el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
+  var t=0.5;
+  if(key==="heat"){var thi=gv("s-thi",22);t=1-(thi-18)/(28-18);}
+  else if(key==="cold"){var tlo=gv("s-tlo",18);t=(tlo-10)/(24-10);}
+  else if(key==="hum"){var dp=gv("s-dp",12);t=(dp-6)/(18-6);}
+  else if(key==="wind"){var wmax=gv("s-wmax",20);t=(wmax-8)/(30-8);}
+  return Math.round(Math.max(0,Math.min(1,t))*100);
+}
+
 function syncSlidersFromAdv(){var keys=["heat","cold","hum","wind"];for(var i=0;i<keys.length;i++){var key=keys[i],pos=advToSlider(key);var el=document.getElementById("sl-"+key);if(el)el.value=pos;var lbl=document.getElementById(key+"-val");if(lbl)lbl.textContent=sliderLabel(key,pos);updateTrack("sl-"+key,pos);}}
 
 // ── Geocoding ──────────────────────────────────────────────────────────────
@@ -1023,6 +1130,8 @@ buildSettings();
 syncSlidersFromAdv();
 initUnit();
 initOnboard();
+applySliderLock();
+initTempPrefs();
 detectLocation();
 </script>
 </body>
