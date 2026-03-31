@@ -870,88 +870,121 @@ function checkConditions(temp, dew, wind, wxCode){
   var issues=[];
   if(temp<5)issues.push("too cold");
   if(dew>temp-4)issues.push("too humid");
-  if(wind>15)issues.push("too windy");
-  if(wxCode!==null&&(wxCode===51||wxCode===53||wxCode===55||wxCode===61||wxCode===63||wxCode===65||wxCode===71||wxCode===73||wxCode===75||wxCode===77||wxCode===80||wxCode===81||wxCode===82))issues.push("rain");
+  if(wind>50)issues.push("too windy");
+  // All precipitation codes >= 51
+  if(wxCode!==null&&wxCode>=51)issues.push("rain");
   return issues;
 }
-
+ 
 function formatHour(h){
   var ampm=h>=12?"pm":"am";
   var h12=h%12||12;
-  return h12+":00 "+ampm;
+  return h12+":00"+ampm;
 }
-
+ 
 function toEpoch(s,tzOff){
-  console.log("toEpoch called with:", s, "type:", typeof s);
   var p=parseLocalTimeStr(s);
   return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
 }
-
-function findBetterWindow(currentHour){
-  if(!window._FC||!window._FC.hourly){console.log("No FC or hourly");return null;}
-  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
-  console.log("Times length:", times.length, "Temps length:", temps.length);
-  
-  var now=Date.now(),startIdx=0;
+ 
+function findBetterWindow(tzOff, sunsetEpoch){
+  if(!window._FC||!window._FC.hourly)return null;
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
+      dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  var now=Date.now();
+  var startIdx=0;
   for(var i=0;i<times.length;i++){
-    var slotMs=toEpoch(times[i],window._tzOff);
-    if(slotMs>=now){startIdx=i;break;}
+    if(toEpoch(times[i],tzOff)>=now){startIdx=i;break;}
   }
-  console.log("Start index:", startIdx);
-  
   var endIdx=Math.min(startIdx+12,temps.length);
   for(var i=startIdx+1;i<endIdx;i++){
     var t=temps[i],d=dews[i],w=winds[i],c=codes[i];
     if(t===null||d===null||w===null)continue;
-    var res=calc(t,d,w),issues=checkConditions(t,d,w,c);
-    var slotEpoch=toEpoch(times[i],window._tzOff);
-    if(window._sunsetEpoch&&slotEpoch>window._sunsetEpoch)continue;
-    console.log("Hour", i, "score:", res.score, "issues:", issues.length);
-    if(!issues.length&&res.score>75)return {hour:new Date(slotEpoch).getHours(),score:res.score,temp:t,dew:d,wind:w};
+    var slotEpoch=toEpoch(times[i],tzOff);
+    if(sunsetEpoch&&slotEpoch>sunsetEpoch)break;
+    var issues=checkConditions(t,d,w,c);
+    if(issues.length>0)continue;
+    var res=calc(t,d,w);
+    if(res.score>=75)return{epoch:slotEpoch,hour:new Date(slotEpoch).getHours(),score:res.score,temp:t,dew:d,wind:w};
   }
-  console.log("No better window found");
   return null;
 }
-
+ 
+// Find when rain ends and what conditions look like after
+function findAfterRainWindow(rainStartIdx, tzOff, sunsetEpoch){
+  if(!window._FC||!window._FC.hourly)return null;
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
+      dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  // Find first slot after rain that is clear
+  for(var i=rainStartIdx+1;i<times.length;i++){
+    var slotEpoch=toEpoch(times[i],tzOff);
+    if(sunsetEpoch&&slotEpoch>sunsetEpoch)return null;
+    var c=codes[i]||0;
+    if(c>=51)continue; // still raining
+    // Clear slot found - check conditions and remaining daylight
+    var t=temps[i],d=dews[i],w=winds[i];
+    if(t===null||d===null||w===null)continue;
+    var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEpoch)/3600000:3;
+    if(hoursToSunset<1)return null; // not enough daylight after rain
+    var issues=checkConditions(t,d,w,0); // ignore wx code, rain has ended
+    var res=calc(t,d,w);
+    return{
+      epoch:slotEpoch,
+      hour:new Date(slotEpoch).getHours(),
+      hoursToSunset:hoursToSunset,
+      score:res.score,
+      temp:t,
+      usable: issues.length===0 && res.score>=55 && hoursToSunset>=2
+    };
+  }
+  return null;
+}
+ 
 function checkWashing(){
-  console.log("checkWashing started");
-  if(!window._FC){console.log("ERROR: _FC is undefined");return;}
+  if(!window._FC){return;}
   var fc=window._FC;
   var tz=fc.timezone;
   window._tzOff=getTZOffsetMin(tz);
   var tzOff=window._tzOff;
   var temp=window._LW.temp;
+  var effDP=window._LW.effDP;
   var rh=window._LW.rh;
   var wind=window._LW.wind;
+  var wxNow=window._LW.wxCode||0;
   var now=Date.now();
-
-  // Sunrise / sunset
+ 
+  // Sunrise / sunset — fall back to day 2 if today's sunset has passed
   var sunriseEpoch=toEpoch(fc.daily.sunrise[0],tzOff);
   var sunsetEpoch=toEpoch(fc.daily.sunset[0],tzOff);
-  window._sunsetEpoch=sunsetEpoch;
-
-  if(sunsetEpoch < now){
+  if(sunsetEpoch<now&&fc.daily.sunrise.length>1){
     sunriseEpoch=toEpoch(fc.daily.sunrise[1],tzOff);
     sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
-    window._sunsetEpoch=sunsetEpoch;
   }
-  
+  window._sunsetEpoch=sunsetEpoch;
+ 
   // Night checks
-  if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn't risen yet 🌙","Hang it out after sunrise for best results.","#5a8aa8");
-  if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun's down 🌙","Hang it out tomorrow morning when there's a full day of drying ahead.","#5a8aa8");
-
+  if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19","Hang it out after sunrise for best results.","#5a8aa8");
+  if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun\u2019s down \uD83C\uDF19","Hang it out tomorrow morning when there\u2019s a full day of drying ahead.","#5a8aa8");
+ 
   var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
-
+ 
+  // Check if it's raining RIGHT NOW
+  var rainingNow=wxNow>=51;
+ 
   // Scan hourly forecast for rain before sunset
   var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
-  var rainInHours=null;
+  var rainStartIdx=null,rainInHours=null;
   for(var i=0;i<times.length;i++){
     var slotMs=toEpoch(times[i],tzOff);
     if(slotMs<now)continue;
     if(sunsetEpoch&&slotMs>sunsetEpoch)break;
-    if((wxCodes[i]||0)>=51){rainInHours=Math.round((slotMs-now)/3600000);break;}
+    if((wxCodes[i]||0)>=51){
+      rainInHours=Math.round((slotMs-now)/3600000);
+      rainStartIdx=i;
+      break;
+    }
   }
-
+ 
   // VPD drying index
   var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
   var avp=svp*(rh/100);
@@ -959,60 +992,108 @@ function checkWashing(){
   var wMult=1+Math.min(1.5,wind/20);
   var tFact=Math.max(0.3,Math.min(1.0,(temp-5)/20));
   var dryIdx=vpd*wMult*tFact;
-
+ 
   // Drying time estimate
   var dryHours,dryLabel;
-  if(dryIdx>1.8){dryHours=0.75;dryLabel="30–60 minutes";}
-  else if(dryIdx>1.2){dryHours=1.5;dryLabel="1–2 hours";}
-  else if(dryIdx>0.7){dryHours=3;dryLabel="2–4 hours";}
-  else if(dryIdx>0.3){dryHours=5;dryLabel="4–6 hours";}
+  if(dryIdx>1.8){dryHours=0.75;dryLabel="30\u201360 minutes";}
+  else if(dryIdx>1.2){dryHours=1.5;dryLabel="1\u20132 hours";}
+  else if(dryIdx>0.7){dryHours=3;dryLabel="2\u20134 hours";}
+  else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
   else{dryHours=999;dryLabel=null;}
-
+ 
   // Reason string
   var rsns=[];
-  if(vpd<0.3)rsns.push("the air is quite humid");else if(vpd>1.2)rsns.push("low humidity");
-  if(wind<5)rsns.push("not much wind");else if(wind>=20)rsns.push("a good breeze");
-  if(temp>25)rsns.push("warm temperature");else if(temp<12)rsns.push("cool temperature");
-  console.log("rsns:", rsns, typeof rsns);
+  if(vpd<0.3)rsns.push("the air is quite humid");
+  else if(vpd>1.2)rsns.push("low humidity");
+  if(wind<5)rsns.push("not much wind");
+  else if(wind>=20)rsns.push("a good breeze");
+  if(temp>25)rsns.push("warm temperature");
+  else if(temp<12)rsns.push("cool temperature");
   var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
-  "Conditions look reasonable.";
-var effDP=window._LW.effDP;
-var res=calc(temp,effDP,wind);
-var currentScore=res.score;
-var currentIssues=checkConditions(temp,effDP,wind,window._LW.wxCode||0);
-var conditionsArePoor=currentScore<75||currentIssues.length>0;
-if(conditionsArePoor){
-  var better=findBetterWindow(new Date().getHours());
-  if(better&&better.score>=75&&better.score>currentScore+10){
-    rsn+=" Might be worth waiting until "+formatHour(better.hour)+" ("+better.temp+"°C, score "+better.score+").";
+    "Conditions look reasonable.";
+ 
+  // Humidity caveat for slow-drying days
+  var humCaveat=(vpd<0.6&&dryHours>=3)?" High humidity will slow things down \u2014 keep an eye on the forecast.":"";
+ 
+  // === RAIN HANDLING ===
+ 
+  // Raining now
+  if(rainingNow){
+    // Is there a usable window after rain ends?
+    var afterRain=rainStartIdx!==null?findAfterRainWindow(0,tzOff,sunsetEpoch):null;
+    // Since it's raining now, scan from current position
+    var afterRainNow=findAfterRainWindow(0,tzOff,sunsetEpoch);
+    // Find first non-rain slot from now
+    var clearAfterIdx=null;
+    for(var i=0;i<times.length;i++){
+      var slotMs=toEpoch(times[i],tzOff);
+      if(slotMs<now)continue;
+      if((wxCodes[i]||0)<51){clearAfterIdx=i;break;}
+    }
+    if(clearAfterIdx!==null){
+      var clearWindow=findAfterRainWindow(clearAfterIdx-1,tzOff,sunsetEpoch);
+      if(clearWindow&&clearWindow.usable){
+        return washingPop("Raining now \uD83C\uDF27\uFE0F","Should clear around "+formatHour(clearWindow.hour)+
+          " with about "+Math.round(clearWindow.hoursToSunset)+" hours of daylight left. Worth hanging out then if conditions hold.","#b06010");
+      }
+    }
+    return washingPop("Raining now \uD83C\uDF27\uFE0F","Rain doesn\u2019t look like it\u2019ll clear in time today. Best to dry inside.","#c03020");
   }
-}
-
-  // Rain?
+ 
+  // Rain forecast before sunset
   if(rainInHours!==null){
-    if(rainInHours<=1)return washingPop("Rain on the way 🌧️","Rain expected within the hour. Best to dry inside today.","#c03020");
-    return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" ⚠️","You might get some drying in, but it's risky. "+rsn,"#b06010");
+    if(rainInHours<=1){
+      return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour. Best to dry inside today.","#c03020");
+    }
+    // Is there a usable window AFTER the rain ends?
+    var afterRainWindow=findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch);
+    if(afterRainWindow&&afterRainWindow.usable){
+      return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" \u26A0\uFE0F",
+        "Rain arrives around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+
+        " but should clear by "+formatHour(afterRainWindow.hour)+
+        " with "+Math.round(afterRainWindow.hoursToSunset)+" hours of daylight left. You could hang washing out then.",
+        "#b06010");
+    }
+    // Rain comes but doesn't clear usably
+    if(dryHours<=rainInHours-0.5&&dryHours!==999){
+      return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F",
+        "Might just get it dry in time if you hang it out now. "+rsn+humCaveat,"#b06010");
+    }
+    return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
   }
-
+ 
+  // === NO RAIN ===
+ 
   // Too bad to dry?
-  if(dryHours===999)return washingPop("Probably not today ❌","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
-
+  if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
+ 
   // Not enough daylight?
   if(dryHours>hoursLeft+0.5){
-    return washingPop("Cutting it close ⚠️","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn,"#b06010");
+    return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat,"#b06010");
   }
-
+ 
+  // Conditions are poor but forecast might be better — only suggest if score < 75
+  var currentRes=calc(temp,effDP,wind);
+  var currentIssues=checkConditions(temp,effDP,wind,wxNow);
+  var conditionsArePoor=currentRes.score<75||currentIssues.length>0;
+  if(conditionsArePoor){
+    var better=findBetterWindow(tzOff,sunsetEpoch);
+    if(better&&better.score>=75&&better.score>currentRes.score+10){
+      rsn+=" Might be worth waiting until "+formatHour(better.hour)+" ("+better.temp+"\u00B0C, score "+better.score+").";
+    }
+  }
+ 
   // Good to go
   var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
-  var emoji=dryHours<=1.5?"☀️":dryHours<=3?"👍":"🤷";
-  return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn,col);
+  var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
+  return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn+humCaveat,col);
 }
+ 
 function washingPop(title,reason,colour){
   document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
   document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"+reason+"</div>";
   document.getElementById("pop-ov").classList.add("open");
 }
-
 
 // ── Init ───────────────────────────────────────────────────────────────────
 function fcScroll(dir){
