@@ -81,7 +81,6 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;color:var(--text-head)}
-/* Score area — locked heights */
 .score-outer{min-height:320px}
 .score-area{text-align:center;padding:4px 0 8px}
 canvas{display:block;margin:0 auto;height:115px;width:200px}
@@ -89,10 +88,8 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .score-emoji{font-size:clamp(26px,7vw,32px);display:block;height:36px;line-height:36px}
 .score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;height:34px;display:flex;align-items:center;justify-content:center}
 .annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:60px;align-content:flex-start}
-/* Share button — centred below score */
 .share-row{text-align:center;margin-top:6px;margin-bottom:6px}
 .share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
-/* Annotation pills */
 .ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
 .ann-great{background:rgba(30,140,65,0.15);color:#0d6030;border-color:rgba(30,140,65,0.3)}
 .ann-warm{background:rgba(255,160,20,0.18);color:#8a4a00;border-color:rgba(255,160,20,0.35)}
@@ -137,7 +134,6 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
   .ann-vdry{background:rgba(140,80,20,0.25);color:#b06020}
   .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
 }
-/* Forecast strip */
 .forecast-wrap-inner{position:relative}
 .fc-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:32px;height:44px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text-sec);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none}
 .fc-nav:active{opacity:0.7}
@@ -155,12 +151,10 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
 .fc-lbl{font-size:10px;font-weight:700;color:var(--text-muted)}
 .fc-temp{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px}
-/* Manual */
 .irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .irow label{font-size:clamp(13px,3.5vw,14px);color:var(--text-sec);flex:0 0 44%;font-weight:700}
 .irow input,.irow select{flex:1;min-width:0;padding:9px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
 .unit{font-size:clamp(12px,3vw,13px);color:var(--text-muted);min-width:28px;flex-shrink:0;font-weight:700}
-/* Sliders */
 .slider-card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
 .slider-row{margin-bottom:18px}
 .slider-row:last-child{margin-bottom:0}
@@ -172,7 +166,6 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:var(--range-bg);border:1px solid var(--card-border)}
 input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;cursor:pointer}
-/* Advanced */
 .adv-tog{font-size:clamp(12px,3vw,14px);color:var(--text-sec);cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--divider);font-weight:700}
 .adv-tog svg{transition:transform 0.2s;flex-shrink:0}
 .adv-tog.open svg{transform:rotate(90deg)}
@@ -280,8 +273,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </div>
       <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
-      <div class="share-row"><button class="share-btn" onclick="shareScore()">Share &#8599;</button><button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? 🧺</button></div>
-
+      <div class="share-row">
+        <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
+        <button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? &#129531;</button>
+      </div>
       <div id="forecast-wrap" style="display:none">
         <div class="sec-lbl" style="margin-top:10px">Recent &amp; upcoming</div>
         <div class="forecast-wrap-inner">
@@ -385,39 +380,36 @@ var STEAMY_TEXT="When both temperature and dew point are above your comfortable 
 var FC_SLOTS=[0,3,6,9,12,15,18,21];
 var MAX_HISTORY=5;
 
-// ── WMO weather code → pill ────────────────────────────────────────────────
+// ── WMO weather code pill ──────────────────────────────────────────────────
 function wxFromCode(code){
-  if(code===0)                         return{c:"ann-wx",t:"clear sky \u2600\uFE0F"};
-  if(code===1)                         return{c:"ann-wx",t:"mostly clear \uD83C\uDF24\uFE0F"};
-  if(code===2)                         return{c:"ann-wx",t:"partly cloudy \u26C5"};
-  if(code===3)                         return{c:"ann-wx",t:"overcast \u2601\uFE0F"};
-  if(code>=45&&code<=48)               return{c:"ann-wx",t:"foggy \uD83C\uDF2B\uFE0F"};
-  if(code>=51&&code<=55)               return{c:"ann-wx",t:"drizzle \uD83C\uDF26\uFE0F"};
-  if(code>=56&&code<=57)               return{c:"ann-wx",t:"freezing drizzle \uD83C\uDF27\uFE0F"};
-  if(code>=61&&code<=63)               return{c:"ann-wx",t:"raining \uD83C\uDF27\uFE0F"};
-  if(code===65)                        return{c:"ann-wx",t:"heavy rain \uD83C\uDF27\uFE0F"};
-  if(code>=66&&code<=67)               return{c:"ann-wx",t:"freezing rain \uD83C\uDF27\uFE0F"};
-  if(code>=71&&code<=73)               return{c:"ann-wx",t:"snowing \u2744\uFE0F"};
-  if(code===75)                        return{c:"ann-wx",t:"heavy snow \u2744\uFE0F"};
-  if(code===77)                        return{c:"ann-wx",t:"snow grains \uD83C\uDF28\uFE0F"};
-  if(code>=80&&code<=82)               return{c:"ann-wx",t:"rain showers \uD83C\uDF26\uFE0F"};
-  if(code>=85&&code<=86)               return{c:"ann-wx",t:"snow showers \uD83C\uDF28\uFE0F"};
-  if(code>=95&&code<=99)               return{c:"ann-wx",t:"thunderstorm \u26C8\uFE0F"};
+  if(code===0)return{c:"ann-wx",t:"clear sky \u2600\uFE0F"};
+  if(code===1)return{c:"ann-wx",t:"mostly clear \uD83C\uDF24\uFE0F"};
+  if(code===2)return{c:"ann-wx",t:"partly cloudy \u26C5"};
+  if(code===3)return{c:"ann-wx",t:"overcast \u2601\uFE0F"};
+  if(code>=45&&code<=48)return{c:"ann-wx",t:"foggy \uD83C\uDF2B\uFE0F"};
+  if(code>=51&&code<=55)return{c:"ann-wx",t:"drizzle \uD83C\uDF26\uFE0F"};
+  if(code>=56&&code<=57)return{c:"ann-wx",t:"freezing drizzle \uD83C\uDF27\uFE0F"};
+  if(code>=61&&code<=63)return{c:"ann-wx",t:"raining \uD83C\uDF27\uFE0F"};
+  if(code===65)return{c:"ann-wx",t:"heavy rain \uD83C\uDF27\uFE0F"};
+  if(code>=66&&code<=67)return{c:"ann-wx",t:"freezing rain \uD83C\uDF27\uFE0F"};
+  if(code>=71&&code<=73)return{c:"ann-wx",t:"snowing \u2744\uFE0F"};
+  if(code===75)return{c:"ann-wx",t:"heavy snow \u2744\uFE0F"};
+  if(code===77)return{c:"ann-wx",t:"snow grains \uD83C\uDF28\uFE0F"};
+  if(code>=80&&code<=82)return{c:"ann-wx",t:"rain showers \uD83C\uDF26\uFE0F"};
+  if(code>=85&&code<=86)return{c:"ann-wx",t:"snow showers \uD83C\uDF28\uFE0F"};
+  if(code>=95&&code<=99)return{c:"ann-wx",t:"thunderstorm \u26C8\uFE0F"};
   return null;
 }
 
-// ── Beaufort wind description ──────────────────────────────────────────────
-// Only fires for wind >= 20 km/h (below that handled by nice breeze / calm logic)
+// ── Beaufort wind ──────────────────────────────────────────────────────────
 function windBeaufort(wind,temp,s){
-  // Below pleasant threshold: calm / light — no pill needed unless >= 20
-  if(wind<20) return null;
-  // Within pleasant range: handled by nice breeze pill in getAnnotations
-  if(wind>=s.pwlo&&wind<=s.pwhi) return null;
-  if(wind<29) return{c:"ann-wind",t:"moderate breeze \uD83C\uDF2C\uFE0F"};
-  if(wind<39) return{c:"ann-wind",t:"fresh breeze \uD83D\uDCA8"};
-  if(wind<50) return{c:"ann-wind",t:"strong breeze \uD83D\uDCA8"};
-  if(wind<62) return{c:"ann-wind",t:"near gale \uD83C\uDF00"};
-  if(wind<75) return{c:"ann-wind",t:"gale \uD83C\uDF00"};
+  if(wind<20)return null;
+  if(wind>=s.pwlo&&wind<=s.pwhi)return null;
+  if(wind<29)return{c:"ann-wind",t:"moderate breeze \uD83C\uDF2C\uFE0F"};
+  if(wind<39)return{c:"ann-wind",t:"fresh breeze \uD83D\uDCA8"};
+  if(wind<50)return{c:"ann-wind",t:"strong breeze \uD83D\uDCA8"};
+  if(wind<62)return{c:"ann-wind",t:"near gale \uD83C\uDF00"};
+  if(wind<75)return{c:"ann-wind",t:"gale \uD83C\uDF00"};
   return{c:"ann-wind",t:"storm force \uD83C\uDF2A\uFE0F"};
 }
 
@@ -471,33 +463,26 @@ function localHourInTZ(tz){
   try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,hour:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});var h=parseInt(parts.hour);return h===24?0:h;}catch(e){return new Date().getHours();}
 }
 
-// ── Score history — snap to nearest FC_SLOT ────────────────────────────────
+// ── Score history ──────────────────────────────────────────────────────────
 function histKey(){
-  // Key by location: rounded lat/lon or WU station ID
-  if(window._currentWU) return "hist_wu_"+window._currentWU.stationId;
-  if(window._currentLat) return "hist_"+Math.round(window._currentLat*100)+"_"+Math.round(window._currentLon*100);
+  if(window._currentWU)return "hist_wu_"+window._currentWU.stationId;
+  if(window._currentLat)return "hist_"+Math.round(window._currentLat*100)+"_"+Math.round(window._currentLon*100);
   return "hist_default";
 }
 function loadHistory(){return JSON.parse(localStorage.getItem(histKey())||"[]");}
 function saveHistory(h){localStorage.setItem(histKey(),JSON.stringify(h));}
 function pushHistory(entry,tz){
-  // Only store if current time is within 15 min of an FC_SLOT hour
   var nowHour=localHourInTZ(tz||"UTC");
   var nowMin=0;
   try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",hour12:false,minute:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});nowMin=parseInt(parts.minute)||0;}catch(e){}
   var nearSlot=false;
-  for(var i=0;i<FC_SLOTS.length;i++){
-    if(FC_SLOTS[i]===nowHour&&nowMin<=15){nearSlot=true;break;}
-  }
+  for(var i=0;i<FC_SLOTS.length;i++){if(FC_SLOTS[i]===nowHour&&nowMin<=15){nearSlot=true;break;}}
   if(!nearSlot)return;
-  // slotDay: YYYYMMDD string in location tz for duplicate check
   var slotDay="";
   try{var dp2={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).forEach(function(p){dp2[p.type]=p.value;});slotDay=dp2.year+dp2.month+dp2.day;}catch(e){slotDay=new Date().toISOString().slice(0,10).replace(/-/g,"");}
   var h=loadHistory();
-  // Avoid duplicates within same FC_SLOT hour on same day
   if(h.length&&h[h.length-1].slotHour===nowHour&&h[h.length-1].slotDay===slotDay)return;
-  entry.slotHour=nowHour;
-  entry.slotDay=slotDay;
+  entry.slotHour=nowHour;entry.slotDay=slotDay;
   h.push(entry);
   if(h.length>MAX_HISTORY)h=h.slice(h.length-MAX_HISTORY);
   saveHistory(h);
@@ -586,7 +571,6 @@ function scoreInfo(s){
 }
 function getAnnotations(temp,dp,wind,score,s,iP,wP,wxCode){
   var a=[];
-  // Temperature
   if(temp<-15)a.push({c:"ann-bitter",t:"bitterly cold \u2744\uFE0F"});
   else if(temp<0)a.push({c:"ann-freeze",t:"freezing cold \uD83E\uDD76"});
   else if(temp<5)a.push({c:"ann-vcold",t:"very cold \uD83E\uDDCA"});
@@ -599,35 +583,20 @@ function getAnnotations(temp,dp,wind,score,s,iP,wP,wxCode){
   else if(temp<35)a.push({c:"ann-hot",t:"hot \uD83D\uDD25"});
   else if(temp<40)a.push({c:"ann-vhot",t:"very hot \uD83E\uDD75"});
   else a.push({c:"ann-xhot",t:"extremely hot \uD83C\uDF0B"});
-  // Humidity
   if(dp>s.dp+10)a.push({c:"ann-steamy",t:"oppressively humid \uD83C\uDF0A"});
   else if(dp>s.dp+5)a.push({c:"ann-humid",t:"humid & sticky \uD83D\uDCA7"});
   else if(dp>14)a.push({c:"ann-muggy",t:"a little muggy \uD83D\uDCA6"});
-  // Dry air — suppress below 0°C (cold air is always dry, not useful info)
   if(temp>=0){
     if(dp<0)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
     else if(dp<4)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
   }
-  // Hot & steamy interaction
   if(iP>3)a.push({c:"ann-steamy ann-info",t:"hot & steamy \uD83E\uDD2F \u2139\uFE0F",info:true});
-  // Wind — Beaufort scale replaces single "strong wind" pill
-  if(temp<0&&wind>=15){
-    a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});
-  } else if(wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6){
-    a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});
-  } else {
-    var wb=windBeaufort(wind,temp,s);
-    if(wb)a.push(wb);
-  }
-  // Weather condition (WMO code) — purely descriptive
-  if(wxCode!==undefined&&wxCode!==null){
-    var wx=wxFromCode(wxCode);
-    if(wx)a.push(wx);
-  }
-  // Positive
+  if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
+  else if(wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
+  else{var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);}
+  if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
   var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
   if(inIdeal||score>90)a.push({c:"ann-great",t:"feels great \u2728"});
-  // Deduplicate
   var seen={},out=[];
   for(var i=0;i<a.length;i++){if(!seen[a[i].t]){seen[a[i].t]=1;out.push(a[i]);}}
   return out;
@@ -662,12 +631,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
 // ── Forecast + history ─────────────────────────────────────────────────────
 function renderForecast(fc){
   window._FC=fc;
-  console.log("renderForecast called, window._FC set to:", window._FC);
   var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
   function slotEpoch(i){var p=parseLocalTimeStr(times[i]);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
   var nowHour=localHourInTZ(tz);
-  // Build history slots
   var history=loadHistory(),histHtml="";
   for(var hi=0;hi<history.length;hi++){
     var h=history[hi],res=calc(h.temp,h.dp,h.wind),si2=scoreInfo(res.score);
@@ -675,7 +642,6 @@ function renderForecast(fc){
     var tDisp=new Date(h.ts).toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).toLowerCase().replace(" ","");
     histHtml+="<div class='fc-slot fc-past' onclick='showHistorySlot("+hi+")'><div class='fc-time'>\u25D4 "+tDisp+"</div><div class='fc-score' style='color:"+nc+"'>"+res.score+"</div><div class='fc-lbl' style='color:"+nc+"'>"+si2.label+"</div><div class='fc-temp'>"+toDisp(h.temp).toFixed(1)+unitSym()+"</div></div>";
   }
-  // Find next FC_SLOT
   var startHour=-1;
   for(var si=0;si<FC_SLOTS.length;si++){if(FC_SLOTS[si]>nowHour){startHour=FC_SLOTS[si];break;}}
   if(startHour===-1)startHour=FC_SLOTS[0];
@@ -721,7 +687,8 @@ function shareScore(){
   if(!window._LW)return;
   var w=window._LW,res=calc(w.temp,w.effDP,w.wind),si=scoreInfo(res.score);
   var loc=document.getElementById("live-locname").textContent;
-  var text=loc+" right now: "+res.score+" \u2014 "+si.label+" "+si.emoji+"\n"+toDisp(w.temp).toFixed(1)+unitSym()+" | DP "+toDisp(w.effDP).toFixed(1)+unitSym()+" | Wind "+Math.round(w.wind)+" km/h\njoshburton-92.github.io/comfort-score/";
+  // TODO: update URL below once comfortscore.joshburton.au is live
+  var text=loc+" right now: "+res.score+" \u2014 "+si.label+" "+si.emoji+"\n"+toDisp(w.temp).toFixed(1)+unitSym()+" | DP "+toDisp(w.effDP).toFixed(1)+unitSym()+" | Wind "+Math.round(w.wind)+" km/h\ncomfortscore.joshburton.au";
   if(navigator.share){navigator.share({title:"Comfort Score",text:text}).catch(function(){});}
   else{navigator.clipboard.writeText(text).then(function(){showPop("Copied!","Score copied to clipboard.");}).catch(function(){showPop("Share",text);});}
 }
@@ -752,7 +719,16 @@ function calcManual(){
   var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
   var temp=fromDisp(tempDisp);
   var mode=document.getElementById("m-mode").value;
-  var effDP=mode==="dp"?fromDisp(parseFloat(document.getElementById("m-dp").value)||10):temp-((100-(parseFloat(document.getElementById("m-rh").value)||60))/5);
+  var effDP;
+  if(mode==="dp"){
+    effDP=fromDisp(parseFloat(document.getElementById("m-dp").value)||10);
+  } else {
+    // Magnus formula for accurate RH -> DP conversion
+    var rh2=parseFloat(document.getElementById("m-rh").value)||60;
+    var aa=17.27,bb=237.3;
+    var alph=(aa*temp/(bb+temp))+Math.log(rh2/100);
+    effDP=Math.round((bb*alph/(aa-alph))*10)/10;
+  }
   var wind=parseFloat(document.getElementById("m-wind").value)||0;
   var r=calc(temp,effDP,wind);
   document.getElementById("manual-result").style.display="block";
@@ -794,7 +770,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     pushHistory({ts:Date.now(),temp:temp,dp:effDP,wind:wind},d.timezone);
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
-        document.getElementById("live-locname").textContent=label;
+    document.getElementById("live-locname").textContent=label;
     document.getElementById("washing-btn").style.display="inline-block";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind);
@@ -820,12 +796,18 @@ function fetchWU(stationId,apiKey,label,cb){
     var obs=d.observations[0],m=obs.metric,temp=m.temp,rh=obs.humidity,wind=m.windSpeed,dew=m.dewpt;
     var res=calc(temp,dew,wind);
     window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,res:res,wxCode:null};
-    window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
+    window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;
+    window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
     pushHistory({ts:Date.now(),temp:temp,dp:dew,wind:wind},"UTC");
-    document.getElementById("live-status").textContent="";document.getElementById("wu-status").textContent="";document.getElementById("wu-status").style.display="none";
-    document.getElementById("live-result").style.display="block";document.getElementById("live-locname").textContent=lbl;
-    var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
-    renderChips(temp,dew,rh,wind);renderScore("live-score-area","gauge-live",res,temp,dew,wind,null);
+    document.getElementById("live-status").textContent="";
+    document.getElementById("wu-status").textContent="";document.getElementById("wu-status").style.display="none";
+    document.getElementById("live-result").style.display="block";
+    document.getElementById("live-locname").textContent=lbl;
+    document.getElementById("washing-btn").style.display="inline-block";
+    var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
+    document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
+    renderChips(temp,dew,rh,wind);
+    renderScore("live-score-area","gauge-live",res,temp,dew,wind,null);
     document.getElementById("forecast-wrap").style.display="none";
     if(obs.lat&&obs.lon)fetchForecastOnly(obs.lat,obs.lon);
     if(cb)cb();
@@ -835,7 +817,6 @@ function fetchForecastOnly(lat,lon){
   fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=2")
   .then(function(r){return r.json();})
   .then(function(d){
-    // Apply weather_code to current WU display
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
       window._LW.wxCode=d.current.weather_code;
       var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
@@ -866,94 +847,59 @@ window.addEventListener("appinstalled",function(){document.getElementById("insta
 function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){Promise.all(regs.map(function(r){return r.unregister();})).then(function(){caches.keys().then(function(keys){Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});});});});}else{window.location.reload(true);}}
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
 
-function checkConditions(temp, dew, wind, wxCode){
+// ── Washing feature ────────────────────────────────────────────────────────
+function checkConditions(temp,dew,wind,wxCode){
   var issues=[];
   if(temp<5)issues.push("too cold");
   if(dew>temp-4)issues.push("too humid");
   if(wind>50)issues.push("too windy");
-  // All precipitation codes >= 51
   if(wxCode!==null&&wxCode>=51)issues.push("rain");
   return issues;
 }
- 
-function formatHour(h){
-  var ampm=h>=12?"pm":"am";
-  var h12=h%12||12;
-  return h12+":00"+ampm;
-}
- 
-function toEpoch(s,tzOff){
-  var p=parseLocalTimeStr(s);
-  return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
-}
- 
-function findBetterWindow(tzOff, sunsetEpoch){
+function formatHour(h){var ampm=h>=12?"pm":"am";var h12=h%12||12;return h12+":00"+ampm;}
+function toEpoch(s,tzOff){var p=parseLocalTimeStr(s);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
+function findBetterWindow(tzOff,sunsetEpoch){
   if(!window._FC||!window._FC.hourly)return null;
-  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
-      dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
-  var now=Date.now();
-  var startIdx=0;
-  for(var i=0;i<times.length;i++){
-    if(toEpoch(times[i],tzOff)>=now){startIdx=i;break;}
-  }
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  var now=Date.now(),startIdx=0;
+  for(var i=0;i<times.length;i++){if(toEpoch(times[i],tzOff)>=now){startIdx=i;break;}}
   var endIdx=Math.min(startIdx+12,temps.length);
-  for(var i=startIdx+1;i<endIdx;i++){
-    var t=temps[i],d=dews[i],w=winds[i],c=codes[i];
+  for(var j=startIdx+1;j<endIdx;j++){
+    var t=temps[j],d=dews[j],w=winds[j],c=codes[j];
     if(t===null||d===null||w===null)continue;
-    var slotEpoch=toEpoch(times[i],tzOff);
-    if(sunsetEpoch&&slotEpoch>sunsetEpoch)break;
+    var slotEp=toEpoch(times[j],tzOff);
+    if(sunsetEpoch&&slotEp>sunsetEpoch)break;
     var issues=checkConditions(t,d,w,c);
     if(issues.length>0)continue;
     var res=calc(t,d,w);
-    if(res.score>=75)return{epoch:slotEpoch,hour:new Date(slotEpoch).getHours(),score:res.score,temp:t,dew:d,wind:w};
+    if(res.score>=75)return{epoch:slotEp,hour:new Date(slotEp).getHours(),score:res.score,temp:t,dew:d,wind:w};
   }
   return null;
 }
- 
-// Find when rain ends and what conditions look like after
-function findAfterRainWindow(rainStartIdx, tzOff, sunsetEpoch){
+function findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch){
   if(!window._FC||!window._FC.hourly)return null;
-  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
-      dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
-  // Find first slot after rain that is clear
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
   for(var i=rainStartIdx+1;i<times.length;i++){
-    var slotEpoch=toEpoch(times[i],tzOff);
-    if(sunsetEpoch&&slotEpoch>sunsetEpoch)return null;
-    var c=codes[i]||0;
-    if(c>=51)continue; // still raining
-    // Clear slot found - check conditions and remaining daylight
+    var slotEp=toEpoch(times[i],tzOff);
+    if(sunsetEpoch&&slotEp>sunsetEpoch)return null;
+    if((codes[i]||0)>=51)continue;
     var t=temps[i],d=dews[i],w=winds[i];
     if(t===null||d===null||w===null)continue;
-    var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEpoch)/3600000:3;
-    if(hoursToSunset<1)return null; // not enough daylight after rain
-    var issues=checkConditions(t,d,w,0); // ignore wx code, rain has ended
+    var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:3;
+    if(hoursToSunset<1)return null;
+    var issues=checkConditions(t,d,w,0);
     var res=calc(t,d,w);
-    return{
-      epoch:slotEpoch,
-      hour:new Date(slotEpoch).getHours(),
-      hoursToSunset:hoursToSunset,
-      score:res.score,
-      temp:t,
-      usable: issues.length===0 && res.score>=55 && hoursToSunset>=2
-    };
+    return{epoch:slotEp,hour:new Date(slotEp).getHours(),hoursToSunset:hoursToSunset,score:res.score,temp:t,usable:issues.length===0&&res.score>=55&&hoursToSunset>=2};
   }
   return null;
 }
- 
 function checkWashing(){
-  if(!window._FC){return;}
-  var fc=window._FC;
-  var tz=fc.timezone;
+  if(!window._FC)return;
+  var fc=window._FC,tz=fc.timezone;
   window._tzOff=getTZOffsetMin(tz);
   var tzOff=window._tzOff;
-  var temp=window._LW.temp;
-  var effDP=window._LW.effDP;
-  var rh=window._LW.rh;
-  var wind=window._LW.wind;
-  var wxNow=window._LW.wxCode||0;
+  var temp=window._LW.temp,effDP=window._LW.effDP,rh=window._LW.rh,wind=window._LW.wind,wxNow=window._LW.wxCode||0;
   var now=Date.now();
- 
-  // Sunrise / sunset — fall back to day 2 if today's sunset has passed
   var sunriseEpoch=toEpoch(fc.daily.sunrise[0],tzOff);
   var sunsetEpoch=toEpoch(fc.daily.sunset[0],tzOff);
   if(sunsetEpoch<now&&fc.daily.sunrise.length>1){
@@ -961,30 +907,18 @@ function checkWashing(){
     sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
   }
   window._sunsetEpoch=sunsetEpoch;
- 
-  // Night checks
   if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19","Hang it out after sunrise for best results.","#5a8aa8");
   if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun\u2019s down \uD83C\uDF19","Hang it out tomorrow morning when there\u2019s a full day of drying ahead.","#5a8aa8");
- 
   var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
- 
-  // Check if it's raining RIGHT NOW
   var rainingNow=wxNow>=51;
- 
-  // Scan hourly forecast for rain before sunset
   var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
   var rainStartIdx=null,rainInHours=null;
   for(var i=0;i<times.length;i++){
     var slotMs=toEpoch(times[i],tzOff);
     if(slotMs<now)continue;
     if(sunsetEpoch&&slotMs>sunsetEpoch)break;
-    if((wxCodes[i]||0)>=51){
-      rainInHours=Math.round((slotMs-now)/3600000);
-      rainStartIdx=i;
-      break;
-    }
+    if((wxCodes[i]||0)>=51){rainInHours=Math.round((slotMs-now)/3600000);rainStartIdx=i;break;}
   }
- 
   // VPD drying index
   var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
   var avp=svp*(rh/100);
@@ -992,87 +926,76 @@ function checkWashing(){
   var wMult=1+Math.min(1.5,wind/20);
   var tFact=Math.max(0.3,Math.min(1.0,(temp-5)/20));
   var dryIdx=vpd*wMult*tFact;
- 
-  // Drying time estimate
+  // DP penalty
+  var dpPenalty=1.0;
+  if(effDP>20)dpPenalty=0.35;
+  else if(effDP>16)dpPenalty=Math.max(0.35,1.0-(effDP-16)*0.1625);
+  dryIdx=dryIdx*dpPenalty;
+  // Drying time
   var dryHours,dryLabel;
   if(dryIdx>1.8){dryHours=0.75;dryLabel="30\u201360 minutes";}
   else if(dryIdx>1.2){dryHours=1.5;dryLabel="1\u20132 hours";}
   else if(dryIdx>0.7){dryHours=3;dryLabel="2\u20134 hours";}
   else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
   else{dryHours=999;dryLabel=null;}
- 
   // Reason string
   var rsns=[];
-  if(vpd<0.3)rsns.push("the air is quite humid");
-  else if(vpd>1.2)rsns.push("low humidity");
+  if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(vpd<0.3)rsns.push("the air is quite humid");
+  else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");
   else if(wind>=20)rsns.push("a good breeze");
   if(temp>25)rsns.push("warm temperature");
   else if(temp<12)rsns.push("cool temperature");
   var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
     "Conditions look reasonable.";
- 
-  // Humidity caveat for slow-drying days
-  var humCaveat=(vpd<0.6&&dryHours>=3)?" High humidity will slow things down \u2014 keep an eye on the forecast.":"";
- 
-  // === RAIN HANDLING ===
- 
-  // Raining now
+  // Humidity caveat
+  var dpAlreadyMentioned=(effDP>16);
+  var humCaveat="";
+  if((vpd<0.6||effDP>16)&&dryHours>=3&&!dpAlreadyMentioned){
+    humCaveat=" High humidity will slow things down \u2014 check the forecast and bring it in if the weather turns.";
+  } else if(effDP>18&&dryHours<3){
+    humCaveat=" Note: dew point is high ("+effDP.toFixed(1)+"\u00B0C) \u2014 washing may feel damp longer than expected.";
+  }
+  if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
+  // Rain now
   if(rainingNow){
-    // Is there a usable window after rain ends?
-    var afterRain=rainStartIdx!==null?findAfterRainWindow(0,tzOff,sunsetEpoch):null;
-    // Since it's raining now, scan from current position
-    var afterRainNow=findAfterRainWindow(0,tzOff,sunsetEpoch);
-    // Find first non-rain slot from now
     var clearAfterIdx=null;
-    for(var i=0;i<times.length;i++){
-      var slotMs=toEpoch(times[i],tzOff);
-      if(slotMs<now)continue;
-      if((wxCodes[i]||0)<51){clearAfterIdx=i;break;}
+    for(var j=0;j<times.length;j++){
+      var slotMs2=toEpoch(times[j],tzOff);
+      if(slotMs2<now)continue;
+      if((wxCodes[j]||0)<51){clearAfterIdx=j;break;}
     }
     if(clearAfterIdx!==null){
       var clearWindow=findAfterRainWindow(clearAfterIdx-1,tzOff,sunsetEpoch);
       if(clearWindow&&clearWindow.usable){
-        return washingPop("Raining now \uD83C\uDF27\uFE0F","Should clear around "+formatHour(clearWindow.hour)+
-          " with about "+Math.round(clearWindow.hoursToSunset)+" hours of daylight left. Worth hanging out then if conditions hold.","#b06010");
+        return washingPop("Raining now \uD83C\uDF27\uFE0F","Should clear around "+formatHour(clearWindow.hour)+" with about "+Math.round(clearWindow.hoursToSunset)+" hours of daylight left. Worth hanging out then if conditions hold.","#b06010");
       }
     }
     return washingPop("Raining now \uD83C\uDF27\uFE0F","Rain doesn\u2019t look like it\u2019ll clear in time today. Best to dry inside.","#c03020");
   }
- 
-  // Rain forecast before sunset
+  // Rain forecast
   if(rainInHours!==null){
-    if(rainInHours<=1){
-      return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour. Best to dry inside today.","#c03020");
-    }
-    // Is there a usable window AFTER the rain ends?
+    if(rainInHours<=1)return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour. Best to dry inside today.","#c03020");
     var afterRainWindow=findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch);
     if(afterRainWindow&&afterRainWindow.usable){
       return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" \u26A0\uFE0F",
         "Rain arrives around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+
         " but should clear by "+formatHour(afterRainWindow.hour)+
-        " with "+Math.round(afterRainWindow.hoursToSunset)+" hours of daylight left. You could hang washing out then.",
-        "#b06010");
+        " with "+Math.round(afterRainWindow.hoursToSunset)+" hours of daylight left. You could hang washing out then.","#b06010");
     }
-    // Rain comes but doesn't clear usably
     if(dryHours<=rainInHours-0.5&&dryHours!==999){
-      return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F",
-        "Might just get it dry in time if you hang it out now. "+rsn+humCaveat,"#b06010");
+      return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F","Might just get it dry in time if you hang it out now. "+rsn+humCaveat,"#b06010");
     }
     return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
   }
- 
-  // === NO RAIN ===
- 
-  // Too bad to dry?
+  // No rain
   if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
- 
-  // Not enough daylight?
   if(dryHours>hoursLeft+0.5){
     return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat,"#b06010");
   }
- 
-  // Conditions are poor but forecast might be better — only suggest if score < 75
+  // Check for better window only if conditions are poor
   var currentRes=calc(temp,effDP,wind);
   var currentIssues=checkConditions(temp,effDP,wind,wxNow);
   var conditionsArePoor=currentRes.score<75||currentIssues.length>0;
@@ -1082,26 +1005,20 @@ function checkWashing(){
       rsn+=" Might be worth waiting until "+formatHour(better.hour)+" ("+better.temp+"\u00B0C, score "+better.score+").";
     }
   }
- 
-  // Good to go
   var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
   var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
   return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn+humCaveat,col);
 }
- 
 function washingPop(title,reason,colour){
   document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
   document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"+reason+"</div>";
   document.getElementById("pop-ov").classList.add("open");
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
-function fcScroll(dir){
-  var strip=document.getElementById("forecast-strip");
-  if(!strip)return;
-  strip.scrollBy({left:dir*220,behavior:"smooth"});
-}
+// ── Forecast scroll ────────────────────────────────────────────────────────
+function fcScroll(dir){var strip=document.getElementById("forecast-strip");if(!strip)return;strip.scrollBy({left:dir*220,behavior:"smooth"});}
 
+// ── Init ───────────────────────────────────────────────────────────────────
 buildSettings();
 syncSlidersFromAdv();
 initUnit();
