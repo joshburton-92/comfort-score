@@ -305,45 +305,50 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="irow"><label>Wind speed</label><input type="number" id="m-wind" value="0" step="1" min="0"/><span class="unit">km/h</span></div>
       <div style="margin-top:4px"><button class="btn btn-p" onclick="calcManual()">Calculate</button></div>
     </div>
-    <div class="card" id="manual-result" style="display:none"><div id="manual-score-area"></div></div>
+   <div class="card" id="manual-result" style="display:none">
+  <div id="manual-score-area"></div>
+  <div class="share-row" style="margin-top:8px">
+    <button class="share-btn" onclick="checkWashingManual()">Will washing dry? &#129531;</button>
   </div>
+</div>
+</div>
 
   <div class="slider-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-  <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
-  <button class="slider-lock-btn" id="slider-lock-btn" onclick="toggleSliderLock()">🔓 Unlocked</button>
-</div>
-   <div class="temp-input-row">
-  <label>I feel hot above</label>
-  <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
-  <span class="temp-input-unit" id="pref-thi-unit">°C</span>
-</div>
-<div class="slider-row">
-  <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
-  <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
-  <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
-</div>
-<div class="temp-input-row" style="margin-top:10px">
-  <label>I feel cold below</label>
-  <input type="number" id="pref-tlo" value="15" step="1" onchange="onTempPref()"/>
-  <span class="temp-input-unit" id="pref-tlo-unit">°C</span>
-</div>
-<div class="slider-row">
-  <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
-  <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
-  <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
-</div>
-    <div class="slider-row">
-      <div class="slider-lbl-row"><span class="slider-name">Humidity tolerance</span><span class="slider-val" id="hum-val">Moderate</span></div>
-      <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
-      <div class="slider-ends"><span class="slider-end">Prefer dry</span><span class="slider-end">Tolerant</span></div>
-    </div>
-    <div class="slider-row">
-      <div class="slider-lbl-row"><span class="slider-name">Wind preference</span><span class="slider-val" id="wind-val">Moderate</span></div>
-      <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
-      <div class="slider-ends"><span class="slider-end">Love wind</span><span class="slider-end">Hate wind</span></div>
-    </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
+    <button class="slider-lock-btn" id="slider-lock-btn" onclick="toggleSliderLock()">&#128275; Unlocked</button>
   </div>
+  <div class="temp-input-row">
+    <label>I feel hot above</label>
+    <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
+    <span class="temp-input-unit" id="pref-thi-unit">&#176;C</span>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
+    <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
+    <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+  </div>
+  <div class="temp-input-row" style="margin-top:10px">
+    <label>I feel cold below</label>
+    <input type="number" id="pref-tlo" value="15" step="1" onchange="onTempPref()"/>
+    <span class="temp-input-unit" id="pref-tlo-unit">&#176;C</span>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
+    <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
+    <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Humidity tolerance</span><span class="slider-val" id="hum-val">Moderate</span></div>
+    <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
+    <div class="slider-ends"><span class="slider-end">Prefer dry</span><span class="slider-end">Tolerant</span></div>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Wind preference</span><span class="slider-val" id="wind-val">Moderate</span></div>
+    <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
+    <div class="slider-ends"><span class="slider-end">Hate wind</span><span class="slider-end">Love wind</span></div>
+  </div>
+</div>
 
   <div class="card" style="margin-bottom:0">
     <div class="adv-tog" id="adv-tog" onclick="toggleAdv()">
@@ -777,8 +782,8 @@ var SLIDER_MAPS={
  heat:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);setAdv("s-tmax",Math.round(lerp(50,90,t)));}},
  cold:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-coolmax",Math.round(lerp(15,55,t)));setAdv("s-coldmax",Math.round(lerp(50,150,t)/5)*5);}},
   hum:{labels:["Prefer dry","Mild","Moderate","Tolerant"],thr:[25,50,75],apply:function(t){setAdv("s-dp",Math.round(lerp(6,18,t)*2)/2);setAdv("s-hmax",Math.round(lerp(70,30,t)));setAdv("s-hexp",Math.round(lerp(0.4,0.9,t)*20)/20);setAdv("s-hdp_ceil",Math.round(lerp(20,32,t)*2)/2);}},
-  wind:{labels:["Love wind","Like it","Neutral","Hate wind"],thr:[25,50,75],apply:function(t){setAdv("s-wmax",Math.round(lerp(8,30,t)));setAdv("s-cws",Math.round(lerp(0.5,2.5,t)*10)/10);setAdv("s-pwhi",Math.round(lerp(40,10,t)));setAdv("s-pwlo",Math.round(lerp(5,15,t)));}}
-};
+  wind:{labels:["Hate wind","Neutral","Like it","Love wind"],thr:[25,50,75],apply:function(t){setAdv("s-wmax",Math.round(lerp(30,8,t)));setAdv("s-cws",Math.round(lerp(2.5,0.5,t)*10)/10);setAdv("s-pwhi",Math.round(lerp(10,40,t)));setAdv("s-pwlo",Math.round(lerp(15,5,t)));}}
+  }
 function lerp(a,b,t){return a+(b-a)*t;}
 function setAdv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
 function sliderLabel(key,pos){var m=SLIDER_MAPS[key];if(pos<=m.thr[0])return m.labels[0];if(pos<=m.thr[1])return m.labels[1];if(pos<=m.thr[2])return m.labels[2];return m.labels[3];}
@@ -827,20 +832,19 @@ function onTempPref(){
 }
 
 function initTempPrefs(){
-  // Load saved thi/tlo and populate the number inputs in display units
-  var thi=parseFloat(document.getElementById("s-thi").value)||22;
-  var tlo=parseFloat(document.getElementById("s-tlo").value)||18;
-  _tlo=useFahrenheit?fromDisp(parseFloat(document.getElementById("pref-tlo").value)||18):parseFloat(document.getElementById("pref-tlo").value)||18;
-  _thi=useFahrenheit?fromDisp(parseFloat(document.getElementById("pref-thi").value)||22):parseFloat(document.getElementById("pref-thi").value)||22;
+  var thi=parseFloat(document.getElementById("s-thi")?document.getElementById("s-thi").value:_thi)||_thi||22;
+  var tlo=parseFloat(document.getElementById("s-tlo")?document.getElementById("s-tlo").value:_tlo)||_tlo||18;
   var thiEl=document.getElementById("pref-thi");
   var tloEl=document.getElementById("pref-tlo");
-  if(thiEl)thiEl.value=useFahrenheit?toDisp(thi):thi;
-  if(tloEl)tloEl.value=useFahrenheit?toDisp(tlo):tlo;
+  if(thiEl)thiEl.value=useFahrenheit?Math.round(toDisp(thi)):thi;
+  if(tloEl)tloEl.value=useFahrenheit?Math.round(toDisp(tlo)):tlo;
   var unit=unitSym();
   var thiU=document.getElementById("pref-thi-unit");
   var tloU=document.getElementById("pref-tlo-unit");
   if(thiU)thiU.textContent=unit;
   if(tloU)tloU.textContent=unit;
+  _thi=thi;
+  _tlo=tlo;
   // Recalibrate cold zone to match saved threshold
   onTempPref();
 }
@@ -852,7 +856,7 @@ function advToSlider(key){
   if(key==="heat"){var thi=gv("s-thi",22);t=1-(thi-18)/(28-18);}
   else if(key==="cold"){var tlo=gv("s-tlo",18);t=(tlo-10)/(24-10);}
   else if(key==="hum"){var dp=gv("s-dp",12);t=(dp-6)/(18-6);}
-  else if(key==="wind"){var wmax=gv("s-wmax",20);t=(wmax-8)/(30-8);}
+  else if(key==="wind"){var wmax=parseFloat(gv("s-wmax",20))||20;t=1-(wmax-8)/(30-8);}
   return Math.round(Math.max(0,Math.min(1,t))*100);
 }
 
@@ -965,9 +969,11 @@ function checkConditions(temp,dew,wind,wxCode){
 }
 function formatHour(h){var ampm=h>=12?"pm":"am";var h12=h%12||12;return h12+":00"+ampm;}
 function toEpoch(s,tzOff){var p=parseLocalTimeStr(s);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
+
 function findBetterWindow(tzOff,sunsetEpoch){
   if(!window._FC||!window._FC.hourly)return null;
-  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
+      dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
   var now=Date.now(),startIdx=0;
   for(var i=0;i<times.length;i++){if(toEpoch(times[i],tzOff)>=now){startIdx=i;break;}}
   var endIdx=Math.min(startIdx+12,temps.length);
@@ -979,10 +985,19 @@ function findBetterWindow(tzOff,sunsetEpoch){
     var issues=checkConditions(t,d,w,c);
     if(issues.length>0)continue;
     var res=calc(t,d,w);
-    if(res.score>=75)return{epoch:slotEp,hour:new Date(slotEp).getHours(),score:res.score,temp:t,dew:d,wind:w};
+    if(res.score>=75){
+      // Format time with day context — check if it's tomorrow
+      var slotDate=new Date(slotEp);
+      var nowDate=new Date(now);
+      var isTomorrow=slotDate.getDate()!==nowDate.getDate();
+      var hourStr=formatHour(new Date(slotEp).toLocaleString("en-US",{timeZone:window._FC.timezone,hour:"numeric",hour12:false}).replace(/\D/g,"")*1);
+      var timeLabel=(isTomorrow?"tomorrow ":"")+hourStr;
+      return{epoch:slotEp,timeLabel:timeLabel,score:res.score,temp:t,dew:d,wind:w};
+    }
   }
   return null;
 }
+
 function findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch){
   if(!window._FC||!window._FC.hourly)return null;
   var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
@@ -1000,6 +1015,82 @@ function findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch){
   }
   return null;
 }
+
+function checkWashingManual(){
+  // Get values from manual inputs
+  var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
+  var temp=fromDisp(tempDisp);
+  var mode=document.getElementById("m-mode").value;
+  var effDP;
+  if(mode==="dp"){
+    effDP=fromDisp(parseFloat(document.getElementById("m-dp").value)||10);
+  } else {
+    var rh2=parseFloat(document.getElementById("m-rh").value)||60;
+    var aa=17.27,bb=237.3;
+    var alph=(aa*temp/(bb+temp))+Math.log(rh2/100);
+    effDP=Math.round((bb*alph/(aa-alph))*10)/10;
+  }
+  var wind=parseFloat(document.getElementById("m-wind").value)||0;
+  // Derive RH from DP and temp for VPD calculation
+  var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
+  var avpFromDP=0.6108*Math.exp(17.27*effDP/(effDP+237.3));
+  var rh=Math.round(Math.min(100,(avpFromDP/svp)*100));
+
+  // Freeze check
+  if(temp<=0)return washingPop("Too cold to dry outside \u2744\uFE0F","Below freezing — washing will freeze on the line rather than dry. Dry inside.","#5a8aa8");
+
+  // VPD drying index
+  var avp=svp*(rh/100);
+  var vpd=svp-avp;
+  var wMult=1+Math.min(1.5,wind/20);
+  var tFact=Math.max(0.3,Math.min(1.0,(temp-5)/20));
+  var dryIdx=vpd*wMult*tFact;
+
+  // DP penalty
+  var dpPenalty=1.0;
+  if(effDP>20)dpPenalty=0.35;
+  else if(effDP>16)dpPenalty=Math.max(0.35,1.0-(effDP-16)*0.1625);
+  dryIdx=dryIdx*dpPenalty;
+
+  // Drying time
+  var dryHours,dryLabel;
+  if(dryIdx>1.8){dryHours=0.75;dryLabel="30\u201360 minutes";}
+  else if(dryIdx>1.2){dryHours=1.5;dryLabel="1\u20132 hours";}
+  else if(dryIdx>0.7){dryHours=3;dryLabel="2\u20134 hours";}
+  else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
+  else{dryHours=999;dryLabel=null;}
+
+  // Reason string
+  var rsns=[];
+  if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(vpd<0.3)rsns.push("the air is quite humid");
+  else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
+  if(wind<5)rsns.push("not much wind");
+  else if(wind>=20)rsns.push("a good breeze");
+  if(temp>25)rsns.push("warm temperature");
+  else if(temp<12)rsns.push("cool temperature");
+  var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
+    "Conditions look reasonable.";
+
+  // Humidity caveat
+  var dpAlreadyMentioned=(effDP>16);
+  var humCaveat="";
+  if((vpd<0.6||effDP>16)&&dryHours>=3&&!dpAlreadyMentioned){
+    humCaveat=" High humidity will slow things down.";
+  } else if(effDP>18&&dryHours<3){
+    humCaveat=" Note: dew point is high \u2014 washing may feel damp longer than expected.";
+  }
+  if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
+
+  if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying.","#c03020");
+
+  // No daylight check in manual mode — just give the drying estimate
+  var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
+  var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
+  return washingPop("Should dry in about "+dryLabel+" "+emoji,rsn+humCaveat+" (No forecast data \u2014 rain and sunset not checked.)",col);
+}
+
 function checkWashing(){
   if(!window._FC)return;
   var fc=window._FC,tz=fc.timezone;
@@ -1098,6 +1189,7 @@ function checkWashing(){
     return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
   }
   // No rain
+  if(temp<=0)return washingPop("Too cold to dry outside \u2744\uFE0F","Below freezing — your washing will freeze on the line rather than dry. Best to dry inside.","#5a8aa8");
   if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
   if(dryHours>hoursLeft+0.5){
     return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat,"#b06010");
@@ -1109,7 +1201,7 @@ function checkWashing(){
   if(conditionsArePoor){
     var better=findBetterWindow(tzOff,sunsetEpoch);
     if(better&&better.score>=75&&better.score>currentRes.score+10){
-      rsn+=" Might be worth waiting until "+formatHour(better.hour)+" ("+better.temp+"\u00B0C, score "+better.score+").";
+      rsn+=" Might be worth waiting until "+better.timeLabel+" ("+toDisp(better.temp).toFixed(1)+unitSym()+", score "+better.score+").";
     }
   }
   var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
