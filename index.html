@@ -151,6 +151,13 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
 .fc-lbl{font-size:10px;font-weight:700;color:var(--text-muted)}
 .fc-temp{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px}
+.fc-slot-7{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:84px;cursor:pointer}
+.fc-slot-7:active{opacity:0.75}
+.fc-day{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:6px}
+.fc-hilo{display:flex;flex-direction:column;gap:3px}
+.fc-hi{font-size:16px;font-weight:800;line-height:1}
+.fc-lo{font-size:14px;font-weight:700;line-height:1;opacity:0.7}
+.fc-hitime{font-size:9px;font-weight:600;color:var(--text-muted);margin-top:1px}
 .irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .irow label{font-size:clamp(13px,3.5vw,14px);color:var(--text-sec);flex:0 0 44%;font-weight:700}
 .irow input,.irow select{flex:1;min-width:0;padding:9px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
@@ -222,6 +229,13 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .result-item{padding:11px 14px;background:var(--result-item);cursor:pointer;border-bottom:1px solid var(--divider);font-size:clamp(13px,3.5vw,14px);color:var(--text);font-weight:600}
 .result-item:last-child{border-bottom:none}
 .result-sub{font-size:clamp(11px,2.8vw,12px);color:var(--text-muted);margin-top:2px;font-weight:600}
+.world-section{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.08em;text-transform:uppercase;margin:10px 0 6px}
+.world-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--divider)}
+.world-row:last-child{border-bottom:none}
+.world-score{font-size:18px;font-weight:800;min-width:36px;text-align:right}
+.world-name{flex:1;font-size:13px;font-weight:700;color:var(--text)}
+.world-cc{font-size:11px;color:var(--text-muted);font-weight:600}
+.world-loading{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;padding:20px 0}
 .washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
 .sources-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
@@ -282,14 +296,20 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="score-outer" id="live-score-area"></div>
       <div class="share-row">
         <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
-        <button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? &#129531;</button>
-      </div>
-      <div id="forecast-wrap" style="display:none">
-        <div class="sec-lbl" style="margin-top:10px">Recent &amp; upcoming</div>
+<button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? &#129531;</button>
+<button class="share-btn" id="world-btn" onclick="openWorldCheck()" style="display:none;margin-left:8px">Where in the world? &#127758;</button>
+<div id="forecast-wrap" style="display:none">
+        <div class="sec-lbl" style="margin-top:10px">Next 24 hours</div>
         <div class="forecast-wrap-inner">
           <button class="fc-nav fc-nav-l" onclick="fcScroll(-1)" aria-label="Scroll left">&#8249;</button>
           <div class="forecast-strip" id="forecast-strip"><div class="forecast-row" id="forecast-row"></div></div>
           <button class="fc-nav fc-nav-r" onclick="fcScroll(1)" aria-label="Scroll right">&#8250;</button>
+        </div>
+        <div class="sec-lbl" style="margin-top:14px">Next 7 days</div>
+        <div class="forecast-wrap-inner">
+          <button class="fc-nav fc-nav-l" onclick="fc7Scroll(-1)" aria-label="Scroll left">&#8249;</button>
+          <div class="forecast-strip" id="forecast-strip-7"><div class="forecast-row" id="forecast-row-7"></div></div>
+          <button class="fc-nav fc-nav-r" onclick="fc7Scroll(1)" aria-label="Scroll right">&#8250;</button>
         </div>
       </div>
     </div>
@@ -397,9 +417,161 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </div>
 </div>
 
+<div class="pop-ov" id="world-ov" onclick="closeWorld()">
+  <div class="pop" style="max-width:360px" onclick="event.stopPropagation()">
+    <div class="pop-ttl">Where in the world? &#127758;</div>
+    <div id="world-body" class="pop-body"></div>
+    <span class="pop-close" onclick="closeWorld()">Tap to close</span>
+  </div>
+</div>
+
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────
 var SBANDS=[{max:35,col:"rgba(190,50,50,0.92)"},{max:55,col:"rgba(210,120,20,0.92)"},{max:75,col:"rgba(190,185,20,0.92)"},{max:90,col:"rgba(100,180,50,0.92)"},{max:100,col:"rgba(25,140,65,0.92)"}];
+var WORLD_CITIES=[
+  {name:"Jakarta",lat:-6.21,lon:106.85,cc:"ID"},
+  {name:"Dhaka",lat:23.72,lon:90.41,cc:"BD"},
+  {name:"Tokyo",lat:35.69,lon:139.69,cc:"JP"},
+  {name:"Delhi",lat:28.66,lon:77.23,cc:"IN"},
+  {name:"Shanghai",lat:31.23,lon:121.47,cc:"CN"},
+  {name:"Guangzhou",lat:23.13,lon:113.26,cc:"CN"},
+  {name:"Cairo",lat:30.06,lon:31.25,cc:"EG"},
+  {name:"Manila",lat:14.6,lon:120.98,cc:"PH"},
+  {name:"Kolkata",lat:22.57,lon:88.36,cc:"IN"},
+  {name:"Seoul",lat:37.57,lon:126.98,cc:"KR"},
+  {name:"Karachi",lat:24.86,lon:67.01,cc:"PK"},
+  {name:"Mumbai",lat:19.08,lon:72.88,cc:"IN"},
+  {name:"Sao Paulo",lat:-23.55,lon:-46.63,cc:"BR"},
+  {name:"Bangkok",lat:13.75,lon:100.52,cc:"TH"},
+  {name:"Mexico City",lat:19.43,lon:-99.13,cc:"MX"},
+  {name:"Beijing",lat:39.91,lon:116.39,cc:"CN"},
+  {name:"Lahore",lat:31.55,lon:74.34,cc:"PK"},
+  {name:"Istanbul",lat:41.01,lon:28.95,cc:"TR"},
+  {name:"Moscow",lat:55.75,lon:37.62,cc:"RU"},
+  {name:"Ho Chi Minh City",lat:10.82,lon:106.63,cc:"VN"},
+  {name:"Buenos Aires",lat:-34.61,lon:-58.38,cc:"AR"},
+  {name:"New York",lat:40.71,lon:-74.01,cc:"US"},
+  {name:"Shenzhen",lat:22.54,lon:114.06,cc:"CN"},
+  {name:"Bengaluru",lat:12.97,lon:77.59,cc:"IN"},
+  {name:"Osaka",lat:34.69,lon:135.5,cc:"JP"},
+  {name:"Lagos",lat:6.45,lon:3.4,cc:"NG"},
+  {name:"Los Angeles",lat:34.05,lon:-118.24,cc:"US"},
+  {name:"Chennai",lat:13.08,lon:80.27,cc:"IN"},
+  {name:"Kinshasa",lat:-4.32,lon:15.32,cc:"CD"},
+  {name:"Bogota",lat:4.71,lon:-74.07,cc:"CO"},
+  {name:"Lima",lat:-12.05,lon:-77.04,cc:"PE"},
+  {name:"London",lat:51.51,lon:-0.13,cc:"GB"},
+  {name:"Rio de Janeiro",lat:-22.91,lon:-43.17,cc:"BR"},
+  {name:"Paris",lat:48.86,lon:2.35,cc:"FR"},
+  {name:"Hyderabad",lat:17.38,lon:78.49,cc:"IN"},
+  {name:"Tehran",lat:35.69,lon:51.39,cc:"IR"},
+  {name:"Luanda",lat:-8.84,lon:13.23,cc:"AO"},
+  {name:"Bandung",lat:-6.92,lon:107.61,cc:"ID"},
+  {name:"Kuala Lumpur",lat:3.14,lon:101.69,cc:"MY"},
+  {name:"Dar es Salaam",lat:-6.79,lon:39.21,cc:"TZ"},
+  {name:"Suzhou",lat:31.3,lon:120.62,cc:"CN"},
+  {name:"Ahmedabad",lat:23.03,lon:72.57,cc:"IN"},
+  {name:"Hangzhou",lat:30.25,lon:120.17,cc:"CN"},
+  {name:"Wuhan",lat:30.59,lon:114.31,cc:"CN"},
+  {name:"Tianjin",lat:39.14,lon:117.18,cc:"CN"},
+  {name:"Alexandria",lat:31.2,lon:29.92,cc:"EG"},
+  {name:"Nagoya",lat:35.18,lon:136.91,cc:"JP"},
+  {name:"Johannesburg",lat:-26.2,lon:28.04,cc:"ZA"},
+  {name:"Chongqing",lat:29.56,lon:106.55,cc:"CN"},
+  {name:"Riyadh",lat:24.69,lon:46.72,cc:"SA"},
+  {name:"Surat",lat:21.17,lon:72.83,cc:"IN"},
+  {name:"Surabaya",lat:-7.25,lon:112.75,cc:"ID"},
+  {name:"Pune",lat:18.52,lon:73.86,cc:"IN"},
+  {name:"Khartoum",lat:15.55,lon:32.53,cc:"SD"},
+  {name:"Nanjing",lat:32.06,lon:118.78,cc:"CN"},
+  {name:"Santiago",lat:-33.45,lon:-70.67,cc:"CL"},
+  {name:"Chicago",lat:41.88,lon:-87.63,cc:"US"},
+  {name:"Chengdu",lat:30.66,lon:104.07,cc:"CN"},
+  {name:"Xi'an",lat:34.27,lon:108.95,cc:"CN"},
+  {name:"Hong Kong",lat:22.32,lon:114.17,cc:"HK"},
+  {name:"Baghdad",lat:33.34,lon:44.4,cc:"IQ"},
+  {name:"Madrid",lat:40.42,lon:-3.7,cc:"ES"},
+  {name:"Houston",lat:29.76,lon:-95.37,cc:"US"},
+  {name:"Dallas",lat:32.78,lon:-96.8,cc:"US"},
+  {name:"Toronto",lat:43.65,lon:-79.38,cc:"CA"},
+  {name:"Miami",lat:25.77,lon:-80.19,cc:"US"},
+  {name:"Belo Horizonte",lat:-19.92,lon:-43.94,cc:"BR"},
+  {name:"Singapore",lat:1.35,lon:103.82,cc:"SG"},
+  {name:"Philadelphia",lat:39.95,lon:-75.17,cc:"US"},
+  {name:"Atlanta",lat:33.75,lon:-84.39,cc:"US"},
+  {name:"Fukuoka",lat:33.59,lon:130.4,cc:"JP"},
+  {name:"Barcelona",lat:41.39,lon:2.15,cc:"ES"},
+  {name:"Saint Petersburg",lat:59.93,lon:30.32,cc:"RU"},
+  {name:"Washington DC",lat:38.91,lon:-77.04,cc:"US"},
+  {name:"Yangon",lat:16.87,lon:96.19,cc:"MM"},
+  {name:"Guadalajara",lat:20.66,lon:-103.35,cc:"MX"},
+  {name:"Adelaide",lat:-34.93,lon:138.6,cc:"AU"},
+  {name:"Brisbane",lat:-27.47,lon:153.02,cc:"AU"},
+  {name:"Hobart",lat:-42.88,lon:147.33,cc:"AU"},
+  {name:"Melbourne",lat:-37.81,lon:144.96,cc:"AU"},
+  {name:"Sydney",lat:-33.87,lon:151.21,cc:"AU"},
+  {name:"Darwin",lat:-12.46,lon:130.84,cc:"AU"},
+  {name:"Perth",lat:-31.95,lon:115.86,cc:"AU"},
+  {name:"Auckland",lat:-36.87,lon:174.77,cc:"NZ"},
+  {name:"Christchurch",lat:-43.53,lon:172.64,cc:"NZ"},
+  {name:"Reykjavik",lat:64.13,lon:-21.9,cc:"IS"},
+  {name:"Torshavn",lat:62.01,lon:-6.77,cc:"FO"},
+  {name:"Vancouver",lat:49.25,lon:-123.12,cc:"CA"},
+  {name:"Honolulu",lat:21.31,lon:-157.86,cc:"US"},
+  {name:"Dubai",lat:25.2,lon:55.27,cc:"AE"},
+  {name:"Nairobi",lat:-1.29,lon:36.82,cc:"KE"},
+  {name:"Cape Town",lat:-33.93,lon:18.42,cc:"ZA"},
+  {name:"Accra",lat:5.56,lon:-0.2,cc:"GH"},
+  {name:"Casablanca",lat:33.59,lon:-7.62,cc:"MA"},
+  {name:"Addis Ababa",lat:9.03,lon:38.74,cc:"ET"},
+  {name:"Ankara",lat:39.93,lon:32.86,cc:"TR"},
+  {name:"Warsaw",lat:52.23,lon:21.01,cc:"PL"},
+  {name:"Berlin",lat:52.52,lon:13.4,cc:"DE"},
+  {name:"Rome",lat:41.9,lon:12.5,cc:"IT"},
+  {name:"Amsterdam",lat:52.37,lon:4.9,cc:"NL"},
+  {name:"Stockholm",lat:59.33,lon:18.07,cc:"SE"},
+  {name:"Oslo",lat:59.91,lon:10.75,cc:"NO"},
+  {name:"Helsinki",lat:60.17,lon:24.94,cc:"FI"},
+  {name:"Vienna",lat:48.21,lon:16.37,cc:"AT"},
+  {name:"Zurich",lat:47.38,lon:8.54,cc:"CH"},
+  {name:"Lisbon",lat:38.72,lon:-9.14,cc:"PT"},
+  {name:"Athens",lat:37.98,lon:23.73,cc:"GR"},
+  {name:"Kyiv",lat:50.45,lon:30.52,cc:"UA"},
+  {name:"Colombo",lat:6.93,lon:79.85,cc:"LK"},
+  {name:"Kathmandu",lat:27.71,lon:85.32,cc:"NP"},
+  {name:"Ulaanbaatar",lat:47.91,lon:106.88,cc:"MN"},
+  {name:"Almaty",lat:43.26,lon:76.93,cc:"KZ"},
+  {name:"Tashkent",lat:41.3,lon:69.27,cc:"UZ"},
+  {name:"Baku",lat:40.41,lon:49.87,cc:"AZ"},
+  {name:"Tbilisi",lat:41.69,lon:44.83,cc:"GE"},
+  {name:"Beirut",lat:33.89,lon:35.5,cc:"LB"},
+  {name:"Amman",lat:31.96,lon:35.95,cc:"JO"},
+  {name:"Tel Aviv",lat:32.08,lon:34.78,cc:"IL"},
+  {name:"Phnom Penh",lat:11.56,lon:104.92,cc:"KH"},
+  {name:"Vientiane",lat:17.97,lon:102.6,cc:"LA"},
+  {name:"Taipei",lat:25.05,lon:121.53,cc:"TW"},
+  {name:"Kabul",lat:34.52,lon:69.18,cc:"AF"},
+  {name:"Islamabad",lat:33.72,lon:73.04,cc:"PK"},
+  {name:"Quito",lat:-0.22,lon:-78.51,cc:"EC"},
+  {name:"La Paz",lat:-16.5,lon:-68.15,cc:"BO"},
+  {name:"Asuncion",lat:-25.29,lon:-57.65,cc:"PY"},
+  {name:"Montevideo",lat:-34.9,lon:-56.19,cc:"UY"},
+  {name:"Panama City",lat:8.99,lon:-79.52,cc:"PA"},
+  {name:"San Jose",lat:9.93,lon:-84.08,cc:"CR"},
+  {name:"Guatemala City",lat:14.64,lon:-90.51,cc:"GT"},
+  {name:"Havana",lat:23.13,lon:-82.38,cc:"CU"},
+  {name:"Port of Spain",lat:10.65,lon:-61.52,cc:"TT"},
+  {name:"Dakar",lat:14.72,lon:-17.47,cc:"SN"},
+  {name:"Abidjan",lat:5.35,lon:-4.0,cc:"CI"},
+  {name:"Maputo",lat:-25.97,lon:32.59,cc:"MZ"},
+  {name:"Antananarivo",lat:-18.91,lon:47.54,cc:"MG"},
+  {name:"Lusaka",lat:-15.42,lon:28.28,cc:"ZM"},
+  {name:"Harare",lat:-17.83,lon:31.05,cc:"ZW"},
+  {name:"Algiers",lat:36.74,lon:3.06,cc:"DZ"},
+  {name:"Tripoli",lat:32.9,lon:13.18,cc:"LY"},
+  {name:"Tunis",lat:36.82,lon:10.17,cc:"TN"}
+];
+var PINNED_CITIES=["New York","London","Dubai","Tokyo","Sydney"];
 var STEAMY_TITLE="Hot & steamy";
 var STEAMY_TEXT="When both temperature and dew point are above your comfortable range at the same time, this condition fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
 var FC_SLOTS=[0,3,6,9,12,15,18,21];
@@ -628,12 +800,15 @@ function getAnnotations(temp,dp,wind,score,s,iP,wP,wxCode){
   else if(dp>s.dp+5)a.push({c:"ann-humid",t:"humid & sticky \uD83D\uDCA7"});
   else if(dp>14)a.push({c:"ann-muggy",t:"a little muggy \uD83D\uDCA6"});
   if(temp>=0){
-    if(dp<0)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
-    else if(dp<4)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
+    var vdryThresh=temp<15?-8:0;
+    var dryThresh=temp<15?0:4;
+    if(dp<vdryThresh)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
+    else if(dp<dryThresh)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
   }
   if(iP>3)a.push({c:"ann-steamy ann-info",t:"hot & steamy \uD83E\uDD2F \u2139\uFE0F",info:true});
-  if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
+ if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
   else if(wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
+  else if(wind>=12&&wind<20){a.push({c:"ann-breeze",t:"gentle breeze \uD83C\uDF43"});}
   else{var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);}
   if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
   var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
@@ -702,7 +877,8 @@ function renderForecast(fc){
   }
   document.getElementById("forecast-row").innerHTML=histHtml+fcastHtml;
   document.getElementById("forecast-wrap").style.display="block";
-  if(history.length){setTimeout(function(){var strip=document.querySelector(".forecast-strip");if(strip){strip.scrollLeft=Math.max(0,history.length*80-20);}},100);}
+if(history.length){setTimeout(function(){var strip=document.querySelector(".forecast-strip");if(strip){strip.scrollLeft=Math.max(0,history.length*80-20);}},100);}
+  render7Day(fc);
 }
 function showForecastSlot(idx){
   if(!window._FC)return;
@@ -873,7 +1049,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=2";
+var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
@@ -883,6 +1059,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
     document.getElementById("washing-btn").style.display="inline-block";
+document.getElementById("world-btn").style.display="inline-block";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
@@ -915,6 +1092,7 @@ function fetchWU(stationId,apiKey,label,cb){
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=lbl;
     document.getElementById("washing-btn").style.display="inline-block";
+document.getElementById("world-btn").style.display="inline-block";
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
     renderChips(temp,dew,rh,wind);
@@ -925,7 +1103,7 @@ function fetchWU(stationId,apiKey,label,cb){
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
-  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=2")
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
@@ -1091,6 +1269,77 @@ function checkWashingManual(){
   return washingPop("Should dry in about "+dryLabel+" "+emoji,rsn+humCaveat+" (No forecast data \u2014 rain and sunset not checked.)",col);
 }
 
+function openWorldCheck(){
+  document.getElementById("world-ov").classList.add("open");
+  document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking 143 cities\u2026</div>";
+  fetchWorldScores();
+}
+function closeWorld(){document.getElementById("world-ov").classList.remove("open");}
+
+function fetchWorldScores(){
+  var lats=WORLD_CITIES.map(function(c){return c.lat;}).join(",");
+  var lons=WORLD_CITIES.map(function(c){return c.lon;}).join(",");
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lats+"&longitude="+lons
+    +"&current=temperature_2m,dew_point_2m,wind_speed_10m"
+    +"&wind_speed_unit=kmh&timezone=auto&forecast_days=1";
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    // data is array when multiple locations
+    var results=Array.isArray(data)?data:[data];
+    var scored=[];
+    for(var i=0;i<results.length;i++){
+      var d=results[i];
+      if(!d.current)continue;
+      var cur=d.current;
+      var r=calc(cur.temperature_2m,cur.dew_point_2m,cur.wind_speed_10m);
+      scored.push({
+        name:WORLD_CITIES[i].name,
+        cc:WORLD_CITIES[i].cc,
+        score:r.score,
+        temp:cur.temperature_2m,
+        dp:cur.dew_point_2m,
+        wind:cur.wind_speed_10m
+      });
+    }
+    renderWorldResults(scored);
+  }).catch(function(e){
+    document.getElementById("world-body").innerHTML="<div class='world-loading'>Failed to load: "+e.message+"</div>";
+  });
+}
+
+function renderWorldResults(scored){
+  // Sort by score
+  var sorted=scored.slice().sort(function(a,b){return b.score-a.score;});
+  var top=sorted.slice(0,5);
+  var bottom=sorted.slice(-5).reverse();
+  // Pinned cities
+  var pinned=[];
+  for(var pi=0;pi<PINNED_CITIES.length;pi++){
+    for(var si=0;si<scored.length;si++){
+      if(scored[si].name===PINNED_CITIES[pi]){pinned.push(scored[si]);break;}
+    }
+  }
+
+  function row(c){
+    var nc=SBANDS[bandForScore(c.score)].col.replace("0.92","1");
+    return "<div class='world-row'>"
+      +"<div class='world-score' style='color:"+nc+"'>"+c.score+"</div>"
+      +"<div class='world-name'>"+c.name+"</div>"
+      +"<div class='world-cc'>"+c.cc
+      +" \u00B7 "+toDisp(c.temp).toFixed(1)+unitSym()
+      +"</div></div>";
+  }
+
+  var html="";
+  html+="<div class='world-section'>\uD83C\uDFC6 Top 5 right now</div>";
+  for(var i=0;i<top.length;i++)html+=row(top[i]);
+  html+="<div class='world-section'>\uD83C\uDF0D World</div>";
+  for(var i=0;i<pinned.length;i++)html+=row(pinned[i]);
+  html+="<div class='world-section'>\uD83C\uDF21\uFE0F Bottom 5 right now</div>";
+  for(var i=0;i<bottom.length;i++)html+=row(bottom[i]);
+
+  document.getElementById("world-body").innerHTML=html;
+}
+
 function checkWashing(){
   if(!window._FC)return;
   var fc=window._FC,tz=fc.timezone;
@@ -1105,9 +1354,29 @@ function checkWashing(){
     sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
   }
   window._sunsetEpoch=sunsetEpoch;
-  if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19","Hang it out after sunrise for best results.","#5a8aa8");
+if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19","Hang it out after sunrise for best results.","#5a8aa8");
   if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun\u2019s down \uD83C\uDF19","Hang it out tomorrow morning when there\u2019s a full day of drying ahead.","#5a8aa8");
   var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
+  // Freeze check — highest priority after night checks
+  // But first scan for a warmer window later today
+  if(temp<=0){
+    var warmWindowMsg="";
+    var times2=fc.hourly.time,temps2=fc.hourly.temperature_2m,dews2=fc.hourly.dew_point_2m,winds2=fc.hourly.wind_speed_10m,codes2=fc.hourly.weather_code||[];
+    for(var fi=0;fi<times2.length;fi++){
+      var fSlotMs=toEpoch(times2[fi],tzOff);
+      if(fSlotMs<=now)continue;
+      if(sunsetEpoch&&fSlotMs>sunsetEpoch)break;
+      var fTemp=temps2[fi],fDew=dews2[fi],fWind=winds2[fi],fCode=codes2[fi]||0;
+      if(fTemp===null||fTemp<=0)continue;
+      if(fCode>=51)continue;
+      var fHoursLeft=sunsetEpoch?(sunsetEpoch-fSlotMs)/3600000:3;
+      if(fHoursLeft<1)break;
+      var fTimeLabel=fmtFcTime(times2[fi],tz);
+      warmWindowMsg=" Should warm above freezing around "+fTimeLabel+" \u2014 consider hanging out then if conditions hold.";
+      break;
+    }
+    return washingPop("Below freezing \u2744\uFE0F","Washing will freeze on the line rather than dry."+warmWindowMsg+(warmWindowMsg?"":" Best to dry inside."),"#5a8aa8");
+  }
   var rainingNow=wxNow>=51;
   var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
   var rainStartIdx=null,rainInHours=null;
@@ -1215,6 +1484,99 @@ function washingPop(title,reason,colour){
 }
 
 // ── Forecast scroll ────────────────────────────────────────────────────────
+function fc7Scroll(dir){
+  var strip=document.getElementById("forecast-strip-7");
+  if(!strip)return;
+  strip.scrollBy({left:dir*220,behavior:"smooth"});
+}
+
+function render7Day(fc){
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
+  var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
+  // Group hourly slots by local date
+  var days={};
+  for(var i=0;i<times.length;i++){
+    // Get local date string for this slot
+    var slotMs=Date.UTC(0,0)+0;
+    try{
+      var p=parseLocalTimeStr(times[i]);
+      var utcMs=Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
+      var dateStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(utcMs));
+      if(!days[dateStr])days[dateStr]=[];
+      days[dateStr].push({idx:i,utcMs:utcMs,temp:temps[i],dp:dps[i],wind:winds[i]});
+    }catch(e){}
+  }
+  // Get today's local date to skip it
+  var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var dateKeys=Object.keys(days).sort().filter(function(d){return d>todayStr;}).slice(0,7);
+  var html="";
+  for(var di=0;di<dateKeys.length;di++){
+    var key=dateKeys[di];
+    var slots=days[key].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
+    if(!slots.length)continue;
+    // Find max and min score slots
+    var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
+    for(var si=0;si<slots.length;si++){
+      var s=slots[si];
+      var r=calc(s.temp,s.dp,s.wind);
+      if(r.score>maxScore){maxScore=r.score;maxSlot=s;}
+      if(r.score<minScore){minScore=r.score;minSlot=s;}
+    }
+    var maxNc=SBANDS[bandForScore(maxScore)].col.replace("0.92","1");
+    var minNc=SBANDS[bandForScore(minScore)].col.replace("0.92","1");
+    // Day label
+    var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(slots[0].utcMs));
+    // Time labels for max/min
+    var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
+    var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
+    html+="<div class='fc-slot-7' onclick='show7DaySlot("+JSON.stringify(key)+")'>"
+         +"<div class='fc-day'>"+dayLabel+"</div>"
+         +"<div class='fc-hilo'>"
+         +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
+         +"<div class='fc-hitime'>"+maxTime+"</div>"
+         +"<div class='fc-lo' style='color:"+minNc+"'>\u2193"+minScore+"</div>"
+         +"<div class='fc-hitime'>"+minTime+"</div>"
+         +"</div></div>";
+  }
+  document.getElementById("forecast-row-7").innerHTML=html;
+  // Store days data for tap handler
+  window._7dayData=days;
+  window._7dayTZ=tz;
+}
+
+function show7DaySlot(dateKey){
+  if(!window._7dayData||!window._7dayData[dateKey])return;
+  var slots=window._7dayData[dateKey];
+  var tz=window._7dayTZ;
+  var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
+  for(var i=0;i<slots.length;i++){
+    var s=slots[i];
+    if(s.temp===null||s.dp===null||s.wind===null)continue;
+    var r=calc(s.temp,s.dp,s.wind);
+    if(r.score>maxScore){maxScore=r.score;maxSlot=s;}
+    if(r.score<minScore){minScore=r.score;minSlot=s;}
+  }
+  var gs2=gs();
+  // Max slot details
+  var maxR=calc(maxSlot.temp,maxSlot.dp,maxSlot.wind);
+  var maxAnns=getAnnotations(maxSlot.temp,maxSlot.dp,maxSlot.wind,maxR.score,gs2,maxR.iP,maxR.wP,null);
+  var maxAnnText="";for(var i=0;i<maxAnns.length;i++){maxAnnText+=(i>0?", ":"")+maxAnns[i].t.replace(" \u2139\uFE0F","");}
+  var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(maxSlot.utcMs)).replace(",","");
+  // Min slot details
+  var minR=calc(minSlot.temp,minSlot.dp,minSlot.wind);
+  var minAnns=getAnnotations(minSlot.temp,minSlot.dp,minSlot.wind,minR.score,gs2,minR.iP,minR.wP,null);
+  var minAnnText="";for(var i=0;i<minAnns.length;i++){minAnnText+=(i>0?", ":"")+minAnns[i].t.replace(" \u2139\uFE0F","");}
+  var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(minSlot.utcMs)).replace(",","");
+  var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"long",month:"short",day:"numeric"}).format(new Date(slots[0].utcMs));
+  showPop(dayLabel,
+    "\u2191 Best: "+maxScore+" ("+scoreInfo(maxScore).label+") at "+maxTime+"\n"
+    +toDisp(maxSlot.temp).toFixed(1)+unitSym()+" | DP "+toDisp(maxSlot.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(maxSlot.wind)+" km/h"
+    +(maxAnnText?"\n"+maxAnnText:"")+"\n\n"
+    +"\u2193 Worst: "+minScore+" ("+scoreInfo(minScore).label+") at "+minTime+"\n"
+    +toDisp(minSlot.temp).toFixed(1)+unitSym()+" | DP "+toDisp(minSlot.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(minSlot.wind)+" km/h"
+    +(minAnnText?"\n"+minAnnText:"")
+  );
+}
 function fcScroll(dir){var strip=document.getElementById("forecast-strip");if(!strip)return;strip.scrollBy({left:dir*220,behavior:"smooth"});}
 
 // ── Init ───────────────────────────────────────────────────────────────────
