@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#a8d8ea" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0d1e2e" media="(prefers-color-scheme: dark)"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Comfort Score"/>
+<meta name="description" content="Your personal weather comfort score based on temperature, humidity and wind."/>
+<title>Comfort Score</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --font:'Nunito',Arial,sans-serif;
+  --bg:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e0 100%);
+  --card:rgba(255,255,255,0.72);--card-border:rgba(255,255,255,0.9);
+  --card-inner:rgba(255,255,255,0.55);--card-inner-border:rgba(255,255,255,0.85);
+  --input-bg:rgba(255,255,255,0.65);--btn-bg:rgba(255,255,255,0.55);
+  --text:#1a3a4a;--text-sec:#3a8fa8;--text-muted:#5a9ab0;--text-head:#1a5f7a;
+  --toggle-bg:rgba(255,255,255,0.3);--toggle-active:rgba(255,255,255,0.85);
+  --sgrp:#5a9ab0;--sitem:rgba(255,255,255,0.5);--sitem-border:rgba(255,255,255,0.8);
+  --sitem-input:rgba(255,255,255,0.7);--pop-bg:rgba(238,250,255,0.97);
+  --pop-border:rgba(120,200,230,0.6);--result-item:rgba(255,255,255,0.65);
+  --divider:rgba(255,255,255,0.5);--range-fill:#2a9fd6;--range-bg:rgba(255,255,255,0.5);
+  --fc-bg:rgba(255,255,255,0.55);--onboard-bg:rgba(255,255,255,0.82);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:linear-gradient(160deg,#0d1e2e 0%,#102030 35%,#0e2018 70%,#0f2220 100%);
+    --card:rgba(255,255,255,0.07);--card-border:rgba(255,255,255,0.12);
+    --card-inner:rgba(255,255,255,0.06);--card-inner-border:rgba(255,255,255,0.1);
+    --input-bg:rgba(255,255,255,0.08);--btn-bg:rgba(255,255,255,0.08);
+    --text:#c8e8f0;--text-sec:#5ab8d0;--text-muted:#4a8898;--text-head:#7ad0e8;
+    --toggle-bg:rgba(255,255,255,0.08);--toggle-active:rgba(255,255,255,0.18);
+    --sgrp:#4a8898;--sitem:rgba(255,255,255,0.06);--sitem-border:rgba(255,255,255,0.1);
+    --sitem-input:rgba(255,255,255,0.08);--pop-bg:rgba(10,25,40,0.97);
+    --pop-border:rgba(60,140,180,0.4);--result-item:rgba(255,255,255,0.07);
+    --divider:rgba(255,255,255,0.1);--range-bg:rgba(255,255,255,0.12);
+    --fc-bg:rgba(255,255,255,0.06);--onboard-bg:rgba(10,28,44,0.92);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font);-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var(--text)}
+.app{max-width:480px;margin:0 auto;padding:max(env(safe-area-inset-top,12px),12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
+.header{padding:16px 0 14px;text-align:center;position:relative}
+.header-icon{width:48px;height:48px;margin:0 auto 8px;background:var(--card);border:1px solid var(--card-border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.header h1{font-size:clamp(18px,5.5vw,24px);font-weight:800;color:var(--text-head);letter-spacing:-0.3px}
+.header p{font-size:clamp(11px,3vw,13px);color:var(--text-sec);margin-top:2px;font-weight:600}
+.unit-toggle{position:absolute;top:16px;right:0;display:flex;border-radius:20px;overflow:hidden;border:1px solid var(--card-border);background:var(--toggle-bg)}
+.unit-btn{padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer;color:var(--text-sec);border:none;background:transparent}
+.unit-btn.active{background:var(--toggle-active);color:var(--text-head)}
+.star-btn{position:absolute;top:16px;left:0;width:34px;height:28px;border-radius:20px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{flex:1;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid var(--card-border);border-radius:10px;background:var(--toggle-bg);color:var(--text-sec);text-align:center}
+.tab.active{background:var(--toggle-active);color:var(--text-head)}
+.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
+.sec-lbl{font-size:11px;font-weight:800;color:var(--text-sec);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.search-row{display:flex;gap:6px;margin-bottom:8px}
+.search-row input{flex:1;min-width:0;padding:10px 12px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+.search-row input::placeholder{color:var(--text-muted)}
+.btn{padding:10px clamp(10px,3vw,16px);font-size:clamp(13px,3.5vw,15px);font-weight:700;border:1px solid var(--card-border);border-radius:10px;background:var(--btn-bg);color:var(--text-head);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn:active{opacity:0.75}
+.btn-p{background:linear-gradient(135deg,#2a9fd6,#1a7ab0);color:#fff;border-color:rgba(255,255,255,0.4)}
+.status{font-size:clamp(12px,3vw,14px);color:var(--text-sec);padding:4px 0;font-weight:600}
+.loc-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.loc-name{font-size:clamp(15px,4.5vw,18px);font-weight:800;color:var(--text);flex:1}
+.loc-star{font-size:18px;cursor:pointer;color:var(--text-sec);flex-shrink:0;background:none;border:none;padding:0}
+.obs-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.obs-time{font-size:clamp(11px,3vw,13px);color:var(--text-muted);font-weight:600;flex:1}
+.refresh-btn{background:none;border:none;cursor:pointer;color:var(--text-sec);font-size:16px;padding:2px 4px;line-height:1;flex-shrink:0}
+.refresh-btn.spinning{animation:spin 0.8s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;color:var(--text-head)}
+.score-outer{min-height:320px}
+.score-area{text-align:center;padding:4px 0 8px}
+canvas{display:block;margin:0 auto;height:115px;width:200px}
+.score-num{font-size:clamp(60px,18vw,80px);font-weight:800;line-height:1;height:86px;display:flex;align-items:center;justify-content:center;letter-spacing:-2px}
+.score-emoji{font-size:clamp(26px,7vw,32px);display:block;height:36px;line-height:36px}
+.score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;height:34px;display:flex;align-items:center;justify-content:center}
+.annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:60px;align-content:flex-start}
+.share-row{text-align:center;margin-top:6px;margin-bottom:6px}
+.share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
+.ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
+.ann-great{background:rgba(30,140,65,0.15);color:#0d6030;border-color:rgba(30,140,65,0.3)}
+.ann-warm{background:rgba(255,160,20,0.18);color:#8a4a00;border-color:rgba(255,160,20,0.35)}
+.ann-hot{background:rgba(220,60,20,0.15);color:#8a1a00;border-color:rgba(220,60,20,0.3)}
+.ann-vhot{background:rgba(200,30,10,0.18);color:#7a0800;border-color:rgba(200,30,10,0.35)}
+.ann-xhot{background:rgba(170,10,0,0.2);color:#5a0000;border-color:rgba(170,10,0,0.4)}
+.ann-cool{background:rgba(140,200,240,0.2);color:#1a3a5a;border-color:rgba(140,200,240,0.4)}
+.ann-chilly{background:rgba(100,170,230,0.2);color:#1a4a7a;border-color:rgba(100,170,230,0.4)}
+.ann-cold{background:rgba(60,120,210,0.2);color:#0a2a6a;border-color:rgba(60,120,210,0.4)}
+.ann-vcold{background:rgba(30,80,190,0.2);color:#080e4a;border-color:rgba(30,80,190,0.4)}
+.ann-freeze{background:rgba(20,50,170,0.2);color:#06083a;border-color:rgba(20,50,170,0.4)}
+.ann-bitter{background:rgba(10,20,140,0.2);color:#04062a;border-color:rgba(10,20,140,0.4)}
+.ann-muggy{background:rgba(180,140,20,0.15);color:#6a4a00;border-color:rgba(180,140,20,0.3)}
+.ann-humid{background:rgba(160,100,20,0.18);color:#5a2800;border-color:rgba(160,100,20,0.35)}
+.ann-steamy{background:rgba(200,60,20,0.18);color:#6a1000;border-color:rgba(200,60,20,0.35)}
+.ann-breeze{background:rgba(50,180,130,0.15);color:#0a4a30;border-color:rgba(50,180,130,0.3)}
+.ann-wind{background:rgba(80,120,180,0.18);color:#1a2a5a;border-color:rgba(80,120,180,0.35)}
+.ann-chill{background:rgba(40,100,200,0.2);color:#0a1a5a;border-color:rgba(40,100,200,0.4)}
+.ann-dry{background:rgba(180,130,60,0.15);color:#5a3a00;border-color:rgba(180,130,60,0.3)}
+.ann-vdry{background:rgba(160,100,30,0.18);color:#4a2000;border-color:rgba(160,100,30,0.35)}
+.ann-wx{background:rgba(100,160,200,0.15);color:#1a4060;border-color:rgba(100,160,200,0.3)}
+.ann-info{cursor:pointer}
+@media(prefers-color-scheme:dark){
+  .ann-great{background:rgba(30,140,65,0.25);color:#4ae880}
+  .ann-warm{background:rgba(255,160,20,0.25);color:#ffb830}
+  .ann-hot{background:rgba(220,60,20,0.25);color:#ff7040}
+  .ann-vhot{background:rgba(200,30,10,0.3);color:#ff5020}
+  .ann-xhot{background:rgba(170,10,0,0.3);color:#ff3010}
+  .ann-cool{background:rgba(100,170,210,0.25);color:#80c8e8}
+  .ann-chilly{background:rgba(80,140,210,0.25);color:#70a8e0}
+  .ann-cold{background:rgba(50,100,200,0.25);color:#6090d8}
+  .ann-vcold{background:rgba(30,70,190,0.25);color:#5080c8}
+  .ann-freeze{background:rgba(20,50,170,0.25);color:#4070b8}
+  .ann-bitter{background:rgba(10,20,140,0.25);color:#3060a8}
+  .ann-muggy{background:rgba(180,140,20,0.25);color:#d4a820}
+  .ann-humid{background:rgba(160,100,20,0.25);color:#c07818}
+  .ann-steamy{background:rgba(200,60,20,0.25);color:#e04818}
+  .ann-breeze{background:rgba(40,160,110,0.25);color:#40c888}
+  .ann-wind{background:rgba(70,110,180,0.25);color:#6090d0}
+  .ann-chill{background:rgba(40,90,200,0.25);color:#5080d0}
+  .ann-dry{background:rgba(160,110,40,0.25);color:#c08030}
+  .ann-vdry{background:rgba(140,80,20,0.25);color:#b06020}
+  .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
+}
+.forecast-wrap-inner{position:relative}
+.fc-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:32px;height:44px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text-sec);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none}
+.fc-nav:active{opacity:0.7}
+.fc-nav-l{left:0}
+.fc-nav-r{right:0}
+.forecast-strip{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:4px;padding:2px 36px 4px}
+.forecast-strip::-webkit-scrollbar{height:3px}
+.forecast-strip::-webkit-scrollbar-track{background:rgba(255,255,255,0.1);border-radius:2px}
+.forecast-strip::-webkit-scrollbar-thumb{background:rgba(42,127,180,0.3);border-radius:2px}
+.forecast-row{display:flex;gap:8px;width:max-content;padding:2px}
+.fc-slot{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:72px;cursor:pointer}
+.fc-slot:active{opacity:0.75}
+.fc-slot.fc-past{opacity:0.55}
+.fc-time{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:4px}
+.fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
+.fc-lbl{font-size:10px;font-weight:700;color:var(--text-muted)}
+.fc-temp{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px}
+.fc-slot-7{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:84px;cursor:pointer}
+.fc-slot-7:active{opacity:0.75}
+.fc-day{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:6px}
+.fc-hilo{display:flex;flex-direction:column;gap:3px}
+.fc-hi{font-size:16px;font-weight:800;line-height:1}
+.fc-lo{font-size:14px;font-weight:700;line-height:1;opacity:0.7}
+.fc-hitime{font-size:9px;font-weight:600;color:var(--text-muted);margin-top:1px}
+.irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.irow label{font-size:clamp(13px,3.5vw,14px);color:var(--text-sec);flex:0 0 44%;font-weight:700}
+.irow input,.irow select{flex:1;min-width:0;padding:9px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+.unit{font-size:clamp(12px,3vw,13px);color:var(--text-muted);min-width:28px;flex-shrink:0;font-weight:700}
+.slider-card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
+.slider-row{margin-bottom:18px}
+.slider-row:last-child{margin-bottom:0}
+.slider-lbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.slider-name{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head)}
+.slider-val{font-size:clamp(11px,3vw,12px);font-weight:700;color:var(--text-sec);background:var(--card-inner);border:1px solid var(--card-border);border-radius:20px;padding:2px 9px}
+.slider-lock-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:10px;gap:6px}
+.slider-lock-btn{font-size:12px;font-weight:700;color:var(--text-sec);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 12px;cursor:pointer}
+input[type=range].locked{pointer-events:none;opacity:0.5}
+.slider-ends{display:flex;justify-content:space-between;margin-top:5px}
+.temp-input-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.temp-input-row label{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head);flex:1}
+.temp-input-row input{width:80px;padding:6px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:700;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text);text-align:center}
+.temp-input-unit{font-size:13px;font-weight:700;color:var(--text-muted);min-width:28px}
+.slider-end{font-size:clamp(10px,2.5vw,11px);font-weight:700;color:var(--text-muted)}
+input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:var(--range-bg);border:1px solid var(--card-border)}
+input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;cursor:pointer}
+.adv-tog{font-size:clamp(12px,3vw,14px);color:var(--text-sec);cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--divider);font-weight:700}
+.adv-tog svg{transition:transform 0.2s;flex-shrink:0}
+.adv-tog.open svg{transform:rotate(90deg)}
+.s-panel{display:none;margin-top:10px}.s-panel.open{display:block}
+.sgrp-title{font-size:10px;font-weight:800;color:var(--sgrp);letter-spacing:0.1em;text-transform:uppercase;margin:12px 0 6px;grid-column:1/-1}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+@media(max-width:360px){.sgrid{grid-template-columns:1fr}}
+.sitem{background:var(--sitem);border:1px solid var(--sitem-border);border-radius:10px;padding:8px 10px}
+.sitem-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sitem label{font-size:clamp(11px,2.8vw,12px);color:var(--text-sec);flex:1;line-height:1.3;font-weight:700}
+.sitem input{width:100%;font-size:clamp(13px,3.5vw,14px);font-weight:700;border:1px solid var(--sitem-border);border-radius:8px;padding:5px 8px;background:var(--sitem-input);color:var(--text)}
+.ibtn{width:18px;height:18px;border-radius:50%;background:rgba(42,127,180,0.2);border:1px solid rgba(42,127,180,0.35);color:#2a7fa8;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.wu-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--divider)}
+.wu-row{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.wu-row input{flex:1;min-width:0;padding:8px 10px;font-size:13px;font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+.wu-row input::placeholder{color:var(--text-muted)}
+.wu-hint{font-size:11px;color:var(--text-muted);font-weight:600;line-height:1.5;margin-bottom:8px}
+.wu-hint a{color:#2a9fd6;text-decoration:none}
+.install-banner{display:none;background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:12px 14px;margin-bottom:10px;align-items:center;gap:10px}
+.install-banner.show{display:flex}
+.install-banner p{font-size:14px;font-weight:700;color:var(--text-sec);flex:1;line-height:1.4}
+.onboard-card{background:var(--onboard-bg);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(14px,4vw,20px);margin-bottom:12px}
+.onboard-title{font-size:16px;font-weight:800;color:var(--text-head);margin-bottom:8px}
+.onboard-body{font-size:13px;font-weight:600;color:var(--text);line-height:1.65;margin-bottom:12px}
+.onboard-bands{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.ob{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;color:#fff}
+.ob-vp{background:#be3232}.ob-po{background:#d27814}.ob-mo{background:#a0a010}.ob-go{background:#4ab420}.ob-ex{background:#198c40}
+.onboard-close{font-size:13px;font-weight:700;color:var(--text-sec);background:none;border:1px solid var(--card-border);border-radius:10px;padding:8px 16px;cursor:pointer;width:100%}
+.pop-ov{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,60,80,0.45);padding:20px;align-items:center;justify-content:center}
+.pop-ov.open{display:flex}
+.pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%}
+.pop-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px}
+.pop-body{font-size:clamp(13px,3.2vw,14px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line}
+.pop-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700}
+.stars-pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%}
+.stars-list{margin-top:8px;max-height:260px;overflow-y:auto}
+.star-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card-inner);border-radius:12px;margin-bottom:6px;cursor:pointer}
+.star-item:hover{opacity:0.85}
+.star-item-name{flex:1;font-size:14px;font-weight:700;color:var(--text)}
+.star-item-type{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:1px}
+.star-item-del{font-size:16px;color:var(--text-muted);cursor:pointer;padding:2px 4px;background:none;border:none;line-height:1}
+.star-empty{font-size:13px;color:var(--text-muted);font-weight:600;text-align:center;padding:16px 0}
+.star-save-row{margin-top:10px;border-top:1px solid var(--divider);padding-top:10px}
+.star-save-row input{width:100%;padding:8px 10px;font-size:13px;font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text);margin-bottom:8px}
+.star-save-btns{display:flex;gap:6px}
+.results-list{margin-top:4px;border-radius:10px;overflow:hidden;border:1px solid var(--card-border)}
+.result-item{padding:11px 14px;background:var(--result-item);cursor:pointer;border-bottom:1px solid var(--divider);font-size:clamp(13px,3.5vw,14px);color:var(--text);font-weight:600}
+.result-item:last-child{border-bottom:none}
+.result-sub{font-size:clamp(11px,2.8vw,12px);color:var(--text-muted);margin-top:2px;font-weight:600}
+.world-section{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.08em;text-transform:uppercase;margin:10px 0 6px}
+.world-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--divider)}
+.world-row:last-child{border-bottom:none}
+.world-score{font-size:18px;font-weight:800;min-width:36px;text-align:right}
+.world-name{flex:1;font-size:13px;font-weight:700;color:var(--text)}
+.world-cc{font-size:11px;color:var(--text-muted);font-weight:600}
+.world-loading{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;padding:20px 0}
+.washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
+.footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
+.sources-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
+.clear-btn{font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="onboard-card" id="onboard-card" style="display:none">
+    <div class="onboard-title">Welcome to Comfort Score</div>
+    <div class="onboard-body">Your current weather conditions — temperature, humidity, and wind — combined into a single score from 0 to 100. Adjust the preference sliders to match your personal comfort.</div>
+    <div class="onboard-bands"><span class="ob ob-vp">Very poor</span><span class="ob ob-po">Poor</span><span class="ob ob-mo">Moderate</span><span class="ob ob-go">Good</span><span class="ob ob-ex">Excellent</span></div>
+    <button class="onboard-close" onclick="dismissOnboard()">Got it</button>
+  </div>
+
+  <div class="header">
+    <button class="star-btn" onclick="openStars()" title="Saved locations">&#9733;</button>
+    <div class="header-icon">&#127780;&#65039;</div>
+    <h1>Comfort Score</h1>
+    <p>Your personal weather comfort rating</p>
+    <div class="unit-toggle">
+      <div class="unit-btn active" id="btn-c" onclick="setUnit('C')">&#176;C</div>
+      <div class="unit-btn"        id="btn-f" onclick="setUnit('F')">&#176;F</div>
+    </div>
+  </div>
+
+  <div class="install-banner" id="install-banner">
+    <p>Add to your home screen for quick access</p>
+    <button class="btn btn-p" onclick="installApp()">Install</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-live"   onclick="switchTab('live')">Live weather</div>
+    <div class="tab"        id="tab-manual" onclick="switchTab('manual')">Manual input</div>
+  </div>
+
+  <div class="page active" id="page-live">
+    <div class="card">
+      <div class="sec-lbl">Location</div>
+      <div class="search-row">
+        <input type="text" id="city-input" placeholder="Search city or suburb..." onkeydown="if(event.key==='Enter')searchCity()"/>
+        <button class="btn" onclick="searchCity()">Search</button>
+        <button class="btn" onclick="detectLocation()">Detect</button>
+      </div>
+      <div id="results-list" class="results-list" style="display:none"></div>
+      <div id="live-status" class="status">Detecting your location...</div>
+    </div>
+    <div class="card" id="live-result" style="display:none">
+      <div class="loc-row">
+        <div class="loc-name" id="live-locname"></div>
+        <button class="loc-star" onclick="promptSaveLoc()" title="Save location">&#9733;</button>
+      </div>
+      <div class="obs-row">
+        <div class="obs-time" id="live-obstime"></div>
+        <button class="refresh-btn" id="refresh-btn" onclick="refreshWeather()" title="Refresh">&#8635;</button>
+      </div>
+      <div class="chips" id="live-chips"></div>
+      <div class="score-outer" id="live-score-area"></div>
+      <div class="share-row">
+        <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
+<button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? &#129531;</button>
+<button class="share-btn" id="world-btn" onclick="openWorldCheck()" style="display:none;margin-left:8px">Where in the world? &#127758;</button>
+<div id="forecast-wrap" style="display:none">
+        <div class="sec-lbl" style="margin-top:10px">Next 24 hours</div>
+        <div class="forecast-wrap-inner">
+          <button class="fc-nav fc-nav-l" onclick="fcScroll(-1)" aria-label="Scroll left">&#8249;</button>
+          <div class="forecast-strip" id="forecast-strip"><div class="forecast-row" id="forecast-row"></div></div>
+          <button class="fc-nav fc-nav-r" onclick="fcScroll(1)" aria-label="Scroll right">&#8250;</button>
+        </div>
+        <div class="sec-lbl" style="margin-top:14px">Next 7 days</div>
+        <div class="forecast-wrap-inner">
+          <button class="fc-nav fc-nav-l" onclick="fc7Scroll(-1)" aria-label="Scroll left">&#8249;</button>
+          <div class="forecast-strip" id="forecast-strip-7"><div class="forecast-row" id="forecast-row-7"></div></div>
+          <button class="fc-nav fc-nav-r" onclick="fc7Scroll(1)" aria-label="Scroll right">&#8250;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="page" id="page-manual">
+    <div class="card">
+      <div class="sec-lbl">Conditions</div>
+      <div class="irow"><label>Temperature</label><input type="number" id="m-temp" value="25.5" step="0.1"/><span class="unit" id="unit-temp">&#176;C</span></div>
+      <div class="irow"><label>Humidity mode</label><select id="m-mode" onchange="toggleMode()"><option value="dp">Dew point</option><option value="rh">Relative humidity</option></select></div>
+      <div id="m-dp-row" class="irow"><label>Dew point</label><input type="number" id="m-dp" value="16.1" step="0.1"/><span class="unit" id="unit-dp">&#176;C</span></div>
+      <div id="m-rh-row" class="irow" style="display:none"><label>Relative humidity</label><input type="number" id="m-rh" value="60" step="1" min="0" max="100"/><span class="unit">%</span></div>
+      <div class="irow"><label>Wind speed</label><input type="number" id="m-wind" value="0" step="1" min="0"/><span class="unit">km/h</span></div>
+      <div style="margin-top:4px"><button class="btn btn-p" onclick="calcManual()">Calculate</button></div>
+    </div>
+    <div class="card" id="manual-result" style="display:none">
+      <div id="manual-score-area"></div>
+      <div class="share-row" style="margin-top:8px">
+        <button class="share-btn" onclick="checkWashingManual()">Will washing dry? &#129531;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="slider-card">
+
+  <div class="slider-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
+    <button class="slider-lock-btn" id="slider-lock-btn" onclick="toggleSliderLock()">&#128275; Unlocked</button>
+  </div>
+  <div class="temp-input-row">
+    <label>I feel hot above</label>
+    <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
+    <span class="temp-input-unit" id="pref-thi-unit">&#176;C</span>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
+    <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
+    <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+  </div>
+  <div class="temp-input-row" style="margin-top:10px">
+    <label>I feel cold below</label>
+    <input type="number" id="pref-tlo" value="15" step="1" onchange="onTempPref()"/>
+    <span class="temp-input-unit" id="pref-tlo-unit">&#176;C</span>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
+    <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
+    <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Humidity tolerance</span><span class="slider-val" id="hum-val">Moderate</span></div>
+    <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
+    <div class="slider-ends"><span class="slider-end">Prefer dry</span><span class="slider-end">Tolerant</span></div>
+  </div>
+  <div class="slider-row">
+    <div class="slider-lbl-row"><span class="slider-name">Wind preference</span><span class="slider-val" id="wind-val">Moderate</span></div>
+    <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
+    <div class="slider-ends"><span class="slider-end">Hate wind</span><span class="slider-end">Love wind</span></div>
+  </div>
+</div>
+
+  <div class="card" style="margin-bottom:0">
+    <div class="adv-tog" id="adv-tog" onclick="toggleAdv()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Settings &amp; calibration (advanced)</span>
+    </div>
+    <div class="s-panel" id="s-panel">
+      <div class="sec-lbl" style="margin-top:8px">Your calibration</div>
+      <div class="sgrid" id="sgrid"></div>
+      <div class="wu-section">
+        <div class="sec-lbl">Personal Weather Station (Weather Underground)</div>
+        <div class="wu-hint">Enter your WU API key and a station ID to fetch hyperlocal conditions. <a href="https://www.wunderground.com/member/api-keys" target="_blank">Get an API key &#8599;</a></div>
+        <div class="wu-row"><input type="text" id="wu-api-key" placeholder="API key (32 characters)" oninput="saveWuKey()"/></div>
+        <div class="wu-row"><input type="text" id="wu-station-id" placeholder="Station ID (e.g. IVIC123)" onkeydown="if(event.key==='Enter')fetchWU()"/><button class="btn btn-p" onclick="fetchWU()">Fetch</button></div>
+        <div id="wu-status" class="status" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-row">
+    <button class="sources-btn" onclick="showSources()">Sources &#9432;</button>
+    <button class="clear-btn"   onclick="clearAndReload()">Clear cache &amp; reload</button>
+  </div>
+</div>
+</div>
+
+<div class="pop-ov" id="pop-ov" onclick="closePop()">
+  <div class="pop" onclick="event.stopPropagation()">
+    <div class="pop-ttl" id="pop-ttl"></div>
+    <div class="pop-body" id="pop-body"></div>
+    <span class="pop-close" onclick="closePop()">Tap to close</span>
+  </div>
+</div>
+
+<div class="pop-ov" id="stars-ov" onclick="closeStars()">
+  <div class="stars-pop" onclick="event.stopPropagation()">
+    <div class="pop-ttl">Saved locations</div>
+    <div class="stars-list" id="stars-list"></div>
+    <div class="star-save-row" id="star-save-row" style="display:none">
+      <input type="text" id="star-name-input" placeholder="Name this location..."/>
+      <div class="star-save-btns">
+        <button class="btn btn-p" style="flex:1" onclick="confirmSaveLoc()">Save</button>
+        <button class="btn" onclick="cancelSaveLoc()">Cancel</button>
+      </div>
+    </div>
+    <span class="pop-close" onclick="closeStars()">Tap to close</span>
+  </div>
+</div>
+
+<div class="pop-ov" id="world-ov" onclick="closeWorld()">
+  <div class="pop" style="max-width:360px" onclick="event.stopPropagation()">
+    <div class="pop-ttl">Where in the world? &#127758;</div>
+    <div id="world-body" class="pop-body"></div>
+    <span class="pop-close" onclick="closeWorld()">Tap to close</span>
+  </div>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+var SBANDS=[{max:35,col:"rgba(190,50,50,0.92)"},{max:55,col:"rgba(210,120,20,0.92)"},{max:75,col:"rgba(190,185,20,0.92)"},{max:90,col:"rgba(100,180,50,0.92)"},{max:100,col:"rgba(25,140,65,0.92)"}];
+var WORLD_CITIES=[
+  {name:"Jakarta",lat:-6.21,lon:106.85,cc:"ID"},
+  {name:"Dhaka",lat:23.72,lon:90.41,cc:"BD"},
+  {name:"Tokyo",lat:35.69,lon:139.69,cc:"JP"},
+  {name:"Delhi",lat:28.66,lon:77.23,cc:"IN"},
+  {name:"Shanghai",lat:31.23,lon:121.47,cc:"CN"},
+  {name:"Guangzhou",lat:23.13,lon:113.26,cc:"CN"},
+  {name:"Cairo",lat:30.06,lon:31.25,cc:"EG"},
+  {name:"Manila",lat:14.6,lon:120.98,cc:"PH"},
+  {name:"Kolkata",lat:22.57,lon:88.36,cc:"IN"},
+  {name:"Seoul",lat:37.57,lon:126.98,cc:"KR"},
+  {name:"Karachi",lat:24.86,lon:67.01,cc:"PK"},
+  {name:"Mumbai",lat:19.08,lon:72.88,cc:"IN"},
+  {name:"Sao Paulo",lat:-23.55,lon:-46.63,cc:"BR"},
+  {name:"Bangkok",lat:13.75,lon:100.52,cc:"TH"},
+  {name:"Mexico City",lat:19.43,lon:-99.13,cc:"MX"},
+  {name:"Beijing",lat:39.91,lon:116.39,cc:"CN"},
+  {name:"Lahore",lat:31.55,lon:74.34,cc:"PK"},
+  {name:"Istanbul",lat:41.01,lon:28.95,cc:"TR"},
+  {name:"Moscow",lat:55.75,lon:37.62,cc:"RU"},
+  {name:"Ho Chi Minh City",lat:10.82,lon:106.63,cc:"VN"},
+  {name:"Buenos Aires",lat:-34.61,lon:-58.38,cc:"AR"},
+  {name:"New York",lat:40.71,lon:-74.01,cc:"US"},
+  {name:"Shenzhen",lat:22.54,lon:114.06,cc:"CN"},
+  {name:"Bengaluru",lat:12.97,lon:77.59,cc:"IN"},
+  {name:"Osaka",lat:34.69,lon:135.5,cc:"JP"},
+  {name:"Lagos",lat:6.45,lon:3.4,cc:"NG"},
+  {name:"Los Angeles",lat:34.05,lon:-118.24,cc:"US"},
+  {name:"Chennai",lat:13.08,lon:80.27,cc:"IN"},
+  {name:"Kinshasa",lat:-4.32,lon:15.32,cc:"CD"},
+  {name:"Bogota",lat:4.71,lon:-74.07,cc:"CO"},
+  {name:"Lima",lat:-12.05,lon:-77.04,cc:"PE"},
+  {name:"London",lat:51.51,lon:-0.13,cc:"GB"},
+  {name:"Rio de Janeiro",lat:-22.91,lon:-43.17,cc:"BR"},
+  {name:"Paris",lat:48.86,lon:2.35,cc:"FR"},
+  {name:"Hyderabad",lat:17.38,lon:78.49,cc:"IN"},
+  {name:"Tehran",lat:35.69,lon:51.39,cc:"IR"},
+  {name:"Luanda",lat:-8.84,lon:13.23,cc:"AO"},
+  {name:"Bandung",lat:-6.92,lon:107.61,cc:"ID"},
+  {name:"Kuala Lumpur",lat:3.14,lon:101.69,cc:"MY"},
+  {name:"Dar es Salaam",lat:-6.79,lon:39.21,cc:"TZ"},
+  {name:"Suzhou",lat:31.3,lon:120.62,cc:"CN"},
+  {name:"Ahmedabad",lat:23.03,lon:72.57,cc:"IN"},
+  {name:"Hangzhou",lat:30.25,lon:120.17,cc:"CN"},
+  {name:"Wuhan",lat:30.59,lon:114.31,cc:"CN"},
+  {name:"Tianjin",lat:39.14,lon:117.18,cc:"CN"},
+  {name:"Alexandria",lat:31.2,lon:29.92,cc:"EG"},
+  {name:"Nagoya",lat:35.18,lon:136.91,cc:"JP"},
+  {name:"Johannesburg",lat:-26.2,lon:28.04,cc:"ZA"},
+  {name:"Chongqing",lat:29.56,lon:106.55,cc:"CN"},
+  {name:"Riyadh",lat:24.69,lon:46.72,cc:"SA"},
+  {name:"Surat",lat:21.17,lon:72.83,cc:"IN"},
+  {name:"Surabaya",lat:-7.25,lon:112.75,cc:"ID"},
+  {name:"Pune",lat:18.52,lon:73.86,cc:"IN"},
+  {name:"Khartoum",lat:15.55,lon:32.53,cc:"SD"},
+  {name:"Nanjing",lat:32.06,lon:118.78,cc:"CN"},
+  {name:"Santiago",lat:-33.45,lon:-70.67,cc:"CL"},
+  {name:"Chicago",lat:41.88,lon:-87.63,cc:"US"},
+  {name:"Chengdu",lat:30.66,lon:104.07,cc:"CN"},
+  {name:"Xian",lat:34.27,lon:108.95,cc:"CN"},
+  {name:"Hong Kong",lat:22.32,lon:114.17,cc:"HK"},
+  {name:"Baghdad",lat:33.34,lon:44.4,cc:"IQ"},
+  {name:"Madrid",lat:40.42,lon:-3.7,cc:"ES"},
+  {name:"Houston",lat:29.76,lon:-95.37,cc:"US"},
+  {name:"Dallas",lat:32.78,lon:-96.8,cc:"US"},
+  {name:"Toronto",lat:43.65,lon:-79.38,cc:"CA"},
+  {name:"Miami",lat:25.77,lon:-80.19,cc:"US"},
+  {name:"Belo Horizonte",lat:-19.92,lon:-43.94,cc:"BR"},
+  {name:"Singapore",lat:1.35,lon:103.82,cc:"SG"},
+  {name:"Philadelphia",lat:39.95,lon:-75.17,cc:"US"},
+  {name:"Atlanta",lat:33.75,lon:-84.39,cc:"US"},
+  {name:"Fukuoka",lat:33.59,lon:130.4,cc:"JP"},
+  {name:"Barcelona",lat:41.39,lon:2.15,cc:"ES"},
+  {name:"Saint Petersburg",lat:59.93,lon:30.32,cc:"RU"},
+  {name:"Washington DC",lat:38.91,lon:-77.04,cc:"US"},
+  {name:"Yangon",lat:16.87,lon:96.19,cc:"MM"},
+  {name:"Guadalajara",lat:20.66,lon:-103.35,cc:"MX"},
+  {name:"Adelaide",lat:-34.93,lon:138.6,cc:"AU"},
+  {name:"Brisbane",lat:-27.47,lon:153.02,cc:"AU"},
+  {name:"Hobart",lat:-42.88,lon:147.33,cc:"AU"},
+  {name:"Melbourne",lat:-37.81,lon:144.96,cc:"AU"},
+  {name:"Sydney",lat:-33.87,lon:151.21,cc:"AU"},
+  {name:"Darwin",lat:-12.46,lon:130.84,cc:"AU"},
+  {name:"Perth",lat:-31.95,lon:115.86,cc:"AU"},
+  {name:"Auckland",lat:-36.87,lon:174.77,cc:"NZ"},
+  {name:"Christchurch",lat:-43.53,lon:172.64,cc:"NZ"},
+  {name:"Reykjavik",lat:64.13,lon:-21.9,cc:"IS"},
+  {name:"Torshavn",lat:62.01,lon:-6.77,cc:"FO"},
+  {name:"Vancouver",lat:49.25,lon:-123.12,cc:"CA"},
+  {name:"Honolulu",lat:21.31,lon:-157.86,cc:"US"},
+  {name:"Dubai",lat:25.2,lon:55.27,cc:"AE"},
+  {name:"Nairobi",lat:-1.29,lon:36.82,cc:"KE"},
+  {name:"Cape Town",lat:-33.93,lon:18.42,cc:"ZA"},
+  {name:"Accra",lat:5.56,lon:-0.2,cc:"GH"},
+  {name:"Casablanca",lat:33.59,lon:-7.62,cc:"MA"},
+  {name:"Addis Ababa",lat:9.03,lon:38.74,cc:"ET"},
+  {name:"Ankara",lat:39.93,lon:32.86,cc:"TR"},
+  {name:"Warsaw",lat:52.23,lon:21.01,cc:"PL"},
+  {name:"Berlin",lat:52.52,lon:13.4,cc:"DE"},
+  {name:"Rome",lat:41.9,lon:12.5,cc:"IT"},
+  {name:"Amsterdam",lat:52.37,lon:4.9,cc:"NL"},
+  {name:"Stockholm",lat:59.33,lon:18.07,cc:"SE"},
+  {name:"Oslo",lat:59.91,lon:10.75,cc:"NO"},
+  {name:"Helsinki",lat:60.17,lon:24.94,cc:"FI"},
+  {name:"Vienna",lat:48.21,lon:16.37,cc:"AT"},
+  {name:"Zurich",lat:47.38,lon:8.54,cc:"CH"},
+  {name:"Lisbon",lat:38.72,lon:-9.14,cc:"PT"},
+  {name:"Athens",lat:37.98,lon:23.73,cc:"GR"},
+  {name:"Kyiv",lat:50.45,lon:30.52,cc:"UA"},
+  {name:"Colombo",lat:6.93,lon:79.85,cc:"LK"},
+  {name:"Kathmandu",lat:27.71,lon:85.32,cc:"NP"},
+  {name:"Ulaanbaatar",lat:47.91,lon:106.88,cc:"MN"},
+  {name:"Almaty",lat:43.26,lon:76.93,cc:"KZ"},
+  {name:"Tashkent",lat:41.3,lon:69.27,cc:"UZ"},
+  {name:"Baku",lat:40.41,lon:49.87,cc:"AZ"},
+  {name:"Tbilisi",lat:41.69,lon:44.83,cc:"GE"},
+  {name:"Beirut",lat:33.89,lon:35.5,cc:"LB"},
+  {name:"Amman",lat:31.96,lon:35.95,cc:"JO"},
+  {name:"Tel Aviv",lat:32.08,lon:34.78,cc:"IL"},
+  {name:"Phnom Penh",lat:11.56,lon:104.92,cc:"KH"},
+  {name:"Vientiane",lat:17.97,lon:102.6,cc:"LA"},
+  {name:"Taipei",lat:25.05,lon:121.53,cc:"TW"},
+  {name:"Kabul",lat:34.52,lon:69.18,cc:"AF"},
+  {name:"Islamabad",lat:33.72,lon:73.04,cc:"PK"},
+  {name:"Quito",lat:-0.22,lon:-78.51,cc:"EC"},
+  {name:"La Paz",lat:-16.5,lon:-68.15,cc:"BO"},
+  {name:"Asuncion",lat:-25.29,lon:-57.65,cc:"PY"},
+  {name:"Montevideo",lat:-34.9,lon:-56.19,cc:"UY"},
+  {name:"Panama City",lat:8.99,lon:-79.52,cc:"PA"},
+  {name:"San Jose",lat:9.93,lon:-84.08,cc:"CR"},
+  {name:"Guatemala City",lat:14.64,lon:-90.51,cc:"GT"},
+  {name:"Havana",lat:23.13,lon:-82.38,cc:"CU"},
+  {name:"Port of Spain",lat:10.65,lon:-61.52,cc:"TT"},
+  {name:"Dakar",lat:14.72,lon:-17.47,cc:"SN"},
+  {name:"Abidjan",lat:5.35,lon:-4.0,cc:"CI"},
+  {name:"Maputo",lat:-25.97,lon:32.59,cc:"MZ"},
+  {name:"Antananarivo",lat:-18.91,lon:47.54,cc:"MG"},
+  {name:"Lusaka",lat:-15.42,lon:28.28,cc:"ZM"},
+  {name:"Harare",lat:-17.83,lon:31.05,cc:"ZW"},
+  {name:"Algiers",lat:36.74,lon:3.06,cc:"DZ"},
+  {name:"Tripoli",lat:32.9,lon:13.18,cc:"LY"},
+  {name:"Tunis",lat:36.82,lon:10.17,cc:"TN"}
+];
+var PINNED_CITIES=["New York","London","Dubai","Tokyo","Sydney"];
+var STEAMY_TITLE="Hot & steamy";
+var STEAMY_TEXT="When both temperature and dew point are above your comfortable range at the same time, this condition fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
+var FC_SLOTS=[0,3,6,9,12,15,18,21];
+var MAX_HISTORY=5;
+var _tlo=18;
+var _thi=22;
+
+// ── WMO weather code pill ──────────────────────────────────────────────────
+function wxFromCode(code){
+  if(code===0)return{c:"ann-wx",t:"clear sky \u2600\uFE0F"};
+  if(code===1)return{c:"ann-wx",t:"mostly clear \uD83C\uDF24\uFE0F"};
+  if(code===2)return{c:"ann-wx",t:"partly cloudy \u26C5"};
+  if(code===3)return{c:"ann-wx",t:"overcast \u2601\uFE0F"};
+  if(code>=45&&code<=48)return{c:"ann-wx",t:"foggy \uD83C\uDF2B\uFE0F"};
+  if(code>=51&&code<=55)return{c:"ann-wx",t:"drizzle \uD83C\uDF26\uFE0F"};
+  if(code>=56&&code<=57)return{c:"ann-wx",t:"freezing drizzle \uD83C\uDF27\uFE0F"};
+  if(code>=61&&code<=63)return{c:"ann-wx",t:"raining \uD83C\uDF27\uFE0F"};
+  if(code===65)return{c:"ann-wx",t:"heavy rain \uD83C\uDF27\uFE0F"};
+  if(code>=66&&code<=67)return{c:"ann-wx",t:"freezing rain \uD83C\uDF27\uFE0F"};
+  if(code>=71&&code<=73)return{c:"ann-wx",t:"snowing \u2744\uFE0F"};
+  if(code===75)return{c:"ann-wx",t:"heavy snow \u2744\uFE0F"};
+  if(code===77)return{c:"ann-wx",t:"snow grains \uD83C\uDF28\uFE0F"};
+  if(code>=80&&code<=82)return{c:"ann-wx",t:"rain showers \uD83C\uDF26\uFE0F"};
+  if(code>=85&&code<=86)return{c:"ann-wx",t:"snow showers \uD83C\uDF28\uFE0F"};
+  if(code>=95&&code<=99)return{c:"ann-wx",t:"thunderstorm \u26C8\uFE0F"};
+  return null;
+}
+
+// ── Beaufort wind ──────────────────────────────────────────────────────────
+function windBeaufort(wind,temp,s){
+  if(wind<20)return null;
+  if(wind>=s.pwlo&&wind<=s.pwhi)return null;
+  if(wind<29)return{c:"ann-wind",t:"moderate breeze \uD83C\uDF2C\uFE0F"};
+  if(wind<39)return{c:"ann-wind",t:"fresh breeze \uD83D\uDCA8"};
+  if(wind<50)return{c:"ann-wind",t:"strong breeze \uD83D\uDCA8"};
+  if(wind<62)return{c:"ann-wind",t:"near gale \uD83C\uDF00"};
+  if(wind<75)return{c:"ann-wind",t:"gale \uD83C\uDF00"};
+  return{c:"ann-wind",t:"storm force \uD83C\uDF2A\uFE0F"};
+}
+
+// ── Onboarding ─────────────────────────────────────────────────────────────
+function initOnboard(){if(!localStorage.getItem("comfort_onboarded"))document.getElementById("onboard-card").style.display="block";}
+function dismissOnboard(){document.getElementById("onboard-card").style.display="none";localStorage.setItem("comfort_onboarded","1");}
+
+// ── Unit system ────────────────────────────────────────────────────────────
+var useFahrenheit=false;
+function toDisp(c){return useFahrenheit?Math.round((c*9/5+32)*10)/10:Math.round(c*10)/10;}
+function fromDisp(v){return useFahrenheit?Math.round(((v-32)*5/9)*10)/10:v;}
+function unitSym(){return useFahrenheit?"\u00B0F":"\u00B0C";}
+function detectUnitFromLocale(){var r=(navigator.language||"").split("-")[1]||"";return["US","LR","MM"].indexOf(r.toUpperCase())!==-1?"F":"C";}
+function setUnit(unit){
+  useFahrenheit=(unit==="F");localStorage.setItem("comfort_unit",unit);
+  document.getElementById("btn-c").classList.toggle("active",!useFahrenheit);
+  document.getElementById("btn-f").classList.toggle("active",useFahrenheit);
+  document.getElementById("unit-temp").textContent=unitSym();
+  document.getElementById("unit-dp").textContent=unitSym();
+  if(window._LW)renderChips(window._LW.temp,window._LW.effDP,window._LW.rh,window._LW.wind);
+  reRenderAll();
+  initTempPrefs();
+}
+function initUnit(){
+  var unit=localStorage.getItem("comfort_unit")||detectUnitFromLocale();
+  useFahrenheit=(unit==="F");
+  document.getElementById("btn-c").classList.toggle("active",!useFahrenheit);
+  document.getElementById("btn-f").classList.toggle("active",useFahrenheit);
+  document.getElementById("unit-temp").textContent=unitSym();
+  document.getElementById("unit-dp").textContent=unitSym();
+}
+function renderChips(temp,effDP,rh,wind){
+  document.getElementById("live-chips").innerHTML=
+    "<span class='chip'>"+toDisp(temp).toFixed(1)+unitSym()+"</span>"
+   +"<span class='chip'>"+rh+"% RH</span>"
+   +"<span class='chip'>DP "+toDisp(effDP).toFixed(1)+unitSym()+"</span>"
+   +"<span class='chip'>Wind "+Math.round(wind)+" km/h</span>";
+}
+
+// ── Time helpers ───────────────────────────────────────────────────────────
+function parseLocalTimeStr(s){var p=s.split("T"),d=p[0].split("-"),t=(p[1]||"00:00").split(":");return{yr:+d[0],mo:+d[1]-1,dy:+d[2],hr:+t[0],mn:+t[1]};}
+function getTZOffsetMin(tz){
+  try{var now=new Date(),parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(now).forEach(function(p){parts[p.type]=p.value;});var localAsUTC=Date.UTC(+parts.year,+parts.month-1,+parts.day,parts.hour==="24"?0:+parts.hour,+parts.minute,+parts.second);return(localAsUTC-now.getTime())/60000;}catch(e){return 0;}
+}
+function fmtObsTime(timeStr,tz){
+  try{var p=parseLocalTimeStr(timeStr),tzOff=getTZOffsetMin(tz),utcMs=Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;return new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(utcMs)).replace(",","");}catch(e){return timeStr.slice(11,16);}
+}
+function fmtFcTime(timeStr,tz){
+  try{var p=parseLocalTimeStr(timeStr),tzOff=getTZOffsetMin(tz),utcMs=Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;return new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(utcMs)).toLowerCase().replace(" ","");}catch(e){return timeStr.slice(11,16);}
+}
+function localHourInTZ(tz){
+  try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,hour:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});var h=parseInt(parts.hour);return h===24?0:h;}catch(e){return new Date().getHours();}
+}
+
+// ── Score history ──────────────────────────────────────────────────────────
+function histKey(){
+  if(window._currentWU)return "hist_wu_"+window._currentWU.stationId;
+  if(window._currentLat)return "hist_"+Math.round(window._currentLat*100)+"_"+Math.round(window._currentLon*100);
+  return "hist_default";
+}
+function loadHistory(){return JSON.parse(localStorage.getItem(histKey())||"[]");}
+function saveHistory(h){localStorage.setItem(histKey(),JSON.stringify(h));}
+function pushHistory(entry,tz){
+  var nowHour=localHourInTZ(tz||"UTC");
+  var nowMin=0;
+  try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",hour12:false,minute:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});nowMin=parseInt(parts.minute)||0;}catch(e){}
+  var nearSlot=false;
+  for(var i=0;i<FC_SLOTS.length;i++){if(FC_SLOTS[i]===nowHour&&nowMin<=15){nearSlot=true;break;}}
+  if(!nearSlot)return;
+  var slotDay="";
+  try{var dp2={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).forEach(function(p){dp2[p.type]=p.value;});slotDay=dp2.year+dp2.month+dp2.day;}catch(e){slotDay=new Date().toISOString().slice(0,10).replace(/-/g,"");}
+  var h=loadHistory();
+  if(h.length&&h[h.length-1].slotHour===nowHour&&h[h.length-1].slotDay===slotDay)return;
+  entry.slotHour=nowHour;entry.slotDay=slotDay;
+  h.push(entry);
+  if(h.length>MAX_HISTORY)h=h.slice(h.length-MAX_HISTORY);
+  saveHistory(h);
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+var SETTINGS=[
+  {grp:"Temperature"},
+  {id:"s-hw",label:"Heat penalty weight (x)",val:1.2,step:0.1,title:"Heat sensitivity",info:"Controls whether heat or cold bothers you more. At 1.0 they are equal. Raise this if a hot day ruins your comfort more than a cold one would at the same distance from ideal."},
+  {id:"s-tmax",label:"Temp max penalty (pts)",val:70,step:1,title:"Temperature penalty ceiling",info:"The maximum number of score points that temperature alone can take off. Raising this allows extreme heat or cold to push scores lower."},
+  {id:"s-coldmax",label:"Cold zone max pts",val:100,step:5,title:"Sub-zero penalty ceiling",info:"The maximum additional penalty for temperatures below 0C, stacked on top of the cool zone."},
+  {id:"s-coldexp",label:"Cold curve exponent",val:1.2,step:0.1,title:"Sub-zero penalty shape",info:"Controls how the freezing penalty ramps up. Above 1.0 the penalty accelerates, so -10C hurts much more than twice -5C."},
+  {grp:"Humidity"},
+  {id:"s-dp",label:"DP threshold (C)",val:12,step:0.5,title:"Humidity sensitivity threshold",info:"The dew point above which you start noticing humidity. Raise it if you only mind humidity in tropical conditions. Lower it if even mild humidity bothers you."},
+  {id:"s-hmax",label:"Humidity max penalty (pts)",val:50,step:1,title:"Humidity penalty ceiling",info:"The maximum score points humidity can take off. Raise this if humidity affects your comfort more than temperature does."},
+  {id:"s-hdp_ceil",label:"Humidity DP ceiling (C)",val:26,step:0.5,title:"Extreme humidity reference point",info:"The dew point at which humidity penalty reaches its maximum. Lower this if you want tropical-level dew points to hit maximum penalty sooner."},
+  {id:"s-hexp",label:"Humidity curve exponent",val:0.6,step:0.05,title:"Humidity penalty shape",info:"Controls how the humidity penalty ramps up. Below 1.0, even mild humidity gets a meaningful penalty quickly, then levels off toward maximum."},
+  {id:"s-int",label:"Interaction penalty (pts)",val:8,step:0.5,title:"Heat and humidity combined penalty",info:"An extra penalty that only fires when both temperature AND humidity are above your comfortable range at the same time."},
+  {id:"s-iscale",label:"Interaction scaling (x)",val:1.2,step:0.1,title:"Combined penalty aggressiveness",info:"Controls how quickly the heat and humidity combined penalty reaches its maximum."},
+  {grp:"Wind"},
+  {id:"s-wmax",label:"Wind max penalty (pts)",val:20,step:1,title:"Wind penalty ceiling",info:"The maximum score points wind can take off. A gentle breeze in comfortable conditions can add a small bonus to the score."},
+  {id:"s-wchill_thresh",label:"Wind chill threshold (C)",val:10,step:0.5,title:"Wind chill activation temperature",info:"Wind only adds a chill penalty when below this temperature. Lower this to make wind chill kick in only at genuinely cold temperatures."},
+  {id:"s-cws",label:"Cold wind sensitivity (x)",val:1.5,step:0.1,title:"Wind chill intensity",info:"How aggressively wind amplifies cold discomfort below the threshold."},
+  {id:"s-pwlo",label:"Pleasant wind low (km/h)",val:10,step:1,title:"Comfortable breeze — lower end",info:"The minimum wind speed that starts to feel like a pleasant breeze. Within this range a small score bonus applies near ideal temperatures."},
+  {id:"s-pwhi",label:"Pleasant wind high (km/h)",val:20,step:1,title:"Comfortable breeze — upper end",info:"The maximum wind speed that still feels pleasant. Above this, wind starts becoming a nuisance."},
+  {id:"s-swt",label:"Strong wind threshold (km/h)",val:35,step:1,title:"Strong wind threshold",info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."}
+];
+function showPop(title,text){document.getElementById("pop-ttl").textContent=title;document.getElementById("pop-body").textContent=text;document.getElementById("pop-ov").classList.add("open");}
+function closePop(){document.getElementById("pop-ov").classList.remove("open");}
+function showSources(){showPop("Data sources","Weather data: Open-Meteo (open-meteo.com) — free, open-source weather API, no key required.\n\nGeocoding & search: Nominatim / OpenStreetMap (nominatim.openstreetmap.org) — free, open-source.\n\nPersonal weather stations: Weather Underground API (wunderground.com) — requires a free API key.\n\nAll data fetched live. Settings and saved locations stored locally on your device only.");}
+function buildSettings(){
+  var saved=JSON.parse(localStorage.getItem("comfort_settings")||"{}"),html="";
+  for(var i=0;i<SETTINGS.length;i++){var s=SETTINGS[i];if(s.grp){html+="<div class='sgrp-title'>"+s.grp+"</div>";continue;}var v=(saved[s.id]!==undefined)?saved[s.id]:s.val;html+="<div class='sitem'><div class='sitem-hdr'><label for='"+s.id+"'>"+s.label+"</label><div class='ibtn' onclick='showPop(SETTINGS["+i+"].title,SETTINGS["+i+"].info)'>i</div></div><input type='number' id='"+s.id+"' value='"+v+"' step='"+s.step+"' onchange='onAdvChange()'/></div>";}
+  document.getElementById("sgrid").innerHTML=html;
+  document.getElementById("wu-api-key").value=localStorage.getItem("wu_api_key")||"";
+}
+function saveSettings(){var out={};for(var i=0;i<SETTINGS.length;i++){if(!SETTINGS[i].id)continue;var el=document.getElementById(SETTINGS[i].id);if(el)out[SETTINGS[i].id]=parseFloat(el.value);}localStorage.setItem("comfort_settings",JSON.stringify(out));}
+function saveWuKey(){localStorage.setItem("wu_api_key",document.getElementById("wu-api-key").value.trim());}
+var _renderTimer=null;
+function onAdvChange(){saveSettings();syncSlidersFromAdv();scheduleRender();}
+function scheduleRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTimer=setTimeout(function(){reRenderAll();_renderTimer=null;},120);}
+
+// ── Get settings ───────────────────────────────────────────────────────────
+function gs(){
+  function v(id){var el=document.getElementById(id);return el?(parseFloat(el.value)||0):0;}
+  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:v("s-coolmax")||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,int:v("s-int")||8,iscale:v("s-iscale")||1.2,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
+}
+
+// ── Calc ───────────────────────────────────────────────────────────────────
+function calc(temp,dp,wind){
+  var s=gs();
+  var tP=0;
+if(temp>=s.thi){
+  tP=Math.min(1,(temp-s.thi)/Math.max(1,45-s.thi))*s.tmax*s.hw;
+} else if(temp>=s.tlo){
+  tP=0;
+} else if(s.tlo>=0){
+  // Normal case: tlo is above freezing, cool zone then cold zone
+  if(temp>=0){tP=((s.tlo-temp)/Math.max(1,s.tlo))*s.coolmax;}
+  else{var cf=Math.min(1,Math.abs(temp)/Math.max(1,Math.abs(s.coldfloor)));tP=s.coolmax+Math.pow(cf,s.coldexp)*s.coldmax;}
+} else {
+  // tlo is below freezing — add a transition zone just below tlo
+  // to avoid the cliff from 0 penalty to full cold zone in one step
+  var transWidth=Math.min(5,Math.abs(s.tlo)*0.5+2);
+  var transBottom=s.tlo-transWidth;
+  if(temp>=transBottom){
+    // Gentle transition slope
+    tP=((s.tlo-temp)/transWidth)*s.coolmax*0.5;
+  } else {
+    // Full cold zone below transition
+    var cf=Math.min(1,Math.abs(temp-transBottom)/Math.max(1,Math.abs(s.coldfloor)-transWidth));
+    tP=s.coolmax*0.5+Math.pow(cf,s.coldexp)*s.coldmax;
+  }
+}
+tP=Math.min(s.tmax,tP);
+  var hP=0;
+  if(dp<s.dp)hP=Math.max(0,(dp+5))*0.5/Math.max(1,s.dp+5);
+  else{var hf=Math.min(1,(dp-s.dp)/Math.max(1,s.hdp_ceil-s.dp));hP=Math.pow(hf,s.hexp)*s.hmax;}
+  hP=Math.min(s.hmax,hP);
+  var iP=0;
+  if(temp>s.thi&&dp>s.dp)iP=Math.min(s.int,s.int*Math.min(1,(temp-s.thi)/10)*Math.min(1,(dp-s.dp)/10)*s.iscale);
+  var mid=(s.tlo+s.thi)/2,wBase=0;
+  if(wind>=s.pwlo){if(wind<=s.pwhi)wBase=-2*(1-Math.min(1,Math.max(0,Math.abs(temp-mid)/5)));else if(wind<=s.swt)wBase=(wind-s.pwhi)/(s.swt-s.pwhi)*s.wmax*0.4;else wBase=s.wmax*0.4+(wind-s.swt)/Math.max(1,120-s.swt)*s.wmax*0.6;}
+  var wChill=0;
+  if(temp<s.wchill_thresh){var cf2=Math.min(1,(s.wchill_thresh-temp)/Math.max(1,s.wchill_thresh-s.coldfloor));wChill=cf2*Math.min(1,wind/50)*s.wmax*s.cws;}
+  var evap=(temp>s.thi&&dp<s.dp)?Math.min(3,(temp-s.thi)/5*(s.dp-dp)/5):0;
+  var wP=Math.max(-5,Math.min(s.wmax*2.5,wBase+wChill-evap));
+  return{score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP))),tP:tP,hP:hP,iP:iP,wP:wP};
+}
+
+// ── Display ────────────────────────────────────────────────────────────────
+function bandForScore(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<SBANDS.length;i++)if(v<=SBANDS[i].max)return i;return SBANDS.length-1;}
+function scoreInfo(s){
+  if(s>90)return{label:"Excellent",emoji:"\uD83D\uDE0A",col:"#1a7a3a"};
+  if(s>75)return{label:"Good",emoji:"\uD83D\uDE42",col:"#3a9a2a"};
+  if(s>55)return{label:"Moderate",emoji:"\uD83D\uDE10",col:"#7a7000"};
+  if(s>35)return{label:"Poor",emoji:"\uD83D\uDE13",col:"#b05010"};
+  return{label:"Very poor",emoji:"\uD83D\uDE30",col:"#a02020"};
+}
+function getAnnotations(temp,dp,wind,score,s,iP,wP,wxCode){
+  var a=[];
+  if(temp<-15)a.push({c:"ann-bitter",t:"bitterly cold \u2744\uFE0F"});
+  else if(temp<0)a.push({c:"ann-freeze",t:"freezing cold \uD83E\uDD76"});
+  else if(temp<5)a.push({c:"ann-vcold",t:"very cold \uD83E\uDDCA"});
+  else if(temp<10)a.push({c:"ann-cold",t:"cold \uD83E\uDDE5"});
+  else if(temp<15)a.push({c:"ann-chilly",t:"a bit chilly \uD83E\uDDE5"});
+  else if(temp<s.tlo)a.push({c:"ann-cool",t:"cool \uD83C\uDF2C\uFE0F"});
+  else if(temp<=s.thi){}
+  else if(temp<25)a.push({c:"ann-warm",t:"mildly warm \u2600\uFE0F"});
+  else if(temp<30)a.push({c:"ann-warm",t:"warm \u2600\uFE0F"});
+  else if(temp<35)a.push({c:"ann-hot",t:"hot \uD83D\uDD25"});
+  else if(temp<40)a.push({c:"ann-vhot",t:"very hot \uD83E\uDD75"});
+  else a.push({c:"ann-xhot",t:"extremely hot \uD83C\uDF0B"});
+  if(dp>s.dp+10)a.push({c:"ann-steamy",t:"oppressively humid \uD83C\uDF0A"});
+  else if(dp>s.dp+5)a.push({c:"ann-humid",t:"humid & sticky \uD83D\uDCA7"});
+  else if(dp>14)a.push({c:"ann-muggy",t:"a little muggy \uD83D\uDCA6"});
+  if(temp>=0){
+    var vdryThresh=temp<15?-8:0;
+    var dryThresh=temp<15?0:4;
+    if(dp<vdryThresh)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
+    else if(dp<dryThresh)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
+  }
+  if(iP>3)a.push({c:"ann-steamy ann-info",t:"hot & steamy \uD83E\uDD2F \u2139\uFE0F",info:true});
+ if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
+  else if(wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
+  else if(wind>=12&&wind<20){a.push({c:"ann-breeze",t:"gentle breeze \uD83C\uDF43"});}
+  else{var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);}
+  if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
+  var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
+  if(inIdeal||score>90)a.push({c:"ann-great",t:"feels great \u2728"});
+  var seen={},out=[];
+  for(var i=0;i<a.length;i++){if(!seen[a[i].t]){seen[a[i].t]=1;out.push(a[i]);}}
+  return out;
+}
+function drawGauge(id,score){
+  var c=document.getElementById(id);if(!c)return;
+  var dpr=Math.min(window.devicePixelRatio||1,2),W=200,H=115;
+  c.width=W*dpr;c.height=H*dpr;c.style.width=W+"px";c.style.height=H+"px";
+  var ctx=c.getContext("2d");ctx.scale(dpr,dpr);
+  var cx=100,cy=105,r=82;
+  for(var i=0;i<SBANDS.length;i++){var fs=i===0?0:SBANDS[i-1].max;ctx.beginPath();ctx.arc(cx,cy,r,Math.PI+(fs/100)*Math.PI,Math.PI+(SBANDS[i].max/100)*Math.PI);ctx.arc(cx,cy,r-16,Math.PI+(SBANDS[i].max/100)*Math.PI,Math.PI+(fs/100)*Math.PI,true);ctx.fillStyle=SBANDS[i].col;ctx.fill();}
+  var nc=SBANDS[bandForScore(score)].col.replace("0.92","1");
+  var a=Math.PI+(Math.min(100,Math.max(0,score))/100)*Math.PI;
+  ctx.beginPath();ctx.moveTo(cx-Math.cos(a)*10,cy-Math.sin(a)*10);ctx.lineTo(cx+Math.cos(a)*72,cy+Math.sin(a)*72);ctx.strokeStyle=nc;ctx.lineWidth=2.5;ctx.lineCap="round";ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fillStyle=nc;ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+}
+function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
+  var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=gs();
+  var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP,wxCode);
+  var annHtml="";
+  for(var i=0;i<anns.length;i++){var ann=anns[i];annHtml+=ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>":"<span class='ann "+ann.c+"'>"+ann.t+"</span>";}
+  document.getElementById(areaId).innerHTML=
+    "<div class='score-area'><canvas id='"+gaugeId+"'></canvas>"
+    +"<div class='score-num' style='color:"+si.col+"'>"+score+"</div>"
+    +"<span class='score-emoji'>"+si.emoji+"</span>"
+    +"<div class='score-lbl' style='color:"+si.col+"'>"+si.label+"</div>"
+    +"<div class='annotations'>"+annHtml+"</div></div>";
+  setTimeout(function(){drawGauge(gaugeId,score);},50);
+}
+
+// ── Forecast + history ─────────────────────────────────────────────────────
+function renderForecast(fc){
+  window._FC=fc;
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
+  var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
+  function slotEpoch(i){var p=parseLocalTimeStr(times[i]);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
+  var nowHour=localHourInTZ(tz);
+  var history=loadHistory(),histHtml="";
+  for(var hi=0;hi<history.length;hi++){
+    var h=history[hi],res=calc(h.temp,h.dp,h.wind),si2=scoreInfo(res.score);
+    var nc=SBANDS[bandForScore(res.score)].col.replace("0.92","1");
+    var tDisp=new Date(h.ts).toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).toLowerCase().replace(" ","");
+    histHtml+="<div class='fc-slot fc-past' onclick='showHistorySlot("+hi+")'><div class='fc-time'>\u25D4 "+tDisp+"</div><div class='fc-score' style='color:"+nc+"'>"+res.score+"</div><div class='fc-lbl' style='color:"+nc+"'>"+si2.label+"</div><div class='fc-temp'>"+toDisp(h.temp).toFixed(1)+unitSym()+"</div></div>";
+  }
+  var startHour=-1;
+  for(var si=0;si<FC_SLOTS.length;si++){if(FC_SLOTS[si]>nowHour){startHour=FC_SLOTS[si];break;}}
+  if(startHour===-1)startHour=FC_SLOTS[0];
+  var startIdx=-1;
+  for(var i=0;i<times.length;i++){var h2=parseInt(times[i].slice(11,13));if(h2===startHour&&slotEpoch(i)>nowEpoch){startIdx=i;break;}}
+  if(startIdx===-1)startIdx=0;
+  var fcastHtml="",added=0,idx=startIdx;
+  while(added<8&&idx<times.length){
+    var hr=parseInt(times[idx].slice(11,13));
+    if(FC_SLOTS.indexOf(hr)!==-1){
+      var t=temps[idx],dp=dps[idx],w=winds[idx],res2=calc(t,dp,w),si3=scoreInfo(res2.score);
+      var nc2=SBANDS[bandForScore(res2.score)].col.replace("0.92","1");
+      fcastHtml+="<div class='fc-slot' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div></div>";
+      added++;
+    }
+    idx++;
+  }
+  document.getElementById("forecast-row").innerHTML=histHtml+fcastHtml;
+  document.getElementById("forecast-wrap").style.display="block";
+if(history.length){setTimeout(function(){var strip=document.querySelector(".forecast-strip");if(strip){strip.scrollLeft=Math.max(0,history.length*80-20);}},100);}
+  render7Day(fc);
+}
+function showForecastSlot(idx){
+  if(!window._FC)return;
+  var fc=window._FC,tz=fc.timezone;
+  var t=fc.hourly.temperature_2m[idx],dp=fc.hourly.dew_point_2m[idx],w=fc.hourly.wind_speed_10m[idx];
+  var r=calc(t,dp,w),si=scoreInfo(r.score),s=gs();
+  var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,null);
+  var annText="";for(var i=0;i<anns.length;i++){annText+=(i>0?", ":"")+anns[i].t.replace(" \u2139\uFE0F","");}
+  showPop(fmtObsTime(fc.hourly.time[idx],tz)+" \u2014 Score "+r.score+" ("+si.label+")",toDisp(t).toFixed(1)+unitSym()+" | DP "+toDisp(dp).toFixed(1)+unitSym()+" | Wind "+Math.round(w)+" km/h"+(annText?" | "+annText:""));
+}
+function showHistorySlot(i){
+  var h=loadHistory()[i];if(!h)return;
+  var r=calc(h.temp,h.dp,h.wind),si=scoreInfo(r.score),s=gs();
+  var anns=getAnnotations(h.temp,h.dp,h.wind,r.score,s,r.iP,r.wP,null);
+  var annText="";for(var j=0;j<anns.length;j++){annText+=(j>0?", ":"")+anns[j].t.replace(" \u2139\uFE0F","");}
+  var tz=window._FC?window._FC.timezone:"UTC";
+  var tStr=new Date(h.ts).toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
+  showPop(tStr+" \u2014 Score "+r.score+" ("+si.label+")",toDisp(h.temp).toFixed(1)+unitSym()+" | DP "+toDisp(h.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(h.wind)+" km/h"+(annText?" | "+annText:""));
+}
+
+// ── Share ──────────────────────────────────────────────────────────────────
+function shareScore(){
+  if(!window._LW)return;
+  var w=window._LW,res=calc(w.temp,w.effDP,w.wind),si=scoreInfo(res.score);
+  var loc=document.getElementById("live-locname").textContent;
+  // TODO: update URL below once comfortscore.joshburton.au is live
+  var text=loc+" right now: "+res.score+" \u2014 "+si.label+" "+si.emoji+"\n"+toDisp(w.temp).toFixed(1)+unitSym()+" | DP "+toDisp(w.effDP).toFixed(1)+unitSym()+" | Wind "+Math.round(w.wind)+" km/h\ncomfortscore.joshburton.au";
+  if(navigator.share){navigator.share({title:"Comfort Score",text:text}).catch(function(){});}
+  else{navigator.clipboard.writeText(text).then(function(){showPop("Copied!","Score copied to clipboard.");}).catch(function(){showPop("Share",text);});}
+}
+
+// ── Refresh ────────────────────────────────────────────────────────────────
+function refreshWeather(){
+  if(!window._currentLat&&!window._currentWU)return;
+  var btn=document.getElementById("refresh-btn");btn.classList.add("spinning");
+  var done=function(){btn.classList.remove("spinning");};
+  if(window._currentWU)fetchWU(window._currentWU.stationId,window._currentWU.apiKey,window._currentWU.label,done);
+  else fetchWeatherWithCb(window._currentLat,window._currentLon,window._currentLabel,done);
+}
+
+// ── Re-render ──────────────────────────────────────────────────────────────
+function reRenderLive(){
+  if(!window._LW)return;
+  var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
+  window._LW.res=res;
+  renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode);
+}
+function reRenderManual(){if(document.getElementById("manual-result").style.display==="none")return;calcManual();}
+function reRenderAll(){reRenderLive();reRenderManual();if(window._FC)renderForecast(window._FC);}
+
+// ── UI ─────────────────────────────────────────────────────────────────────
+function switchTab(tab){document.getElementById("tab-live").classList.toggle("active",tab==="live");document.getElementById("tab-manual").classList.toggle("active",tab==="manual");document.getElementById("page-live").classList.toggle("active",tab==="live");document.getElementById("page-manual").classList.toggle("active",tab==="manual");}
+function toggleMode(){var m=document.getElementById("m-mode").value;document.getElementById("m-dp-row").style.display=(m==="dp")?"flex":"none";document.getElementById("m-rh-row").style.display=(m==="rh")?"flex":"none";}
+function calcManual(){
+  var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
+  var temp=fromDisp(tempDisp);
+  var mode=document.getElementById("m-mode").value;
+  var effDP;
+  if(mode==="dp"){
+    effDP=fromDisp(parseFloat(document.getElementById("m-dp").value)||10);
+  } else {
+    // Magnus formula for accurate RH -> DP conversion
+    var rh2=parseFloat(document.getElementById("m-rh").value)||60;
+    var aa=17.27,bb=237.3;
+    var alph=(aa*temp/(bb+temp))+Math.log(rh2/100);
+    effDP=Math.round((bb*alph/(aa-alph))*10)/10;
+  }
+  var wind=parseFloat(document.getElementById("m-wind").value)||0;
+  var r=calc(temp,effDP,wind);
+  document.getElementById("manual-result").style.display="block";
+  renderScore("manual-score-area","gauge-manual",r,temp,effDP,wind,null);
+}
+function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
+
+// ── Sliders ────────────────────────────────────────────────────────────────
+var SLIDER_MAPS={
+ heat:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);setAdv("s-tmax",Math.round(lerp(50,90,t)));}},
+ cold:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-coolmax",Math.round(lerp(15,55,t)));setAdv("s-coldmax",Math.round(lerp(50,150,t)/5)*5);}},
+  hum:{labels:["Prefer dry","Mild","Moderate","Tolerant"],thr:[25,50,75],apply:function(t){setAdv("s-dp",Math.round(lerp(6,18,t)*2)/2);setAdv("s-hmax",Math.round(lerp(70,30,t)));setAdv("s-hexp",Math.round(lerp(0.4,0.9,t)*20)/20);setAdv("s-hdp_ceil",Math.round(lerp(20,32,t)*2)/2);}},
+  wind:{labels:["Hate wind","Neutral","Like it","Love wind"],thr:[25,50,75],apply:function(t){setAdv("s-wmax",Math.round(lerp(30,8,t)));setAdv("s-cws",Math.round(lerp(2.5,0.5,t)*10)/10);setAdv("s-pwhi",Math.round(lerp(10,40,t)));setAdv("s-pwlo",Math.round(lerp(15,5,t)));}}
+  }
+function lerp(a,b,t){return a+(b-a)*t;}
+function setAdv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
+function sliderLabel(key,pos){var m=SLIDER_MAPS[key];if(pos<=m.thr[0])return m.labels[0];if(pos<=m.thr[1])return m.labels[1];if(pos<=m.thr[2])return m.labels[2];return m.labels[3];}
+function updateTrack(id,val){var el=document.getElementById(id);if(el)el.style.background="linear-gradient(to right,var(--range-fill) "+val+"%,var(--range-bg) "+val+"%)";}
+var slidersLocked=localStorage.getItem("sliders_locked")==="1";
+function toggleSliderLock(){
+  slidersLocked=!slidersLocked;
+  localStorage.setItem("sliders_locked",slidersLocked?"1":"0");
+  applySliderLock();
+}
+function applySliderLock(){
+  var btn=document.getElementById("slider-lock-btn");
+  var sliders=document.querySelectorAll(".slider-card input[type=range]");
+  for(var i=0;i<sliders.length;i++){
+    sliders[i].classList.toggle("locked",slidersLocked);
+  }
+  if(btn)btn.textContent=slidersLocked?"\uD83D\uDD12 Locked":"\uD83D\uDD13 Unlocked";
+}
+
+function onTempPref(){
+  var thiEl=document.getElementById("pref-thi");
+  var tloEl=document.getElementById("pref-tlo");
+  if(!thiEl||!tloEl)return;
+  var thiVal=parseFloat(thiEl.value);
+  var tloVal=parseFloat(tloEl.value);
+  // Convert to Celsius for storage
+  var thiC=useFahrenheit?fromDisp(thiVal):thiVal;
+  var tloC=useFahrenheit?fromDisp(tloVal):tloVal;
+  // Sanity check — cold threshold must be below hot threshold
+  if(tloC>=thiC){tloC=thiC-3;tloEl.value=Math.round(useFahrenheit?toDisp(tloC):tloC);}
+  // Set the thresholds
+  setAdv("s-thi",Math.round(thiC*2)/2);
+  setAdv("s-tlo",Math.round(tloC*2)/2);
+  _tlo=Math.round(tloC*2)/2;
+  _thi=Math.round(thiC*2)/2;
+  // Recalibrate cold zone relative to cold threshold
+  // coldfloor is always 20C below the cold threshold — scales with tolerance
+  var coldFloor=Math.round(tloC-20);
+  setAdv("s-coldfloor",coldFloor);
+  // coolmax stays modest — the cool zone (0C to tlo) is narrow for cold-tolerant people
+  // and the cold threshold slider handles severity above that via coldmax/coldexp
+  var coolMax=Math.max(10,Math.min(40,Math.round((18-tloC)*1.5)));
+  setAdv("s-coolmax",coolMax);
+  saveSettings();
+  scheduleRender();
+}
+
+function initTempPrefs(){
+  var thi=parseFloat(document.getElementById("s-thi")?document.getElementById("s-thi").value:_thi)||_thi||22;
+  var tlo=parseFloat(document.getElementById("s-tlo")?document.getElementById("s-tlo").value:_tlo)||_tlo||18;
+  var thiEl=document.getElementById("pref-thi");
+  var tloEl=document.getElementById("pref-tlo");
+  if(thiEl)thiEl.value=useFahrenheit?Math.round(toDisp(thi)):thi;
+  if(tloEl)tloEl.value=useFahrenheit?Math.round(toDisp(tlo)):tlo;
+  var unit=unitSym();
+  var thiU=document.getElementById("pref-thi-unit");
+  var tloU=document.getElementById("pref-tlo-unit");
+  if(thiU)thiU.textContent=unit;
+  if(tloU)tloU.textContent=unit;
+  _thi=thi;
+  _tlo=tlo;
+  // Recalibrate cold zone to match saved threshold
+  onTempPref();
+}
+function onSlider(key){var el=document.getElementById("sl-"+key);if(!el)return;var pos=parseInt(el.value),t=pos/100;SLIDER_MAPS[key].apply(t);document.getElementById(key+"-val").textContent=sliderLabel(key,pos);updateTrack("sl-"+key,pos);saveSettings();scheduleRender();}
+
+function advToSlider(key){
+  function gv(id,def){var el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
+  var t=0.5;
+  if(key==="heat"){var thi=gv("s-thi",22);t=1-(thi-18)/(28-18);}
+  else if(key==="cold"){var tlo=gv("s-tlo",18);t=(tlo-10)/(24-10);}
+  else if(key==="hum"){var dp=gv("s-dp",12);t=(dp-6)/(18-6);}
+  else if(key==="wind"){var wmax=parseFloat(gv("s-wmax",20))||20;t=1-(wmax-8)/(30-8);}
+  return Math.round(Math.max(0,Math.min(1,t))*100);
+}
+
+function syncSlidersFromAdv(){var keys=["heat","cold","hum","wind"];for(var i=0;i<keys.length;i++){var key=keys[i],pos=advToSlider(key);var el=document.getElementById("sl-"+key);if(el)el.value=pos;var lbl=document.getElementById(key+"-val");if(lbl)lbl.textContent=sliderLabel(key,pos);updateTrack("sl-"+key,pos);}}
+
+// ── Geocoding ──────────────────────────────────────────────────────────────
+function revGeo(lat,lon){return fetch("https://nominatim.openstreetmap.org/reverse?lat="+lat+"&lon="+lon+"&format=json&zoom=10",{headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}}).then(function(r){return r.json();}).then(function(d){if(d&&d.address){var a=d.address;var parts=[a.suburb||a.town||a.village||a.city_district||a.city||"",a.city||a.municipality||"",a.state||""].filter(Boolean);var u=parts.filter(function(v,i,arr){return arr.indexOf(v)===i;});return u.slice(0,3).join(", ")||d.display_name.split(",").slice(0,2).join(",").trim();}return null;}).catch(function(){return null;});}
+function nomLabel(p){var a=p.address||{};var name=a.suburb||a.town||a.village||a.city_district||a.city||a.municipality||a.county||p.display_name.split(",")[0].trim();return[name,a.state||"",a.country||""].filter(Boolean).join(", ");}
+function nomSub(p){var a=p.address||{},parts=[];if(a.suburb&&(a.city||a.municipality))parts.push(a.city||a.municipality);if(a.state)parts.push(a.state);if(a.country)parts.push(a.country);return parts.filter(Boolean).join(", ")||(p.type||"");}
+function detectLocation(){document.getElementById("live-status").textContent="Detecting location...";if(!navigator.geolocation){document.getElementById("live-status").textContent="Location not available — search a city instead.";return;}navigator.geolocation.getCurrentPosition(function(pos){var lat=pos.coords.latitude,lon=pos.coords.longitude;document.getElementById("live-status").textContent="Looking up location...";revGeo(lat,lon).then(function(name){fetchWeather(lat,lon,name||(lat.toFixed(2)+"\u00B0, "+lon.toFixed(2)+"\u00B0"));});},function(){document.getElementById("live-status").textContent="Location access denied. Try searching a city.";});}
+function searchCity(){var city=document.getElementById("city-input").value.trim();if(!city)return;document.getElementById("live-status").textContent="Searching...";document.getElementById("results-list").style.display="none";fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(city)+"&format=json&limit=10&addressdetails=1",{headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}}).then(function(r){return r.json();}).then(function(d){if(!d||!d.length){document.getElementById("live-status").textContent="No results found. Try adding a country name.";return;}if(d.length===1){fetchWeather(parseFloat(d[0].lat),parseFloat(d[0].lon),nomLabel(d[0]));return;}document.getElementById("live-status").textContent="Multiple results — tap one:";var list=document.getElementById("results-list"),html="";for(var i=0;i<d.length;i++){html+="<div class='result-item' onclick='selectResult("+i+")'><div>"+nomLabel(d[i])+"</div><div class='result-sub'>"+nomSub(d[i])+"</div></div>";}list.innerHTML=html;list.style.display="block";window._SR=d;}).catch(function(e){document.getElementById("live-status").textContent="Search failed: "+e.message;});}
+function selectResult(i){document.getElementById("results-list").style.display="none";document.getElementById("live-status").textContent="";var p=window._SR[i];fetchWeather(parseFloat(p.lat),parseFloat(p.lon),nomLabel(p));}
+function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
+function fetchWeatherWithCb(lat,lon,label,cb){
+  document.getElementById("live-status").textContent="Fetching weather...";
+  window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
+var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
+    var res=calc(temp,effDP,wind);
+    window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,res:res,wxCode:wxCode};
+    pushHistory({ts:Date.now(),temp:temp,dp:effDP,wind:wind},d.timezone);
+    document.getElementById("live-status").textContent="";
+    document.getElementById("live-result").style.display="block";
+    document.getElementById("live-locname").textContent=label;
+    document.getElementById("washing-btn").style.display="inline-block";
+document.getElementById("world-btn").style.display="inline-block";
+    document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
+    renderChips(temp,effDP,rh,wind);
+    renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
+    renderForecast(d);
+    if(cb)cb();
+  }).catch(function(e){document.getElementById("live-status").textContent="Fetch failed: "+e.message;if(cb)cb();});
+}
+
+// ── Weather Underground ────────────────────────────────────────────────────
+function fetchWU(stationId,apiKey,label,cb){
+  var sid=stationId||document.getElementById("wu-station-id").value.trim();
+  var key=apiKey||localStorage.getItem("wu_api_key")||document.getElementById("wu-api-key").value.trim();
+  var lbl=label||("WU: "+sid);
+  if(!sid){showStatusWU("Enter a station ID.");return;}
+  if(!key){showStatusWU("Enter your WU API key above.");return;}
+  showStatusWU("Fetching from "+sid+"...");
+  document.getElementById("live-status").textContent="Fetching station "+sid+"...";
+  fetch("https://api.weather.com/v2/pws/observations/current?stationId="+encodeURIComponent(sid)+"&format=json&units=m&apiKey="+encodeURIComponent(key))
+  .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+  .then(function(d){
+    if(!d.observations||!d.observations.length)throw new Error("No data returned");
+    var obs=d.observations[0],m=obs.metric,temp=m.temp,rh=obs.humidity,wind=m.windSpeed,dew=m.dewpt;
+    var res=calc(temp,dew,wind);
+    window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,res:res,wxCode:null};
+    window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;
+    window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
+    pushHistory({ts:Date.now(),temp:temp,dp:dew,wind:wind},"UTC");
+    document.getElementById("live-status").textContent="";
+    document.getElementById("wu-status").textContent="";document.getElementById("wu-status").style.display="none";
+    document.getElementById("live-result").style.display="block";
+    document.getElementById("live-locname").textContent=lbl;
+    document.getElementById("washing-btn").style.display="inline-block";
+document.getElementById("world-btn").style.display="inline-block";
+    var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
+    document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
+    renderChips(temp,dew,rh,wind);
+    renderScore("live-score-area","gauge-live",res,temp,dew,wind,null);
+    document.getElementById("forecast-wrap").style.display="none";
+    if(obs.lat&&obs.lon)fetchForecastOnly(obs.lat,obs.lon);
+    if(cb)cb();
+  }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
+}
+function fetchForecastOnly(lat,lon){
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.current&&d.current.weather_code!==undefined&&window._LW){
+      window._LW.wxCode=d.current.weather_code;
+      var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
+      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode);
+    }
+    renderForecast(d);
+  }).catch(function(){});
+}
+function showStatusWU(msg){var el=document.getElementById("wu-status");el.textContent=msg;el.style.display=msg?"":"none";}
+
+// ── Stars ──────────────────────────────────────────────────────────────────
+function loadStars(){return JSON.parse(localStorage.getItem("comfort_stars")||"[]");}
+function saveStars(s){localStorage.setItem("comfort_stars",JSON.stringify(s));}
+function openStars(){document.getElementById("star-save-row").style.display="none";renderStarsList();document.getElementById("stars-ov").classList.add("open");}
+function closeStars(){document.getElementById("stars-ov").classList.remove("open");}
+function renderStarsList(){var stars=loadStars(),html="";if(!stars.length){html="<div class='star-empty'>No saved locations yet.<br/>Search or detect a location then tap \u2605 to save it.</div>";}else{for(var i=0;i<stars.length;i++){var s=stars[i],sub=s.type==="wunderground"?"WU station: "+s.stationId:"";html+="<div class='star-item' onclick='loadStar("+i+")'><div><div class='star-item-name'>\u2605 "+s.name+"</div>"+(sub?"<div class='star-item-type'>"+sub+"</div>":"")+"</div><button class='star-item-del' onclick='deleteStar(event,"+i+")'>&#10005;</button></div>";}}document.getElementById("stars-list").innerHTML=html;}
+function loadStar(i){var s=loadStars()[i];closeStars();if(s.type==="wunderground")fetchWU(s.stationId,s.apiKey,s.name,null);else fetchWeather(s.lat,s.lon,s.name);}
+function deleteStar(e,i){e.stopPropagation();var stars=loadStars();stars.splice(i,1);saveStars(stars);renderStarsList();}
+function promptSaveLoc(){if(!window._currentLabel)return;document.getElementById("star-name-input").value=window._currentLabel.split(",")[0];document.getElementById("star-save-row").style.display="block";renderStarsList();document.getElementById("stars-ov").classList.add("open");setTimeout(function(){document.getElementById("star-name-input").focus();},100);}
+function cancelSaveLoc(){document.getElementById("star-save-row").style.display="none";}
+function confirmSaveLoc(){var name=document.getElementById("star-name-input").value.trim();if(!name)return;var stars=loadStars(),entry;if(window._currentWU){entry={type:"wunderground",name:name,stationId:window._currentWU.stationId,apiKey:window._currentWU.apiKey};}else{if(!window._currentLat)return;entry={type:"location",name:name,lat:window._currentLat,lon:window._currentLon};}for(var i=0;i<stars.length;i++){var s=stars[i],dup=false;if(entry.type==="wunderground"&&s.type==="wunderground"&&s.stationId===entry.stationId)dup=true;if(entry.type==="location"&&s.type==="location"&&Math.abs(s.lat-entry.lat)<0.001&&Math.abs(s.lon-entry.lon)<0.001)dup=true;if(dup){stars[i]=entry;saveStars(stars);document.getElementById("star-save-row").style.display="none";renderStarsList();return;}}stars.push(entry);saveStars(stars);document.getElementById("star-save-row").style.display="none";renderStarsList();}
+
+// ── PWA ────────────────────────────────────────────────────────────────────
+var deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferredPrompt=e;document.getElementById("install-banner").classList.add("show");});
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;document.getElementById("install-banner").classList.remove("show");});}}
+window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
+function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){Promise.all(regs.map(function(r){return r.unregister();})).then(function(){caches.keys().then(function(keys){Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});});});});}else{window.location.reload(true);}}
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+
+// ── Washing feature ────────────────────────────────────────────────────────
+function checkConditions(temp,dew,wind,wxCode){
+  var issues=[];
+  if(temp<5)issues.push("too cold");
+  if(dew>temp-4)issues.push("too humid");
+  if(wind>50)issues.push("too windy");
+  if(wxCode!==null&&wxCode>=51)issues.push("rain");
+  return issues;
+}
+function formatHour(h){var ampm=h>=12?"pm":"am";var h12=h%12||12;return h12+":00"+ampm;}
+function toEpoch(s,tzOff){var p=parseLocalTimeStr(s);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
+
+function findBetterWindow(tzOff,sunsetEpoch){
+  if(!window._FC||!window._FC.hourly)return null;
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
+      dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  var now=Date.now(),startIdx=0;
+  for(var i=0;i<times.length;i++){if(toEpoch(times[i],tzOff)>=now){startIdx=i;break;}}
+  var endIdx=Math.min(startIdx+12,temps.length);
+  for(var j=startIdx+1;j<endIdx;j++){
+    var t=temps[j],d=dews[j],w=winds[j],c=codes[j];
+    if(t===null||d===null||w===null)continue;
+    var slotEp=toEpoch(times[j],tzOff);
+    if(sunsetEpoch&&slotEp>sunsetEpoch)break;
+    var issues=checkConditions(t,d,w,c);
+    if(issues.length>0)continue;
+    var res=calc(t,d,w);
+    if(res.score>=75){
+      // Format time with day context — check if it's tomorrow
+      var slotDate=new Date(slotEp);
+      var nowDate=new Date(now);
+      var isTomorrow=slotDate.getDate()!==nowDate.getDate();
+      var hourStr=formatHour(new Date(slotEp).toLocaleString("en-US",{timeZone:window._FC.timezone,hour:"numeric",hour12:false}).replace(/\D/g,"")*1);
+      var timeLabel=(isTomorrow?"tomorrow ":"")+hourStr;
+      return{epoch:slotEp,timeLabel:timeLabel,score:res.score,temp:t,dew:d,wind:w};
+    }
+  }
+  return null;
+}
+
+function findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch){
+  if(!window._FC||!window._FC.hourly)return null;
+  var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
+  for(var i=rainStartIdx+1;i<times.length;i++){
+    var slotEp=toEpoch(times[i],tzOff);
+    if(sunsetEpoch&&slotEp>sunsetEpoch)return null;
+    if((codes[i]||0)>=51)continue;
+    var t=temps[i],d=dews[i],w=winds[i];
+    if(t===null||d===null||w===null)continue;
+    var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:3;
+    if(hoursToSunset<1)return null;
+    var issues=checkConditions(t,d,w,0);
+    var res=calc(t,d,w);
+    return{epoch:slotEp,hour:new Date(slotEp).getHours(),hoursToSunset:hoursToSunset,score:res.score,temp:t,usable:issues.length===0&&res.score>=55&&hoursToSunset>=2};
+  }
+  return null;
+}
+
+function checkWashingManual(){
+  // Get values from manual inputs
+  var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
+  var temp=fromDisp(tempDisp);
+  var mode=document.getElementById("m-mode").value;
+  var effDP;
+  if(mode==="dp"){
+    effDP=fromDisp(parseFloat(document.getElementById("m-dp").value)||10);
+  } else {
+    var rh2=parseFloat(document.getElementById("m-rh").value)||60;
+    var aa=17.27,bb=237.3;
+    var alph=(aa*temp/(bb+temp))+Math.log(rh2/100);
+    effDP=Math.round((bb*alph/(aa-alph))*10)/10;
+  }
+  var wind=parseFloat(document.getElementById("m-wind").value)||0;
+  // Derive RH from DP and temp for VPD calculation
+  var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
+  var avpFromDP=0.6108*Math.exp(17.27*effDP/(effDP+237.3));
+  var rh=Math.round(Math.min(100,(avpFromDP/svp)*100));
+
+  // Freeze check
+  if(temp<=0)return washingPop("Too cold to dry outside \u2744\uFE0F","Below freezing — washing will freeze on the line rather than dry. Dry inside.","#5a8aa8");
+
+  // VPD drying index
+  var avp=svp*(rh/100);
+  var vpd=svp-avp;
+  var wMult=1+Math.min(1.5,wind/20);
+  var tFact=Math.max(0.3,Math.min(1.0,(temp-5)/20));
+  var dryIdx=vpd*wMult*tFact;
+
+  // DP penalty
+  var dpPenalty=1.0;
+  if(effDP>20)dpPenalty=0.35;
+  else if(effDP>16)dpPenalty=Math.max(0.35,1.0-(effDP-16)*0.1625);
+  dryIdx=dryIdx*dpPenalty;
+
+  // Drying time
+  var dryHours,dryLabel;
+  if(dryIdx>1.8){dryHours=0.75;dryLabel="30\u201360 minutes";}
+  else if(dryIdx>1.2){dryHours=1.5;dryLabel="1\u20132 hours";}
+  else if(dryIdx>0.7){dryHours=3;dryLabel="2\u20134 hours";}
+  else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
+  else{dryHours=999;dryLabel=null;}
+
+  // Reason string
+  var rsns=[];
+  if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(vpd<0.3)rsns.push("the air is quite humid");
+  else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
+  if(wind<5)rsns.push("not much wind");
+  else if(wind>=20)rsns.push("a good breeze");
+  if(temp>25)rsns.push("warm temperature");
+  else if(temp<12)rsns.push("cool temperature");
+  var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
+    "Conditions look reasonable.";
+
+  // Humidity caveat
+  var dpAlreadyMentioned=(effDP>16);
+  var humCaveat="";
+  if((vpd<0.6||effDP>16)&&dryHours>=3&&!dpAlreadyMentioned){
+    humCaveat=" High humidity will slow things down.";
+  } else if(effDP>18&&dryHours<3){
+    humCaveat=" Note: dew point is high \u2014 washing may feel damp longer than expected.";
+  }
+  if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
+
+  if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying.","#c03020");
+
+  // No daylight check in manual mode — just give the drying estimate
+  var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
+  var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
+  return washingPop("Should dry in about "+dryLabel+" "+emoji,rsn+humCaveat+" (No forecast data \u2014 rain and sunset not checked.)",col);
+}
+
+function openWorldCheck(){
+  document.getElementById("world-ov").classList.add("open");
+  document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking 143 cities\u2026</div>";
+  fetchWorldScores();
+}
+function closeWorld(){document.getElementById("world-ov").classList.remove("open");}
+
+function fetchWorldScores(){
+  var lats=WORLD_CITIES.map(function(c){return c.lat;}).join(",");
+  var lons=WORLD_CITIES.map(function(c){return c.lon;}).join(",");
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lats+"&longitude="+lons
+    +"&current=temperature_2m,dew_point_2m,wind_speed_10m"
+    +"&wind_speed_unit=kmh&timezone=auto&forecast_days=1";
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    // data is array when multiple locations
+    var results=Array.isArray(data)?data:[data];
+    var scored=[];
+    for(var i=0;i<results.length;i++){
+      var d=results[i];
+      if(!d.current)continue;
+      var cur=d.current;
+      var r=calc(cur.temperature_2m,cur.dew_point_2m,cur.wind_speed_10m);
+      scored.push({
+        name:WORLD_CITIES[i].name,
+        cc:WORLD_CITIES[i].cc,
+        score:r.score,
+        temp:cur.temperature_2m,
+        dp:cur.dew_point_2m,
+        wind:cur.wind_speed_10m
+      });
+    }
+    renderWorldResults(scored);
+  }).catch(function(e){
+    document.getElementById("world-body").innerHTML="<div class='world-loading'>Failed to load: "+e.message+"</div>";
+  });
+}
+
+function renderWorldResults(scored){
+  // Sort by score
+  var sorted=scored.slice().sort(function(a,b){return b.score-a.score;});
+  var top=sorted.slice(0,5);
+  var bottom=sorted.slice(-5).reverse();
+  // Pinned cities
+  var pinned=[];
+  for(var pi=0;pi<PINNED_CITIES.length;pi++){
+    for(var si=0;si<scored.length;si++){
+      if(scored[si].name===PINNED_CITIES[pi]){pinned.push(scored[si]);break;}
+    }
+  }
+
+  function row(c){
+    var nc=SBANDS[bandForScore(c.score)].col.replace("0.92","1");
+    return "<div class='world-row'>"
+      +"<div class='world-score' style='color:"+nc+"'>"+c.score+"</div>"
+      +"<div class='world-name'>"+c.name+"</div>"
+      +"<div class='world-cc'>"+c.cc
+      +" \u00B7 "+toDisp(c.temp).toFixed(1)+unitSym()
+      +"</div></div>";
+  }
+
+  var html="";
+  html+="<div class='world-section'>\uD83C\uDFC6 Top 5 right now</div>";
+  for(var i=0;i<top.length;i++)html+=row(top[i]);
+  html+="<div class='world-section'>\uD83C\uDF0D World</div>";
+  for(var i=0;i<pinned.length;i++)html+=row(pinned[i]);
+  html+="<div class='world-section'>\uD83C\uDF21\uFE0F Bottom 5 right now</div>";
+  for(var i=0;i<bottom.length;i++)html+=row(bottom[i]);
+
+  document.getElementById("world-body").innerHTML=html;
+}
+
+function checkWashing(){
+  if(!window._FC)return;
+  var fc=window._FC,tz=fc.timezone;
+  window._tzOff=getTZOffsetMin(tz);
+  var tzOff=window._tzOff;
+  var temp=window._LW.temp,effDP=window._LW.effDP,rh=window._LW.rh,wind=window._LW.wind,wxNow=window._LW.wxCode||0;
+  var now=Date.now();
+  var sunriseEpoch=toEpoch(fc.daily.sunrise[0],tzOff);
+  var sunsetEpoch=toEpoch(fc.daily.sunset[0],tzOff);
+  if(sunsetEpoch<now&&fc.daily.sunrise.length>1){
+    sunriseEpoch=toEpoch(fc.daily.sunrise[1],tzOff);
+    sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
+  }
+  window._sunsetEpoch=sunsetEpoch;
+if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19","Hang it out after sunrise for best results.","#5a8aa8");
+  if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun\u2019s down \uD83C\uDF19","Hang it out tomorrow morning when there\u2019s a full day of drying ahead.","#5a8aa8");
+  var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
+  // Freeze check — highest priority after night checks
+  // But first scan for a warmer window later today
+  if(temp<=0){
+    var warmWindowMsg="";
+    var times2=fc.hourly.time,temps2=fc.hourly.temperature_2m,dews2=fc.hourly.dew_point_2m,winds2=fc.hourly.wind_speed_10m,codes2=fc.hourly.weather_code||[];
+    for(var fi=0;fi<times2.length;fi++){
+      var fSlotMs=toEpoch(times2[fi],tzOff);
+      if(fSlotMs<=now)continue;
+      if(sunsetEpoch&&fSlotMs>sunsetEpoch)break;
+      var fTemp=temps2[fi],fDew=dews2[fi],fWind=winds2[fi],fCode=codes2[fi]||0;
+      if(fTemp===null||fTemp<=0)continue;
+      if(fCode>=51)continue;
+      var fHoursLeft=sunsetEpoch?(sunsetEpoch-fSlotMs)/3600000:3;
+      if(fHoursLeft<1)break;
+      var fTimeLabel=fmtFcTime(times2[fi],tz);
+      warmWindowMsg=" Should warm above freezing around "+fTimeLabel+" \u2014 consider hanging out then if conditions hold.";
+      break;
+    }
+    return washingPop("Below freezing \u2744\uFE0F","Washing will freeze on the line rather than dry."+warmWindowMsg+(warmWindowMsg?"":" Best to dry inside."),"#5a8aa8");
+  }
+  var rainingNow=wxNow>=51;
+  var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
+  var rainStartIdx=null,rainInHours=null;
+  for(var i=0;i<times.length;i++){
+    var slotMs=toEpoch(times[i],tzOff);
+    if(slotMs<now)continue;
+    if(sunsetEpoch&&slotMs>sunsetEpoch)break;
+    if((wxCodes[i]||0)>=51){rainInHours=Math.round((slotMs-now)/3600000);rainStartIdx=i;break;}
+  }
+  // VPD drying index
+  var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
+  var avp=svp*(rh/100);
+  var vpd=svp-avp;
+  var wMult=1+Math.min(1.5,wind/20);
+  var tFact=Math.max(0.3,Math.min(1.0,(temp-5)/20));
+  var dryIdx=vpd*wMult*tFact;
+  // DP penalty
+  var dpPenalty=1.0;
+  if(effDP>20)dpPenalty=0.35;
+  else if(effDP>16)dpPenalty=Math.max(0.35,1.0-(effDP-16)*0.1625);
+  dryIdx=dryIdx*dpPenalty;
+  // Drying time
+  var dryHours,dryLabel;
+  if(dryIdx>1.8){dryHours=0.75;dryLabel="30\u201360 minutes";}
+  else if(dryIdx>1.2){dryHours=1.5;dryLabel="1\u20132 hours";}
+  else if(dryIdx>0.7){dryHours=3;dryLabel="2\u20134 hours";}
+  else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
+  else{dryHours=999;dryLabel=null;}
+  // Reason string
+  var rsns=[];
+  if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  else if(vpd<0.3)rsns.push("the air is quite humid");
+  else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
+  if(wind<5)rsns.push("not much wind");
+  else if(wind>=20)rsns.push("a good breeze");
+  if(temp>25)rsns.push("warm temperature");
+  else if(temp<12)rsns.push("cool temperature");
+  var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
+    "Conditions look reasonable.";
+  // Humidity caveat
+  var dpAlreadyMentioned=(effDP>16);
+  var humCaveat="";
+  if((vpd<0.6||effDP>16)&&dryHours>=3&&!dpAlreadyMentioned){
+    humCaveat=" High humidity will slow things down \u2014 check the forecast and bring it in if the weather turns.";
+  } else if(effDP>18&&dryHours<3){
+    humCaveat=" Note: dew point is high ("+effDP.toFixed(1)+"\u00B0C) \u2014 washing may feel damp longer than expected.";
+  }
+  if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
+  // Rain now
+  if(rainingNow){
+    var clearAfterIdx=null;
+    for(var j=0;j<times.length;j++){
+      var slotMs2=toEpoch(times[j],tzOff);
+      if(slotMs2<now)continue;
+      if((wxCodes[j]||0)<51){clearAfterIdx=j;break;}
+    }
+    if(clearAfterIdx!==null){
+      var clearWindow=findAfterRainWindow(clearAfterIdx-1,tzOff,sunsetEpoch);
+      if(clearWindow&&clearWindow.usable){
+        return washingPop("Raining now \uD83C\uDF27\uFE0F","Should clear around "+formatHour(clearWindow.hour)+" with about "+Math.round(clearWindow.hoursToSunset)+" hours of daylight left. Worth hanging out then if conditions hold.","#b06010");
+      }
+    }
+    return washingPop("Raining now \uD83C\uDF27\uFE0F","Rain doesn\u2019t look like it\u2019ll clear in time today. Best to dry inside.","#c03020");
+  }
+  // Rain forecast
+  if(rainInHours!==null){
+    if(rainInHours<=1)return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour. Best to dry inside today.","#c03020");
+    var afterRainWindow=findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch);
+    if(afterRainWindow&&afterRainWindow.usable){
+      return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" \u26A0\uFE0F",
+        "Rain arrives around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+
+        " but should clear by "+formatHour(afterRainWindow.hour)+
+        " with "+Math.round(afterRainWindow.hoursToSunset)+" hours of daylight left. You could hang washing out then.","#b06010");
+    }
+    if(dryHours<=rainInHours-0.5&&dryHours!==999){
+      return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F","Might just get it dry in time if you hang it out now. "+rsn+humCaveat,"#b06010");
+    }
+    return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
+  }
+  // No rain
+  if(temp<=0)return washingPop("Too cold to dry outside \u2744\uFE0F","Below freezing — your washing will freeze on the line rather than dry. Best to dry inside.","#5a8aa8");
+  if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
+  if(dryHours>hoursLeft+0.5){
+    return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat,"#b06010");
+  }
+  // Check for better window only if conditions are poor
+  var currentRes=calc(temp,effDP,wind);
+  var currentIssues=checkConditions(temp,effDP,wind,wxNow);
+  var conditionsArePoor=currentRes.score<75||currentIssues.length>0;
+  if(conditionsArePoor){
+    var better=findBetterWindow(tzOff,sunsetEpoch);
+    if(better&&better.score>=75&&better.score>currentRes.score+10){
+      rsn+=" Might be worth waiting until "+better.timeLabel+" ("+toDisp(better.temp).toFixed(1)+unitSym()+", score "+better.score+").";
+    }
+  }
+  var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
+  var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
+  return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn+humCaveat,col);
+}
+function washingPop(title,reason,colour){
+  document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
+  document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"+reason+"</div>";
+  document.getElementById("pop-ov").classList.add("open");
+}
+
+// ── Forecast scroll ────────────────────────────────────────────────────────
+function fc7Scroll(dir){
+  var strip=document.getElementById("forecast-strip-7");
+  if(!strip)return;
+  strip.scrollBy({left:dir*220,behavior:"smooth"});
+}
+
+function render7Day(fc){
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
+  var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
+  // Group hourly slots by local date
+  var days={};
+  for(var i=0;i<times.length;i++){
+    // Get local date string for this slot
+    var slotMs=Date.UTC(0,0)+0;
+    try{
+      var p=parseLocalTimeStr(times[i]);
+      var utcMs=Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
+      var dateStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(utcMs));
+      if(!days[dateStr])days[dateStr]=[];
+      days[dateStr].push({idx:i,utcMs:utcMs,temp:temps[i],dp:dps[i],wind:winds[i]});
+    }catch(e){}
+  }
+  // Get today's local date to skip it
+  var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var dateKeys=Object.keys(days).sort().filter(function(d){return d>todayStr;}).slice(0,7);
+  var html="";
+  for(var di=0;di<dateKeys.length;di++){
+    var key=dateKeys[di];
+    var slots=days[key].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
+    if(!slots.length)continue;
+    // Find max and min score slots
+    var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
+    for(var si=0;si<slots.length;si++){
+      var s=slots[si];
+      var r=calc(s.temp,s.dp,s.wind);
+      if(r.score>maxScore){maxScore=r.score;maxSlot=s;}
+      if(r.score<minScore){minScore=r.score;minSlot=s;}
+    }
+    var maxNc=SBANDS[bandForScore(maxScore)].col.replace("0.92","1");
+    var minNc=SBANDS[bandForScore(minScore)].col.replace("0.92","1");
+    // Day label
+    var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(slots[0].utcMs));
+    // Time labels for max/min
+    var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
+    var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
+html+="<div class='fc-slot-7' onclick='show7DaySlot("+di+")'>"
+         +"<div class='fc-day'>"+dayLabel+"</div>"
+         +"<div class='fc-hilo'>"
+         +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
+         +"<div class='fc-hitime'>"+maxTime+"</div>"
+         +"<div class='fc-lo' style='color:"+minNc+"'>\u2193"+minScore+"</div>"
+         +"<div class='fc-hitime'>"+minTime+"</div>"
+         +"</div></div>";
+  }
+  document.getElementById("forecast-row-7").innerHTML=html;
+  // Store days data for tap handler
+window._7dayData=days;
+  window._7dayKeys=dateKeys;
+  window._7dayTZ=tz;
+}
+
+function show7DaySlot(di){
+  if(!window._7dayData||!window._7dayKeys)return;
+  var dateKey=window._7dayKeys[di];
+  if(!dateKey||!window._7dayData[dateKey])return;
+  var slots=window._7dayData[dateKey];
+  var tz=window._7dayTZ;
+  var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
+  for(var i=0;i<slots.length;i++){
+    var s=slots[i];
+    if(s.temp===null||s.dp===null||s.wind===null)continue;
+    var r=calc(s.temp,s.dp,s.wind);
+    if(r.score>maxScore){maxScore=r.score;maxSlot=s;}
+    if(r.score<minScore){minScore=r.score;minSlot=s;}
+  }
+  var gs2=gs();
+  // Max slot details
+  var maxR=calc(maxSlot.temp,maxSlot.dp,maxSlot.wind);
+  var maxAnns=getAnnotations(maxSlot.temp,maxSlot.dp,maxSlot.wind,maxR.score,gs2,maxR.iP,maxR.wP,null);
+  var maxAnnText="";for(var i=0;i<maxAnns.length;i++){maxAnnText+=(i>0?", ":"")+maxAnns[i].t.replace(" \u2139\uFE0F","");}
+  var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(maxSlot.utcMs)).replace(",","");
+  // Min slot details
+  var minR=calc(minSlot.temp,minSlot.dp,minSlot.wind);
+  var minAnns=getAnnotations(minSlot.temp,minSlot.dp,minSlot.wind,minR.score,gs2,minR.iP,minR.wP,null);
+  var minAnnText="";for(var i=0;i<minAnns.length;i++){minAnnText+=(i>0?", ":"")+minAnns[i].t.replace(" \u2139\uFE0F","");}
+  var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(minSlot.utcMs)).replace(",","");
+  var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"long",month:"short",day:"numeric"}).format(new Date(slots[0].utcMs));
+  showPop(dayLabel,
+    "\u2191 Best: "+maxScore+" ("+scoreInfo(maxScore).label+") at "+maxTime+"\n"
+    +toDisp(maxSlot.temp).toFixed(1)+unitSym()+" | DP "+toDisp(maxSlot.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(maxSlot.wind)+" km/h"
+    +(maxAnnText?"\n"+maxAnnText:"")+"\n\n"
+    +"\u2193 Worst: "+minScore+" ("+scoreInfo(minScore).label+") at "+minTime+"\n"
+    +toDisp(minSlot.temp).toFixed(1)+unitSym()+" | DP "+toDisp(minSlot.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(minSlot.wind)+" km/h"
+    +(minAnnText?"\n"+minAnnText:"")
+  );
+}
+function fcScroll(dir){var strip=document.getElementById("forecast-strip");if(!strip)return;strip.scrollBy({left:dir*220,behavior:"smooth"});}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+buildSettings();
+syncSlidersFromAdv();
+initUnit();
+initOnboard();
+applySliderLock();
+initTempPrefs();
+detectLocation();
+</script>
+</body>
+</html>
