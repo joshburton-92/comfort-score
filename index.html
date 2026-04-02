@@ -314,6 +314,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </div>
     </div>
   </div>
+  </div>
 
   <div class="page" id="page-manual">
     <div class="card">
@@ -325,13 +326,15 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="irow"><label>Wind speed</label><input type="number" id="m-wind" value="0" step="1" min="0"/><span class="unit">km/h</span></div>
       <div style="margin-top:4px"><button class="btn btn-p" onclick="calcManual()">Calculate</button></div>
     </div>
-   <div class="card" id="manual-result" style="display:none">
-  <div id="manual-score-area"></div>
-  <div class="share-row" style="margin-top:8px">
-    <button class="share-btn" onclick="checkWashingManual()">Will washing dry? &#129531;</button>
+    <div class="card" id="manual-result" style="display:none">
+      <div id="manual-score-area"></div>
+      <div class="share-row" style="margin-top:8px">
+        <button class="share-btn" onclick="checkWashingManual()">Will washing dry? &#129531;</button>
+      </div>
+    </div>
   </div>
-</div>
-</div>
+
+  <div class="slider-card">
 
   <div class="slider-card">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -392,6 +395,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="sources-btn" onclick="showSources()">Sources &#9432;</button>
     <button class="clear-btn"   onclick="clearAndReload()">Clear cache &amp; reload</button>
   </div>
+</div>
 </div>
 
 <div class="pop-ov" id="pop-ov" onclick="closePop()">
@@ -487,7 +491,7 @@ var WORLD_CITIES=[
   {name:"Santiago",lat:-33.45,lon:-70.67,cc:"CL"},
   {name:"Chicago",lat:41.88,lon:-87.63,cc:"US"},
   {name:"Chengdu",lat:30.66,lon:104.07,cc:"CN"},
-  {name:"Xi'an",lat:34.27,lon:108.95,cc:"CN"},
+  {name:"Xian",lat:34.27,lon:108.95,cc:"CN"},
   {name:"Hong Kong",lat:22.32,lon:114.17,cc:"HK"},
   {name:"Baghdad",lat:33.34,lon:44.4,cc:"IQ"},
   {name:"Madrid",lat:40.42,lon:-3.7,cc:"ES"},
@@ -1529,7 +1533,7 @@ function render7Day(fc){
     // Time labels for max/min
     var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
     var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
-    html+="<div class='fc-slot-7' onclick='show7DaySlot("+JSON.stringify(key)+")'>"
+html+="<div class='fc-slot-7' onclick='show7DaySlot("+di+")'>"
          +"<div class='fc-day'>"+dayLabel+"</div>"
          +"<div class='fc-hilo'>"
          +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
@@ -1540,12 +1544,15 @@ function render7Day(fc){
   }
   document.getElementById("forecast-row-7").innerHTML=html;
   // Store days data for tap handler
-  window._7dayData=days;
+window._7dayData=days;
+  window._7dayKeys=dateKeys;
   window._7dayTZ=tz;
 }
 
-function show7DaySlot(dateKey){
-  if(!window._7dayData||!window._7dayData[dateKey])return;
+function show7DaySlot(di){
+  if(!window._7dayData||!window._7dayKeys)return;
+  var dateKey=window._7dayKeys[di];
+  if(!dateKey||!window._7dayData[dateKey])return;
   var slots=window._7dayData[dateKey];
   var tz=window._7dayTZ;
   var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
