@@ -995,8 +995,10 @@ function onTempPref(){
   // Sanity check — cold threshold must be below hot threshold
   if(tloC>=thiC){tloC=thiC-3;tloEl.value=Math.round(useFahrenheit?toDisp(tloC):tloC);}
   // Set the thresholds
-  setAdv("s-thi",Math.round(thiC*2)/2);
-  setAdv("s-tlo",Math.round(tloC*2)/2);
+_thi=Math.round(thiC*2)/2;
+  _tlo=Math.round(tloC*2)/2;
+  localStorage.setItem("pref_thi",_thi);
+  localStorage.setItem("pref_tlo",_tlo);
   _tlo=Math.round(tloC*2)/2;
   _thi=Math.round(thiC*2)/2;
   // Recalibrate cold zone relative to cold threshold
@@ -1012,8 +1014,8 @@ function onTempPref(){
 }
 
 function initTempPrefs(){
-  var thi=parseFloat(document.getElementById("s-thi")?document.getElementById("s-thi").value:_thi)||_thi||22;
-  var tlo=parseFloat(document.getElementById("s-tlo")?document.getElementById("s-tlo").value:_tlo)||_tlo||18;
+var thi=parseFloat(localStorage.getItem("pref_thi"))||_thi||22;
+  var tlo=parseFloat(localStorage.getItem("pref_tlo"))||_tlo||18;
   var thiEl=document.getElementById("pref-thi");
   var tloEl=document.getElementById("pref-tlo");
   if(thiEl)thiEl.value=useFahrenheit?Math.round(toDisp(thi)):thi;
