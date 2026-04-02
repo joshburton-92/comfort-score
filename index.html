@@ -803,11 +803,21 @@ function getAnnotations(temp,dp,wind,score,s,iP,wP,wxCode){
   if(dp>s.dp+10)a.push({c:"ann-steamy",t:"oppressively humid \uD83C\uDF0A"});
   else if(dp>s.dp+5)a.push({c:"ann-humid",t:"humid & sticky \uD83D\uDCA7"});
   else if(dp>14)a.push({c:"ann-muggy",t:"a little muggy \uD83D\uDCA6"});
-  if(temp>=0){
-    var vdryThresh=temp<15?-8:0;
-    var dryThresh=temp<15?0:4;
-    if(dp<vdryThresh)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
-    else if(dp<dryThresh)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
+if(temp>=0){
+    var depression=temp-dp;
+    var firesDry,firesVdry;
+    if(temp<10){
+      firesDry=depression>10;
+      firesVdry=depression>20;
+    } else if(temp<15){
+      firesDry=depression>8;
+      firesVdry=depression>15;
+    } else {
+      firesDry=dp<4;
+      firesVdry=dp<0;
+    }
+    if(firesVdry)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
+    else if(firesDry)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
   }
   if(iP>3)a.push({c:"ann-steamy ann-info",t:"hot & steamy \uD83E\uDD2F \u2139\uFE0F",info:true});
  if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
@@ -995,10 +1005,8 @@ function onTempPref(){
   // Sanity check — cold threshold must be below hot threshold
   if(tloC>=thiC){tloC=thiC-3;tloEl.value=Math.round(useFahrenheit?toDisp(tloC):tloC);}
   // Set the thresholds
-_thi=Math.round(thiC*2)/2;
-  _tlo=Math.round(tloC*2)/2;
-  localStorage.setItem("pref_thi",_thi);
-  localStorage.setItem("pref_tlo",_tlo);
+  setAdv("s-thi",Math.round(thiC*2)/2);
+  setAdv("s-tlo",Math.round(tloC*2)/2);
   _tlo=Math.round(tloC*2)/2;
   _thi=Math.round(thiC*2)/2;
   // Recalibrate cold zone relative to cold threshold
@@ -1014,8 +1022,8 @@ _thi=Math.round(thiC*2)/2;
 }
 
 function initTempPrefs(){
-var thi=parseFloat(localStorage.getItem("pref_thi"))||_thi||22;
-  var tlo=parseFloat(localStorage.getItem("pref_tlo"))||_tlo||18;
+  var thi=parseFloat(document.getElementById("s-thi")?document.getElementById("s-thi").value:_thi)||_thi||22;
+  var tlo=parseFloat(document.getElementById("s-tlo")?document.getElementById("s-tlo").value:_tlo)||_tlo||18;
   var thiEl=document.getElementById("pref-thi");
   var tloEl=document.getElementById("pref-tlo");
   if(thiEl)thiEl.value=useFahrenheit?Math.round(toDisp(thi)):thi;
