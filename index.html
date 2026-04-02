@@ -1045,8 +1045,8 @@ function onSlider(key){var el=document.getElementById("sl-"+key);if(!el)return;v
 function advToSlider(key){
   function gv(id,def){var el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
   var t=0.5;
-  if(key==="heat"){var thi=gv("s-thi",22);t=1-(thi-18)/(28-18);}
-  else if(key==="cold"){var tlo=gv("s-tlo",18);t=(tlo-10)/(24-10);}
+if(key==="heat"){var hw=gv("s-hw",1.2);t=(hw-0.8)/(2.0-0.8);}
+  else if(key==="cold"){var coldmax=gv("s-coldmax",100);t=(coldmax-50)/(150-50);}
   else if(key==="hum"){var dp=gv("s-dp",12);t=(dp-6)/(18-6);}
   else if(key==="wind"){var wmax=parseFloat(gv("s-wmax",20))||20;t=1-(wmax-8)/(30-8);}
   return Math.round(Math.max(0,Math.min(1,t))*100);
