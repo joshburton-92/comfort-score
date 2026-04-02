@@ -1471,13 +1471,26 @@ if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \
     }
     return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
   }
-  // No rain
-  if(temp<=0)return washingPop("Too cold to dry outside \u2744\uFE0F","Below freezing — your washing will freeze on the line rather than dry. Best to dry inside.","#5a8aa8");
-  if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying. Better inside.","#c03020");
-  if(dryHours>hoursLeft+0.5){
-    return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat,"#b06010");
+// Check for a better window — used by all failure paths below
+  function betterWindowSuffix(){
+    var bw=findBetterWindow(tzOff,sunsetEpoch);
+    if(bw&&bw.score>=75)return " Conditions should improve around "+bw.timeLabel+" ("+toDisp(bw.temp).toFixed(1)+unitSym()+", score "+bw.score+") — worth trying then.";
+    return "";
   }
-  // Check for better window only if conditions are poor
+
+  // No rain
+if(dryHours===999){
+    var bwMsg=betterWindowSuffix();
+    var title=bwMsg?"Not right now \u23F3":"Probably not today \u274C";
+    var colour=bwMsg?"#b06010":"#c03020";
+    var reason="Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying."+(bwMsg||" Better inside.");
+    return washingPop(title,reason,colour);
+  }
+  if(dryHours>hoursLeft+0.5){
+    var bwMsg2=betterWindowSuffix();
+    return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat+(bwMsg2||""),"#b06010");
+  }
+  // Good to go — still check for better window if conditions are poor
   var currentRes=calc(temp,effDP,wind);
   var currentIssues=checkConditions(temp,effDP,wind,wxNow);
   var conditionsArePoor=currentRes.score<75||currentIssues.length>0;
