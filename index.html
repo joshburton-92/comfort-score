@@ -338,7 +338,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   <div class="slider-card">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
+<div style="display:flex;align-items:center;gap:6px">
+  <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
+  <div class="ibtn" onclick="showPop('How preferences work','The temperature inputs set your personal comfort thresholds — the point at which you start feeling hot or cold.\n\nThe sensitivity sliders control how much it bothers you once you cross those thresholds. Mild means the score drops gradually; Severe means it drops steeply.\n\nHumidity and wind sliders work the same way — they adjust how much those conditions affect your score.\n\nAll preferences are saved automatically.')">i</div>
+</div>
     <button class="slider-lock-btn" id="slider-lock-btn" onclick="toggleSliderLock()">&#128275; Unlocked</button>
   </div>
   <div class="temp-input-row">
