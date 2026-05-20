@@ -932,14 +932,14 @@ function showBreakdown(tP,hP,iP,wP,score){
     return;
   }
   var lines=[];
-  if(tP>0){
+  if(Math.round(tP)>0){
     var tLbl=(window._LW&&window._LW.temp>(gs().thi||22))?"Too warm":"Too cold";
     lines.push({l:tLbl,pts:-Math.round(tP),bonus:false});
   }
   if(Math.round(hP)>0)lines.push({l:"Humid air",pts:-Math.round(hP),bonus:false});
-  if(iP>0)lines.push({l:"Hot & steamy",pts:-Math.round(iP),bonus:false});
-  if(wP<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP),bonus:true});
-  else if(wP>0)lines.push({l:"Windy",pts:-Math.round(wP),bonus:false});
+  if(Math.round(iP)>0)lines.push({l:"Hot & steamy",pts:-Math.round(iP),bonus:false});
+  if(Math.round(wP)<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP),bonus:true});
+  else if(Math.round(wP)>0)lines.push({l:"Windy",pts:-Math.round(wP),bonus:false});
   var rows="";
   for(var i=0;i<lines.length;i++){
     var col=lines[i].bonus?"#1a7a3a":"var(--text)";
