@@ -925,24 +925,36 @@ function showHistorySlot(i){
 
 // ── Share ──────────────────────────────────────────────────────────────────
 function showBreakdown(tP,hP,iP,wP,score){
+  if(score===100){
+    document.getElementById("pop-ttl").textContent="Score breakdown";
+    document.getElementById("pop-body").innerHTML="<div style='text-align:center;padding:8px 0;font-size:15px;font-weight:700;color:var(--text)'>Perfect weather! \u2600\uFE0F<br><span style='font-size:13px;color:var(--text-muted);font-weight:600'>No penalties at all.</span></div>";
+    document.getElementById("pop-ov").classList.add("open");
+    return;
+  }
   var lines=[];
   if(tP>0){
     var tLbl=(window._LW&&window._LW.temp>(gs().thi||22))?"Too warm":"Too cold";
-    lines.push({l:tLbl,pts:-Math.round(tP)});
+    lines.push({l:tLbl,pts:-Math.round(tP),bonus:false});
   }
-  if(hP>0)lines.push({l:"Humid air",pts:-Math.round(hP)});
-  if(iP>0)lines.push({l:"Hot & steamy",pts:-Math.round(iP)});
-  if(wP<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP)});
-  else if(wP>0)lines.push({l:"Windy",pts:-Math.round(wP)});
-  var body="";
-  if(!lines.length){body="No penalties \u2014 perfect conditions!";}
-  else{
-    for(var i=0;i<lines.length;i++){
-      body+=lines[i].l+" \u00a0 "+lines[i].pts+" pts\n";
-    }
-    body+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nScore: "+score;
+  if(Math.round(hP)>0)lines.push({l:"Humid air",pts:-Math.round(hP),bonus:false});
+  if(iP>0)lines.push({l:"Hot & steamy",pts:-Math.round(iP),bonus:false});
+  if(wP<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP),bonus:true});
+  else if(wP>0)lines.push({l:"Windy",pts:-Math.round(wP),bonus:false});
+  var rows="";
+  for(var i=0;i<lines.length;i++){
+    var col=lines[i].bonus?"#1a7a3a":"var(--text)";
+    rows+="<div style='display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--divider)'>"
+      +"<span style='font-weight:700;color:var(--text)'>"+lines[i].l+"</span>"
+      +"<span style='font-weight:800;color:"+col+"'>"+lines[i].pts+" pts</span>"
+      +"</div>";
   }
-  showPop("Score breakdown",body);
+  var html=rows.length?rows+"<div style='display:flex;justify-content:space-between;align-items:center;padding-top:8px'>"
+    +"<span style='font-weight:800;color:var(--text-head)'>Score</span>"
+    +"<span style='font-weight:800;font-size:18px;color:var(--text-head)'>"+score+"</span>"
+    +"</div>":"<div style='text-align:center;padding:8px 0;color:var(--text-muted);font-weight:600'>No penalties \u2014 perfect conditions!</div>";
+  document.getElementById("pop-ttl").textContent="Score breakdown";
+  document.getElementById("pop-body").innerHTML=html;
+  document.getElementById("pop-ov").classList.add("open");
 }
 function shareScore(){
   if(!window._LW)return;
