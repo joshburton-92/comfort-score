@@ -578,7 +578,64 @@ var WORLD_CITIES=[
   {name:"Harare",lat:-17.83,lon:31.05,cc:"ZW"},
   {name:"Algiers",lat:36.74,lon:3.06,cc:"DZ"},
   {name:"Tripoli",lat:32.9,lon:13.18,cc:"LY"},
-  {name:"Tunis",lat:36.82,lon:10.17,cc:"TN"}
+  {name:"Tunis",lat:36.82,lon:10.17,cc:"TN"},
+  {name:"Muscat",lat:23.61,lon:58.59,cc:"OM"},
+  {name:"Kuwait City",lat:29.37,lon:47.98,cc:"KW"},
+  {name:"Ashgabat",lat:37.95,lon:58.38,cc:"TM"},
+  {name:"Timbuktu",lat:16.77,lon:-3.0,cc:"ML"},
+  {name:"Mombasa",lat:-4.05,lon:39.67,cc:"KE"},
+  {name:"Ouagadougou",lat:12.37,lon:-1.53,cc:"BF"},
+  {name:"Yakutsk",lat:62.03,lon:129.73,cc:"RU"},
+  {name:"Murmansk",lat:68.97,lon:33.07,cc:"RU"},
+  {name:"Longyearbyen",lat:78.22,lon:15.65,cc:"NO"},
+  {name:"Death Valley",lat:36.46,lon:-116.87,cc:"US"},
+  {name:"Cherrapunji",lat:25.3,lon:91.7,cc:"IN"},
+  {name:"Arica",lat:-18.48,lon:-70.33,cc:"CL"},
+  {name:"Verkhoyansk",lat:67.55,lon:133.39,cc:"RU"},
+  {name:"Suva",lat:-18.14,lon:178.44,cc:"FJ"},
+  {name:"Port Moresby",lat:-9.44,lon:147.18,cc:"PG"},
+  {name:"Nuku'alofa",lat:-21.14,lon:-175.22,cc:"TO"},
+  {name:"Kingston",lat:17.99,lon:-76.79,cc:"JM"},
+  {name:"Bridgetown",lat:13.1,lon:-59.62,cc:"BB"},
+  {name:"Winnipeg",lat:49.9,lon:-97.14,cc:"CA"},
+  {name:"Whitehorse",lat:60.72,lon:-135.05,cc:"CA"},
+  {name:"Phoenix",lat:33.45,lon:-112.07,cc:"US"},
+  {name:"Anchorage",lat:61.22,lon:-149.9,cc:"US"},
+  {name:"New Orleans",lat:29.95,lon:-90.07,cc:"US"},
+  {name:"Valletta",lat:35.9,lon:14.51,cc:"MT"},
+  {name:"Palermo",lat:38.12,lon:13.36,cc:"IT"},
+  {name:"Minsk",lat:53.9,lon:27.57,cc:"BY"},
+  {name:"Noumea",lat:-22.27,lon:166.46,cc:"NC"},
+  {name:"Papeete",lat:-17.54,lon:-149.57,cc:"PF"},
+  {name:"Honiara",lat:-9.43,lon:160.05,cc:"SB"},
+  {name:"Apia",lat:-13.83,lon:-171.77,cc:"WS"},
+  {name:"Funafuti",lat:-8.52,lon:179.2,cc:"TV"},
+  {name:"Male",lat:4.17,lon:73.51,cc:"MV"},
+  {name:"Djibouti",lat:11.59,lon:43.15,cc:"DJ"},
+  {name:"Mogadishu",lat:2.05,lon:45.34,cc:"SO"},
+  {name:"Niamey",lat:13.51,lon:2.11,cc:"NE"},
+  {name:"N'Djamena",lat:12.11,lon:15.04,cc:"TD"},
+  {name:"Bamako",lat:12.65,lon:-8.0,cc:"ML"},
+  {name:"Conakry",lat:9.54,lon:-13.68,cc:"GN"},
+  {name:"Freetown",lat:8.49,lon:-13.23,cc:"SL"},
+  {name:"Libreville",lat:0.39,lon:9.45,cc:"GA"},
+  {name:"Brazzaville",lat:-4.27,lon:15.28,cc:"CG"},
+  {name:"Kampala",lat:0.32,lon:32.58,cc:"UG"},
+  {name:"Kigali",lat:-1.95,lon:30.06,cc:"RW"},
+  {name:"Lilongwe",lat:-13.97,lon:33.79,cc:"MW"},
+  {name:"Windhoek",lat:-22.56,lon:17.08,cc:"NA"},
+  {name:"Gaborone",lat:-24.65,lon:25.91,cc:"BW"},
+  {name:"Mbabane",lat:-26.32,lon:31.13,cc:"SZ"},
+  {name:"Maseru",lat:-29.32,lon:27.48,cc:"LS"},
+  {name:"Prague",lat:50.08,lon:14.44,cc:"CZ"},
+  {name:"Budapest",lat:47.5,lon:19.04,cc:"HU"},
+  {name:"Bucharest",lat:44.43,lon:26.1,cc:"RO"},
+  {name:"Sofia",lat:42.7,lon:23.32,cc:"BG"},
+  {name:"Belgrade",lat:44.8,lon:20.46,cc:"RS"},
+  {name:"Vilnius",lat:54.69,lon:25.28,cc:"LT"},
+  {name:"Riga",lat:56.95,lon:24.11,cc:"LV"},
+  {name:"Tallinn",lat:59.44,lon:24.75,cc:"EE"},
+  {name:"Ushuaia",lat:-54.8,lon:-68.3,cc:"AR"}
 ];
 var PINNED_CITIES=["New York","London","Dubai","Tokyo","Sydney"];
 var STEAMY_TITLE="Hot & steamy";
@@ -1377,7 +1434,7 @@ if(dryHours===999){
 
 function openWorldCheck(){
   document.getElementById("world-ov").classList.add("open");
-  document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking 143 cities\u2026</div>";
+  document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking 200 cities\u2026</div>";
   fetchWorldScores();
 }
 function closeWorld(){document.getElementById("world-ov").classList.remove("open");}
@@ -1413,10 +1470,26 @@ function fetchWorldScores(){
 }
 
 function renderWorldResults(scored){
-  // Sort by score
+  window._worldScored=scored;
+  renderWorldBody();
+}
+function shuffleWorld(){renderWorldBody();}
+function renderWorldBody(){
+  var scored=window._worldScored;
+  if(!scored)return;
   var sorted=scored.slice().sort(function(a,b){return b.score-a.score;});
-  var top=sorted.slice(0,5);
-  var bottom=sorted.slice(-5).reverse();
+  var topScore=sorted[0].score;
+  var bottomScore=sorted[sorted.length-1].score;
+  var topPool=sorted.filter(function(c){return c.score===topScore;});
+  var bottomPool=sorted.filter(function(c){return c.score===bottomScore;});
+  // Shuffle helper
+  function pick5(arr){
+    var a=arr.slice();
+    for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+    return a.slice(0,5);
+  }
+  var top=topPool.length>5?pick5(topPool):topPool.slice(0,5);
+  var bottom=bottomPool.length>5?pick5(bottomPool):bottomPool.slice(-5).reverse();
   // Pinned cities
   var pinned=[];
   for(var pi=0;pi<PINNED_CITIES.length;pi++){
@@ -1424,25 +1497,21 @@ function renderWorldResults(scored){
       if(scored[si].name===PINNED_CITIES[pi]){pinned.push(scored[si]);break;}
     }
   }
-
   function row(c){
     var nc=SBANDS[bandForScore(c.score)].col.replace("0.92","1");
     return "<div class='world-row'>"
       +"<div class='world-score' style='color:"+nc+"'>"+c.score+"</div>"
       +"<div class='world-name'>"+c.name+"</div>"
-      +"<div class='world-cc'>"+c.cc
-      +" \u00B7 "+toDisp(c.temp).toFixed(1)+unitSym()
-      +"</div></div>";
+      +"<div class='world-cc'>"+c.cc+" \u00B7 "+toDisp(c.temp).toFixed(1)+unitSym()+"</div></div>";
   }
-
+  var shuffleBtn="<button onclick='shuffleWorld()' style='background:none;border:1px solid var(--card-border);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:800;color:var(--text-sec);cursor:pointer;margin-left:6px;vertical-align:middle'>shuffle</button>";
   var html="";
-  html+="<div class='world-section'>\uD83C\uDFC6 Top 5 right now</div>";
+  html+="<div class='world-section'>\uD83C\uDFC6 Top 5 right now"+(topPool.length>5?shuffleBtn:"")+"</div>";
   for(var i=0;i<top.length;i++)html+=row(top[i]);
   html+="<div class='world-section'>\uD83C\uDF0D World</div>";
   for(var i=0;i<pinned.length;i++)html+=row(pinned[i]);
-  html+="<div class='world-section'>\uD83C\uDF21\uFE0F Bottom 5 right now</div>";
+  html+="<div class='world-section'>\uD83C\uDF21\uFE0F Bottom 5 right now"+(bottomPool.length>5?shuffleBtn:"")+"</div>";
   for(var i=0;i<bottom.length;i++)html+=row(bottom[i]);
-
   document.getElementById("world-body").innerHTML=html;
 }
 
