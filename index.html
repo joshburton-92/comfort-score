@@ -90,6 +90,8 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:60px;align-content:flex-start}
 .share-row{text-align:center;margin-top:6px;margin-bottom:6px}
 .share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
+.score-info-btn{font-size:13px;font-weight:800;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 0 0 8px;line-height:1;vertical-align:middle;opacity:0.6}
+.score-info-btn:active{opacity:1}
 .ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
 .ann-great{background:rgba(30,140,65,0.15);color:#0d6030;border-color:rgba(30,140,65,0.3)}
 .ann-warm{background:rgba(255,160,20,0.18);color:#8a4a00;border-color:rgba(255,160,20,0.35)}
@@ -585,6 +587,7 @@ var FC_SLOTS=[0,3,6,9,12,15,18,21];
 var MAX_HISTORY=5;
 var _tlo=18;
 var _thi=22;
+var _coolmax=35;
 
 // ── WMO weather code pill ──────────────────────────────────────────────────
 function wxFromCode(code){
@@ -735,7 +738,7 @@ function scheduleRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTime
 // ── Get settings ───────────────────────────────────────────────────────────
 function gs(){
   function v(id){var el=document.getElementById(id);return el?(parseFloat(el.value)||0):0;}
-  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:v("s-coolmax")||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,int:v("s-int")||8,iscale:v("s-iscale")||1.2,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
+  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:_coolmax||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,int:v("s-int")||8,iscale:v("s-iscale")||1.2,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
 }
 
 // ── Calc ───────────────────────────────────────────────────────────────────
@@ -830,6 +833,8 @@ if(temp>=0){
   if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
   var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
   if(inIdeal||score>90)a.push({c:"ann-great",t:"feels great \u2728"});
+  if(score===69)a.push({c:"ann-great",t:"nice \uD83D\uDE0F"});
+  if(score>=80){var _loc=document.getElementById("live-locname");if(_loc&&_loc.textContent.indexOf("Los Angeles")!==-1)a.push({c:"ann-great ann-info",t:"Magdalena Bay weather \uD83C\uDF05",url:"https://www.youtube.com/magdalenabay"});}
   var seen={},out=[];
   for(var i=0;i<a.length;i++){if(!seen[a[i].t]){seen[a[i].t]=1;out.push(a[i]);}}
   return out;
@@ -851,10 +856,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=gs();
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP,wxCode);
   var annHtml="";
-  for(var i=0;i<anns.length;i++){var ann=anns[i];annHtml+=ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>":"<span class='ann "+ann.c+"'>"+ann.t+"</span>";}
+  for(var i=0;i<anns.length;i++){var ann=anns[i];annHtml+=ann.url?"<a class='ann "+ann.c+"' href='"+ann.url+"' target='_blank' rel='noopener' style='text-decoration:none'>"+ann.t+"</a>":ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>":"<span class='ann "+ann.c+"'>"+ann.t+"</span>";}
   document.getElementById(areaId).innerHTML=
     "<div class='score-area'><canvas id='"+gaugeId+"'></canvas>"
-    +"<div class='score-num' style='color:"+si.col+"'>"+score+"</div>"
+    +"<div class='score-num' style='color:"+si.col+"'>"+score+"<button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
     +"<span class='score-emoji'>"+si.emoji+"</span>"
     +"<div class='score-lbl' style='color:"+si.col+"'>"+si.label+"</div>"
     +"<div class='annotations'>"+annHtml+"</div></div>";
@@ -902,7 +907,9 @@ function showForecastSlot(idx){
   var fc=window._FC,tz=fc.timezone;
   var t=fc.hourly.temperature_2m[idx],dp=fc.hourly.dew_point_2m[idx],w=fc.hourly.wind_speed_10m[idx];
   var r=calc(t,dp,w),si=scoreInfo(r.score),s=gs();
-  var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,null);
+  var wxCode=(fc.hourly.weather_code||[])[idx];
+  if(wxCode===undefined)wxCode=null;
+  var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
   var annText="";for(var i=0;i<anns.length;i++){annText+=(i>0?", ":"")+anns[i].t.replace(" \u2139\uFE0F","");}
   showPop(fmtObsTime(fc.hourly.time[idx],tz)+" \u2014 Score "+r.score+" ("+si.label+")",toDisp(t).toFixed(1)+unitSym()+" | DP "+toDisp(dp).toFixed(1)+unitSym()+" | Wind "+Math.round(w)+" km/h"+(annText?" | "+annText:""));
 }
@@ -917,6 +924,26 @@ function showHistorySlot(i){
 }
 
 // ── Share ──────────────────────────────────────────────────────────────────
+function showBreakdown(tP,hP,iP,wP,score){
+  var lines=[];
+  if(tP>0){
+    var tLbl=(window._LW&&window._LW.temp>(gs().thi||22))?"Too warm":"Too cold";
+    lines.push({l:tLbl,pts:-Math.round(tP)});
+  }
+  if(hP>0)lines.push({l:"Humid air",pts:-Math.round(hP)});
+  if(iP>0)lines.push({l:"Hot & steamy",pts:-Math.round(iP)});
+  if(wP<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP)});
+  else if(wP>0)lines.push({l:"Windy",pts:-Math.round(wP)});
+  var body="";
+  if(!lines.length){body="No penalties \u2014 perfect conditions!";}
+  else{
+    for(var i=0;i<lines.length;i++){
+      body+=lines[i].l+" \u00a0 "+lines[i].pts+" pts\n";
+    }
+    body+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nScore: "+score;
+  }
+  showPop("Score breakdown",body);
+}
 function shareScore(){
   if(!window._LW)return;
   var w=window._LW,res=calc(w.temp,w.effDP,w.wind),si=scoreInfo(res.score);
@@ -1167,7 +1194,7 @@ function checkConditions(temp,dew,wind,wxCode){
 function formatHour(h){var ampm=h>=12?"pm":"am";var h12=h%12||12;return h12+":00"+ampm;}
 function toEpoch(s,tzOff){var p=parseLocalTimeStr(s);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
 
-function findBetterWindow(tzOff,sunsetEpoch){
+function findBetterWindow(tzOff,sunsetEpoch,dryHours){
   if(!window._FC||!window._FC.hourly)return null;
   var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
       dews=h.dew_point_2m||[],winds=h.wind_speed_10m||[],codes=h.weather_code||[];
@@ -1182,7 +1209,8 @@ function findBetterWindow(tzOff,sunsetEpoch){
     var issues=checkConditions(t,d,w,c);
     if(issues.length>0)continue;
     var res=calc(t,d,w);
-    if(res.score>=75){
+    var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:6;
+    if(res.score>=75&&(!dryHours||hoursToSunset>=dryHours)){
       // Format time with day context — check if it's tomorrow
       var slotDate=new Date(slotEp);
       var nowDate=new Date(now);
@@ -1257,6 +1285,41 @@ function checkWashingManual(){
   else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
   else{dryHours=999;dryLabel=null;}
 
+  // Forecast drying window check
+  var fcDryIdx=dryIdx,fcDegradeCaveat="";
+  if(dryHours!==999){
+    var fdtimes=fc.hourly.time,fdtemps=fc.hourly.temperature_2m,fddps=fc.hourly.dew_point_2m,fdwinds=fc.hourly.wind_speed_10m;
+    var fdTotal=dryIdx,fdCount=1,fdWorstIdx=null,fdWorstTime=null;
+    for(var fdi=0;fdi<fdtimes.length;fdi++){
+      var fdMs=toEpoch(fdtimes[fdi],tzOff);
+      if(fdMs<=now)continue;
+      if(fdMs>now+dryHours*3600000)break;
+      if(sunsetEpoch&&fdMs>sunsetEpoch)break;
+      var fdT=fdtemps[fdi],fdD=fddps[fdi],fdW=fdwinds[fdi];
+      if(fdT===null||fdD===null||fdW===null)continue;
+      var fdSvp=0.6108*Math.exp(17.27*fdT/(fdT+237.3));
+      var fdAvp=0.6108*Math.exp(17.27*fdD/(fdD+237.3));
+      var fdVpd=fdSvp-fdAvp;
+      var fdWm=1+Math.min(1.5,fdW/20);
+      var fdTf=Math.max(0.3,Math.min(1.0,(fdT-5)/20));
+      var fdDpPen=fdD>20?0.35:fdD>16?Math.max(0.35,1.0-(fdD-16)*0.1625):1.0;
+      var fdSlotIdx=fdVpd*fdWm*fdTf*fdDpPen;
+      fdTotal+=fdSlotIdx;fdCount++;
+      if(fdWorstIdx===null||fdSlotIdx<fdWorstIdx){fdWorstIdx=fdSlotIdx;fdWorstTime=fmtFcTime(fdtimes[fdi],tz);}
+    }
+    fcDryIdx=fdTotal/fdCount;
+    var newDryHours=dryHours,newDryLabel=dryLabel;
+    if(fcDryIdx>1.8){newDryHours=0.75;newDryLabel="30\u201360 minutes";}
+    else if(fcDryIdx>1.2){newDryHours=1.5;newDryLabel="1\u20132 hours";}
+    else if(fcDryIdx>0.7){newDryHours=3;newDryLabel="2\u20134 hours";}
+    else if(fcDryIdx>0.3){newDryHours=5;newDryLabel="4\u20136 hours";}
+    else{newDryHours=999;newDryLabel=null;}
+    if(newDryHours>dryHours){dryHours=newDryHours;dryLabel=newDryLabel;}
+    if(fdWorstIdx!==null&&fdWorstIdx<0.3&&dryHours!==999){
+      fcDegradeCaveat=" Conditions may deteriorate around "+fdWorstTime+" \u2014 bring it in if the weather turns.";
+    }
+  }
+
   // Reason string
   var rsns=[];
   if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
@@ -1280,7 +1343,19 @@ function checkWashingManual(){
   }
   if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
 
-  if(dryHours===999)return washingPop("Probably not today \u274C","Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying.","#c03020");
+if(dryHours===999){
+    var badRsns=[];
+    if(effDP>24)badRsns.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 the air is almost fully saturated");
+    else if(effDP>20)badRsns.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 too humid for drying");
+    else if(effDP>16)badRsns.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 humidity will prevent drying");
+    else if(vpd<0.3)badRsns.push("air is too humid for evaporation");
+    if(temp<10)badRsns.push(temp<=0?"freezing temperature":"too cold for effective drying");
+    if(effDP<=16&&wind<=5)badRsns.push("not enough wind");
+    if(!badRsns.length)badRsns.push("conditions are too cool, still and humid for effective drying");
+    var badRsn=badRsns.length?(badRsns[0].charAt(0).toUpperCase()+badRsns[0].slice(1)+(badRsns.length>1?", and "+badRsns.slice(1).join(", "):"")+"."):
+      "Conditions aren\u2019t suitable for drying.";
+    return washingPop("Probably not today \u274C",badRsn+" Best inside.","#c03020");
+  }
 
   // No daylight check in manual mode — just give the drying estimate
   var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
@@ -1368,13 +1443,111 @@ function checkWashing(){
   var now=Date.now();
   var sunriseEpoch=toEpoch(fc.daily.sunrise[0],tzOff);
   var sunsetEpoch=toEpoch(fc.daily.sunset[0],tzOff);
+  if(now>sunsetEpoch){
+    var tmrwMsg="Hang it out tomorrow morning when there's a full day of drying ahead.";
+    var tmrwColour="#5a8aa8";
+    if(fc.daily.sunrise.length>1){
+      var tmrwSunrise=toEpoch(fc.daily.sunrise[1],tzOff);
+      var tmrwSunset=toEpoch(fc.daily.sunset[1],tzOff);
+      var htimes=fc.hourly.time,htemps=fc.hourly.temperature_2m,hdps=fc.hourly.dew_point_2m,hwinds=fc.hourly.wind_speed_10m,hcodes=fc.hourly.weather_code||[];
+      var tmrwRainByNoon=false,tmrwFirstSlot=null,tmrwAfternoonOk=false;
+      for(var ti=0;ti<htimes.length;ti++){
+        var tSlotMs=toEpoch(htimes[ti],tzOff);
+        if(tSlotMs<tmrwSunrise)continue;
+        if(tSlotMs>tmrwSunset)break;
+        var tCode=hcodes[ti]||0,tTemp=htemps[ti],tDp=hdps[ti],tWind=hwinds[ti];
+        if(tTemp===null||tDp===null||tWind===null)continue;
+        var tHour=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:false}).format(new Date(tSlotMs)),10);
+        if(tCode>=51&&tHour<=12)tmrwRainByNoon=true;
+        if(!tmrwFirstSlot&&tCode<51)tmrwFirstSlot={temp:tTemp,dp:tDp,wind:tWind};
+        if(tCode<51&&tHour>=12&&tHour<=16&&!tmrwAfternoonOk){
+          var tSvp=0.6108*Math.exp(17.27*tTemp/(tTemp+237.3));
+          var tAvp=0.6108*Math.exp(17.27*tDp/(tDp+237.3));
+          var tVpd=tSvp-tAvp;
+          var tWm=1+Math.min(1.5,tWind/20);
+          var tTf=Math.max(0.3,Math.min(1.0,(tTemp-5)/20));
+          var tDpPen=tDp>20?0.35:tDp>16?Math.max(0.35,1.0-(tDp-16)*0.1625):1.0;
+          var tAfScore=calc(tTemp,tDp,tWind).score;
+          if(tVpd*tWm*tTf*tDpPen>0.3&&tAfScore>=70)tmrwAfternoonOk=true;
+        }
+      }
+      if(tmrwRainByNoon){
+        tmrwMsg=tmrwAfternoonOk?"Tomorrow morning looks wet — dry inside overnight, or try again in the afternoon.":"Tomorrow morning looks wet — best to dry inside. Check the forecast before hanging out tomorrow.";
+        tmrwColour="#b06010";
+      } else if(tmrwFirstSlot){
+        var fSvp=0.6108*Math.exp(17.27*tmrwFirstSlot.temp/(tmrwFirstSlot.temp+237.3));
+        var fAvp=0.6108*Math.exp(17.27*tmrwFirstSlot.dp/(tmrwFirstSlot.dp+237.3));
+        var fVpd=fSvp-fAvp;
+        var fWm=1+Math.min(1.5,tmrwFirstSlot.wind/20);
+        var fTf=Math.max(0.3,Math.min(1.0,(tmrwFirstSlot.temp-5)/20));
+        var fDpPen=tmrwFirstSlot.dp>20?0.35:tmrwFirstSlot.dp>16?Math.max(0.35,1.0-(tmrwFirstSlot.dp-16)*0.1625):1.0;
+        var fDryIdx=fVpd*fWm*fTf*fDpPen;
+        var fScore=calc(tmrwFirstSlot.temp,tmrwFirstSlot.dp,tmrwFirstSlot.wind).score;
+        var fPoor=fDryIdx<=0.15||fScore<70;
+        if(fPoor){
+          var fHumidHeat=tmrwFirstSlot.temp>22&&tmrwFirstSlot.dp>16;
+          var fColdCalm=tmrwFirstSlot.temp<14&&tmrwFirstSlot.wind<8;
+          var fReason=fHumidHeat?"high humidity means clothes may feel damp even after drying":fColdCalm?"not enough warmth or airflow":"conditions aren\u2019t ideal for drying";
+          tmrwMsg=tmrwAfternoonOk?"Tomorrow morning isn\u2019t great \u2014 "+fReason+". Dry inside overnight, or wait until the afternoon.":"Tomorrow morning isn\u2019t great \u2014 "+fReason+". Best to dry inside and check the forecast.";
+          tmrwColour="#b06010";
+        }
+      }
+    }
+    return washingPop("Sun\u2019s down \uD83C\uDF19",tmrwMsg,tmrwColour);
+  }
+  if(now<sunriseEpoch){
+    var mornMsg="Hang it out after sunrise for best results.";
+    var mornColour="#5a8aa8";
+    var mhtimes=fc.hourly.time,mhtemps=fc.hourly.temperature_2m,mhdps=fc.hourly.dew_point_2m,mhwinds=fc.hourly.wind_speed_10m,mhcodes=fc.hourly.weather_code||[];
+    var mornRain=false,mornFirstSlot=null,mornAfternoonOk=false;
+    for(var mi=0;mi<mhtimes.length;mi++){
+      var mSlotMs=toEpoch(mhtimes[mi],tzOff);
+      if(mSlotMs<sunriseEpoch)continue;
+      if(mSlotMs>sunsetEpoch)break;
+      var mCode=mhcodes[mi]||0,mTemp=mhtemps[mi],mDp=mhdps[mi],mWind=mhwinds[mi];
+      if(mTemp===null||mDp===null||mWind===null)continue;
+      var mHour=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:false}).format(new Date(mSlotMs)),10);
+      if(mCode>=51&&mHour<=12)mornRain=true;
+      if(!mornFirstSlot&&mCode<51)mornFirstSlot={temp:mTemp,dp:mDp,wind:mWind};
+      if(mCode<51&&mHour>=12&&mHour<=16&&!mornAfternoonOk){
+        var mSvp=0.6108*Math.exp(17.27*mTemp/(mTemp+237.3));
+        var mAvp=0.6108*Math.exp(17.27*mDp/(mDp+237.3));
+        var mVpd=mSvp-mAvp;
+        var mWm=1+Math.min(1.5,mWind/20);
+        var mTf=Math.max(0.3,Math.min(1.0,(mTemp-5)/20));
+        var mDpPen=mDp>20?0.35:mDp>16?Math.max(0.35,1.0-(mDp-16)*0.1625):1.0;
+        var mAfScore=calc(mTemp,mDp,mWind).score;
+        if(mVpd*mWm*mTf*mDpPen>0.3&&mAfScore>=70)mornAfternoonOk=true;
+      }
+    }
+    if(mornRain){
+      mornMsg=mornAfternoonOk?"This morning looks wet — conditions may improve in the afternoon.":"This morning looks wet — best to dry inside. Check the forecast before hanging out.";
+      mornColour="#b06010";
+    } else if(mornFirstSlot){
+      var mfSvp=0.6108*Math.exp(17.27*mornFirstSlot.temp/(mornFirstSlot.temp+237.3));
+      var mfAvp=0.6108*Math.exp(17.27*mornFirstSlot.dp/(mornFirstSlot.dp+237.3));
+      var mfVpd=mfSvp-mfAvp;
+      var mfWm=1+Math.min(1.5,mornFirstSlot.wind/20);
+      var mfTf=Math.max(0.3,Math.min(1.0,(mornFirstSlot.temp-5)/20));
+      var mfDpPen=mornFirstSlot.dp>20?0.35:mornFirstSlot.dp>16?Math.max(0.35,1.0-(mornFirstSlot.dp-16)*0.1625):1.0;
+      var mfDryIdx=mfVpd*mfWm*mfTf*mfDpPen;
+      var mfScore=calc(mornFirstSlot.temp,mornFirstSlot.dp,mornFirstSlot.wind).score;
+      var mfPoor=mfDryIdx<=0.15||mfScore<70;
+      if(mfPoor){
+        var mfHumidHeat=mornFirstSlot.temp>22&&mornFirstSlot.dp>16;
+        var mfColdCalm=mornFirstSlot.temp<14&&mornFirstSlot.wind<8;
+        var mfReason=mfHumidHeat?"high humidity means clothes may feel damp even after drying":mfColdCalm?"not enough warmth or airflow":"conditions aren\u2019t ideal for drying";
+        mornMsg=mornAfternoonOk?"This morning isn\u2019t great \u2014 "+mfReason+". Conditions may improve in the afternoon.":"This morning isn\u2019t great \u2014 "+mfReason+". Best to dry inside and check the forecast.";
+        mornColour="#b06010";
+      }
+    }
+    return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19",mornMsg,mornColour);
+  }
   if(sunsetEpoch<now&&fc.daily.sunrise.length>1){
     sunriseEpoch=toEpoch(fc.daily.sunrise[1],tzOff);
     sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
   }
   window._sunsetEpoch=sunsetEpoch;
-if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19","Hang it out after sunrise for best results.","#5a8aa8");
-  if(sunsetEpoch&&now>sunsetEpoch)return washingPop("Sun\u2019s down \uD83C\uDF19","Hang it out tomorrow morning when there\u2019s a full day of drying ahead.","#5a8aa8");
   var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
   // Freeze check — highest priority after night checks
   // But first scan for a warmer window later today
@@ -1445,8 +1618,23 @@ if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \
     humCaveat=" Note: dew point is high ("+effDP.toFixed(1)+"\u00B0C) \u2014 washing may feel damp longer than expected.";
   }
   if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
-  // Rain now
+// Rain now
   if(rainingNow){
+    var rainIntro=wxNow>=95?"Thunderstorm outside.":wxNow>=80?"Showers outside.":wxNow>=61?"Rain outside.":"Drizzle outside.";
+    var rainReasons=[];
+if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 the air is almost fully saturated");
+    else if(effDP>20)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 very humid air will prevent drying even if the rain clears");
+    else if(effDP>16)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 high humidity will slow drying significantly");
+    if(effDP<=20&&wind<5)rainReasons.push("almost no wind to help evaporation");
+    if(effDP<=20&&temp>32)rainReasons.push("heat and humidity together mean the air can\u2019t absorb much moisture");
+    else if(temp<10)rainReasons.push("cool temperature will slow drying");
+    if(hoursLeft<2)rainReasons.push("less than 2 hours of daylight left");
+    var rainBody=rainIntro;
+    if(rainReasons.length){
+      rainBody+=" Even if it clears: "+rainReasons[0].charAt(0).toUpperCase()+rainReasons[0].slice(1);
+      for(var ri=1;ri<rainReasons.length;ri++)rainBody+=", and "+rainReasons[ri];
+      rainBody+=".";
+    }
     var clearAfterIdx=null;
     for(var j=0;j<times.length;j++){
       var slotMs2=toEpoch(times[j],tzOff);
@@ -1455,30 +1643,34 @@ if(sunriseEpoch&&now<sunriseEpoch)return washingPop("Sun hasn\u2019t risen yet \
     }
     if(clearAfterIdx!==null){
       var clearWindow=findAfterRainWindow(clearAfterIdx-1,tzOff,sunsetEpoch);
-      if(clearWindow&&clearWindow.usable){
-        return washingPop("Raining now \uD83C\uDF27\uFE0F","Should clear around "+formatHour(clearWindow.hour)+" with about "+Math.round(clearWindow.hoursToSunset)+" hours of daylight left. Worth hanging out then if conditions hold.","#b06010");
+      if(clearWindow&&clearWindow.usable&&dryHours!==999&&clearWindow.hoursToSunset>=dryHours){
+        return washingPop("Raining now \uD83C\uDF27\uFE0F",rainBody+" Should clear around "+formatHour(clearWindow.hour)+" with about "+Math.round(clearWindow.hoursToSunset)+" hours of daylight left \u2014 worth trying then if conditions improve.","#b06010");
+      }
+      if(clearWindow&&(dryHours===999||clearWindow.hoursToSunset<dryHours)){
+        var postRainIssue=dryHours===999?"conditions will still be too poor for drying after it clears":"not enough daylight left after it clears";
+        return washingPop("Raining now \uD83C\uDF27\uFE0F",rainBody+" Rain may clear around "+formatHour(clearWindow.hour)+" but "+postRainIssue+". Best to dry inside.","#c03020");
       }
     }
-    return washingPop("Raining now \uD83C\uDF27\uFE0F","Rain doesn\u2019t look like it\u2019ll clear in time today. Best to dry inside.","#c03020");
+    return washingPop("Raining now \uD83C\uDF27\uFE0F",rainBody+" Best to dry inside.","#c03020");
   }
   // Rain forecast
   if(rainInHours!==null){
     if(rainInHours<=1)return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour. Best to dry inside today.","#c03020");
     var afterRainWindow=findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch);
-    if(afterRainWindow&&afterRainWindow.usable){
+    if(afterRainWindow&&afterRainWindow.usable&&afterRainWindow.hoursToSunset>=dryHours){
       return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" \u26A0\uFE0F",
         "Rain arrives around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+
         " but should clear by "+formatHour(afterRainWindow.hour)+
         " with "+Math.round(afterRainWindow.hoursToSunset)+" hours of daylight left. You could hang washing out then.","#b06010");
     }
     if(dryHours<=rainInHours-0.5&&dryHours!==999){
-      return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F","Might just get it dry in time if you hang it out now. "+rsn+humCaveat,"#b06010");
+      return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F","Might just get it dry in time if you hang it out now. "+rsn+" Bring it in before the rain arrives.","#b06010");
     }
     return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
   }
 // Check for a better window — used by all failure paths below
   function betterWindowSuffix(){
-    var bw=findBetterWindow(tzOff,sunsetEpoch);
+    var bw=findBetterWindow(tzOff,sunsetEpoch,dryHours===999?3:dryHours);
     if(bw&&bw.score>=75)return " Conditions should improve around "+bw.timeLabel+" ("+toDisp(bw.temp).toFixed(1)+unitSym()+", score "+bw.score+") — worth trying then.";
     return "";
   }
@@ -1488,26 +1680,48 @@ if(dryHours===999){
     var bwMsg=betterWindowSuffix();
     var title=bwMsg?"Not right now \u23F3":"Probably not today \u274C";
     var colour=bwMsg?"#b06010":"#c03020";
-    var reason="Conditions are too "+(vpd<0.2?"humid":"cold and calm")+" for good drying."+(bwMsg||" Better inside.");
-    return washingPop(title,reason,colour);
+    var badReasons=[];
+    if(effDP>24)badReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 the air is almost fully saturated");
+    else if(effDP>20)badReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 too humid for drying");
+    else if(effDP>16)badReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 humidity will prevent drying");
+    else if(vpd<0.3)badReasons.push("air is too humid for evaporation");
+    if(temp<10)badReasons.push(temp<=0?"freezing temperature":"too cold for effective drying");
+    if(effDP<=16&&wind<=5)badReasons.push("not enough wind");
+    if(!badReasons.length)badReasons.push("conditions are too cool, still and humid for effective drying");
+    var reason=badReasons.length?(badReasons[0].charAt(0).toUpperCase()+badReasons[0].slice(1)+(badReasons.length>1?", and "+badReasons.slice(1).join(", "):"")+"."):
+      "Conditions aren\u2019t suitable for drying.";
+    return washingPop(title,reason+(bwMsg||" Best inside."),colour);
   }
   if(dryHours>hoursLeft+0.5){
     var bwMsg2=betterWindowSuffix();
-    return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat+(bwMsg2||""),"#b06010");
+    return washingPop("Cutting it close \u26A0\uFE0F","Needs about "+dryLabel+" but only "+Math.round(hoursLeft)+" hour"+(Math.round(hoursLeft)===1?"":"s")+" of daylight left. "+rsn+humCaveat+" Bring it in at sunset regardless."+(bwMsg2||""),"#b06010");
   }
   // Good to go — still check for better window if conditions are poor
   var currentRes=calc(temp,effDP,wind);
   var currentIssues=checkConditions(temp,effDP,wind,wxNow);
   var conditionsArePoor=currentRes.score<75||currentIssues.length>0;
   if(conditionsArePoor){
-    var better=findBetterWindow(tzOff,sunsetEpoch);
+    var better=findBetterWindow(tzOff,sunsetEpoch,dryHours===999?3:dryHours);
     if(better&&better.score>=75&&better.score>currentRes.score+10){
       rsn+=" Might be worth waiting until "+better.timeLabel+" ("+toDisp(better.temp).toFixed(1)+unitSym()+", score "+better.score+").";
     }
   }
   var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
   var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
-  return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn+humCaveat,col);
+  var sunsetCaveat=(hoursLeft-dryHours<1&&hoursLeft>dryHours)?" Bring it in before dark.":"";
+  var fcDegradeCaveat="";
+  var freezeCaveat="";
+  if(fc.daily.sunrise.length>1){
+    var nextSunrise=toEpoch(fc.daily.sunrise[1],tzOff);
+    var fctimes=fc.hourly.time,fctemps=fc.hourly.temperature_2m||[];
+    for(var fci=0;fci<fctimes.length;fci++){
+      var fcSlotMs=toEpoch(fctimes[fci],tzOff);
+      if(fcSlotMs<=sunsetEpoch)continue;
+      if(fcSlotMs>nextSunrise)break;
+      if(fctemps[fci]!==null&&fctemps[fci]<=0){freezeCaveat=" \u26A0\uFE0F Forecast drops below freezing tonight \u2014 bring it in before dark.";break;}
+    }
+  }
+  return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn+humCaveat+(freezeCaveat||fcDegradeCaveat||sunsetCaveat),col);
 }
 function washingPop(title,reason,colour){
   document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
