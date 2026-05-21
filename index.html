@@ -1847,6 +1847,8 @@ function showWearPop(temp,wind,wxCode){
 function checkWhatToWear(){
   if(!window._LW)return;
   var w=window._LW;
+  document.getElementById("pop-ttl").textContent="";
+  document.getElementById("pop-body").innerHTML="";
   showWearPop(w.temp,w.wind,w.wxCode||null);
 }
 
