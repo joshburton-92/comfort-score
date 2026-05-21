@@ -1665,14 +1665,17 @@ function checkWashing(){
   var tzOff=window._tzOff;
   var temp=window._LW.temp,effDP=window._LW.effDP,rh=window._LW.rh,wind=window._LW.wind,wxNow=window._LW.wxCode||0;
   var now=Date.now();
-  var sunriseEpoch=toEpoch(fc.daily.sunrise[0],tzOff);
-  var sunsetEpoch=toEpoch(fc.daily.sunset[0],tzOff);
+  var todayDateStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var todayDayIdx=fc.daily.time?fc.daily.time.indexOf(todayDateStr):0;
+  if(todayDayIdx<0)todayDayIdx=0;
+  var sunriseEpoch=toEpoch(fc.daily.sunrise[todayDayIdx],tzOff);
+  var sunsetEpoch=toEpoch(fc.daily.sunset[todayDayIdx],tzOff);
   if(now>sunsetEpoch){
     var tmrwMsg="Hang it out tomorrow morning when there's a full day of drying ahead.";
     var tmrwColour="#5a8aa8";
     if(fc.daily.sunrise.length>1){
-      var tmrwSunrise=toEpoch(fc.daily.sunrise[1],tzOff);
-      var tmrwSunset=toEpoch(fc.daily.sunset[1],tzOff);
+      var tmrwSunrise=toEpoch(fc.daily.sunrise[todayDayIdx+1],tzOff);
+      var tmrwSunset=toEpoch(fc.daily.sunset[todayDayIdx+1],tzOff);
       var htimes=fc.hourly.time,htemps=fc.hourly.temperature_2m,hdps=fc.hourly.dew_point_2m,hwinds=fc.hourly.wind_speed_10m,hcodes=fc.hourly.weather_code||[];
       var tmrwRainByNoon=false,tmrwFirstSlot=null,tmrwAfternoonOk=false;
       for(var ti=0;ti<htimes.length;ti++){
