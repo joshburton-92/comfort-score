@@ -1035,7 +1035,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
       var maxFI=ffdiInfo(fd.todayMaxFFDI);
       if(curFI||maxFI){
         var showFI=curFI||maxFI;
-        fireHtml="<div style='margin-top:6px;cursor:pointer' onclick='showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"
+        fireHtml="<div style='margin-top:6px;cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"
           +"<span style='font-size:13px;font-weight:800;color:"+showFI.col+"'>🔥 Fire danger: "+showFI.label
           +(maxFI&&curFI&&fd.todayMaxFFDI>fd.currentFFDI?" · peak: "+maxFI.label:"")
           +"</span></div>";
