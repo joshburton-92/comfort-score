@@ -2042,6 +2042,8 @@ function render7Day(fc){
   }
   // Get today's local date to skip it
   var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var todayDayIdx=fc.daily&&fc.daily.time?fc.daily.time.indexOf(todayStr):0;
+  if(todayDayIdx<0)todayDayIdx=0;
   var dateKeys=Object.keys(days).sort().filter(function(d){return d>todayStr;}).slice(0,7);
   var html="";
   for(var di=0;di<dateKeys.length;di++){
@@ -2063,7 +2065,7 @@ function render7Day(fc){
     // Time labels for max/min
     var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
     var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
-    var dWxCode=(fc.daily&&fc.daily.weather_code)?fc.daily.weather_code[di+1]:null;
+    var dWxCode=(fc.daily&&fc.daily.weather_code)?fc.daily.weather_code[todayDayIdx+di+1]:null;
     if(dWxCode===undefined)dWxCode=null;
     var dWst=wxStyle(dWxCode);
     var dBgAttr=dWst.bg?"background:"+dWst.bg+";":"";
@@ -2120,8 +2122,12 @@ function show7DaySlot(di){
     var dWindMax=fc.daily.wind_speed_10m_max||[];
     var dTmax=fc.daily.temperature_2m_max||[];
     var dTmin=fc.daily.temperature_2m_min||[];
-    // daily index is offset: daily[0]=today, keys start from tomorrow
-    var dOff=dIdx+1;
+    // daily index offset accounts for past_days=20
+    var tz7=fc.timezone;
+    var todayStr7=new Intl.DateTimeFormat("en-CA",{timeZone:tz7,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    var todayDayIdx7=fc.daily.time?fc.daily.time.indexOf(todayStr7):0;
+    if(todayDayIdx7<0)todayDayIdx7=0;
+    var dOff=todayDayIdx7+dIdx+1;
     var wxDay=dCodes[dOff]!==undefined?dCodes[dOff]:null;
     var wxInfo=wxDay!==null?wxStyle(wxDay):null;
     var rainSum=dRain[dOff]!=null?dRain[dOff]:null;
