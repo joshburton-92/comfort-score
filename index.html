@@ -931,7 +931,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
 // ── Forecast + history ─────────────────────────────────────────────────────
 function renderForecast(fc){
   window._FC=fc;
-  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m,uvs=fc.hourly.uv_index||[];
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
   function slotEpoch(i){var p=parseLocalTimeStr(times[i]);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
   var nowHour=localHourInTZ(tz);
