@@ -1823,9 +1823,16 @@ function whatToWear(temp,wind,wxCode,s){
   var windProof=wind>s.pwhi*1.5;
   var rainProof=wxCode!==null&&wxCode>=51;
   var extra="";
-  if(rainProof&&windProof)extra="+ windproof rain jacket ☔";
-  else if(rainProof)extra="+ rain jacket ☔";
-  else if(windProof)extra="+ windproof layer 🌬️";
+  if(rainProof&&windProof){
+    // rain jacket replaces outer layer — show underlayers if any
+    extra=(layers>=3?"Over your mid layer: ":"")+"Windproof rain jacket ☔";
+    if(layers>=2)layerLabel=layers>=3?"Warm mid layer":"Light top or shirt 👔";
+  } else if(rainProof){
+    extra=(layers>=3?"Over your mid layer: ":"")+"Rain jacket ☔";
+    if(layers>=2)layerLabel=layers>=3?"Warm mid layer":"Light top or shirt 👔";
+  } else if(windProof){
+    extra="+ windproof layer 🌬️";
+  }
   return{layerLabel:layerLabel,extra:extra,apparentTemp:apparentTemp,layers:layers};
 }
 function showWearPop(temp,wind,wxCode){
