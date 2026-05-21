@@ -88,8 +88,9 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .score-emoji{font-size:clamp(26px,7vw,32px);display:block;height:36px;line-height:36px}
 .score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;height:34px;display:flex;align-items:center;justify-content:center}
 .annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:60px;align-content:flex-start}
-.share-row{text-align:center;margin-top:6px;margin-bottom:6px}
+.share-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:6px;margin-bottom:6px}
 .share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
+.ann-wear{background:rgba(100,160,100,0.15);border:1px solid rgba(100,160,100,0.35);color:#3a7a3a;cursor:pointer}
 .score-info-btn{font-size:13px;font-weight:800;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 0 0 8px;line-height:1;vertical-align:middle;opacity:0.6}
 .score-info-btn:active{opacity:1}
 .ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
@@ -148,11 +149,11 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .forecast-row{display:flex;gap:8px;width:max-content;padding:2px}
 .fc-slot{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:72px;cursor:pointer}
 .fc-slot:active{opacity:0.75}
-.fc-slot.fc-past{opacity:0.55}
 .fc-time{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:4px}
 .fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
 .fc-lbl{font-size:10px;font-weight:700;color:var(--text-muted)}
 .fc-temp{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px}
+.fc-wx{font-size:14px;line-height:1;margin-top:5px}
 .fc-slot-7{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:84px;cursor:pointer}
 .fc-slot-7:active{opacity:0.75}
 .fc-day{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:6px}
@@ -298,9 +299,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="score-outer" id="live-score-area"></div>
       <div class="share-row">
         <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
-<button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none;margin-left:8px">Will washing dry? &#129531;</button>
-<button class="share-btn" id="world-btn" onclick="openWorldCheck()" style="display:none;margin-left:8px">Where in the world? &#127758;</button>
-<div id="forecast-wrap" style="display:none">
+        <button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none">Will washing dry? &#129531;</button>
+        <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()" style="display:none">What to wear? &#129531;</button>
+        <button class="share-btn" id="world-btn" onclick="openWorldCheck()" style="display:none">Where in the world? &#127758;</button>
+      </div>
+      <div id="forecast-wrap" style="display:none">
         <div class="sec-lbl" style="margin-top:10px">Next 24 hours</div>
         <div class="forecast-wrap-inner">
           <button class="fc-nav fc-nav-l" onclick="fcScroll(-1)" aria-label="Scroll left">&#8249;</button>
@@ -641,7 +644,6 @@ var PINNED_CITIES=["New York","London","Dubai","Tokyo","Sydney"];
 var STEAMY_TITLE="Hot & steamy";
 var STEAMY_TEXT="When both temperature and dew point are above your comfortable range at the same time, this condition fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
 var FC_SLOTS=[0,3,6,9,12,15,18,21];
-var MAX_HISTORY=5;
 var _tlo=18;
 var _thi=22;
 var _coolmax=35;
@@ -665,6 +667,23 @@ function wxFromCode(code){
   if(code>=85&&code<=86)return{c:"ann-wx",t:"snow showers \uD83C\uDF28\uFE0F"};
   if(code>=95&&code<=99)return{c:"ann-wx",t:"thunderstorm \u26C8\uFE0F"};
   return null;
+}
+
+// ── Forecast slot wx tint + emoji ─────────────────────────────────────────
+function wxStyle(code){
+  var dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+  if(code===null||code===undefined)return{bg:'',emoji:''};
+  if(code<=1)  return{bg:dark?'rgba(255,210,80,0.13)':'rgba(255,200,40,0.18)',emoji:'☀️'};
+  if(code===2) return{bg:dark?'rgba(180,200,220,0.10)':'rgba(160,185,210,0.14)',emoji:'⛅'};
+  if(code===3) return{bg:dark?'rgba(150,165,180,0.12)':'rgba(140,155,170,0.15)',emoji:'☁️'};
+  if(code>=45&&code<=48) return{bg:dark?'rgba(160,170,185,0.13)':'rgba(150,160,175,0.16)',emoji:'🌫️'};
+  if(code>=51&&code<=57) return{bg:dark?'rgba(80,150,220,0.15)':'rgba(80,140,210,0.14)',emoji:'🌦️'};
+  if(code>=61&&code<=67) return{bg:dark?'rgba(60,120,210,0.20)':'rgba(50,110,200,0.16)',emoji:'🌧️'};
+  if(code>=71&&code<=77) return{bg:dark?'rgba(180,210,240,0.16)':'rgba(170,205,235,0.20)',emoji:'❄️'};
+  if(code>=80&&code<=82) return{bg:dark?'rgba(60,120,210,0.20)':'rgba(50,110,200,0.16)',emoji:'🌧️'};
+  if(code>=85&&code<=86) return{bg:dark?'rgba(180,210,240,0.16)':'rgba(170,205,235,0.20)',emoji:'❄️'};
+  if(code>=95&&code<=99) return{bg:dark?'rgba(130,80,200,0.20)':'rgba(110,60,190,0.14)',emoji:'⛈️'};
+  return{bg:'',emoji:''};
 }
 
 // ── Beaufort wind ──────────────────────────────────────────────────────────
@@ -728,31 +747,6 @@ function fmtFcTime(timeStr,tz){
 }
 function localHourInTZ(tz){
   try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,hour:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});var h=parseInt(parts.hour);return h===24?0:h;}catch(e){return new Date().getHours();}
-}
-
-// ── Score history ──────────────────────────────────────────────────────────
-function histKey(){
-  if(window._currentWU)return "hist_wu_"+window._currentWU.stationId;
-  if(window._currentLat)return "hist_"+Math.round(window._currentLat*100)+"_"+Math.round(window._currentLon*100);
-  return "hist_default";
-}
-function loadHistory(){return JSON.parse(localStorage.getItem(histKey())||"[]");}
-function saveHistory(h){localStorage.setItem(histKey(),JSON.stringify(h));}
-function pushHistory(entry,tz){
-  var nowHour=localHourInTZ(tz||"UTC");
-  var nowMin=0;
-  try{var parts={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",hour12:false,minute:"2-digit"}).formatToParts(new Date()).forEach(function(p){parts[p.type]=p.value;});nowMin=parseInt(parts.minute)||0;}catch(e){}
-  var nearSlot=false;
-  for(var i=0;i<FC_SLOTS.length;i++){if(FC_SLOTS[i]===nowHour&&nowMin<=15){nearSlot=true;break;}}
-  if(!nearSlot)return;
-  var slotDay="";
-  try{var dp2={};new Intl.DateTimeFormat("en-US",{timeZone:tz||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).forEach(function(p){dp2[p.type]=p.value;});slotDay=dp2.year+dp2.month+dp2.day;}catch(e){slotDay=new Date().toISOString().slice(0,10).replace(/-/g,"");}
-  var h=loadHistory();
-  if(h.length&&h[h.length-1].slotHour===nowHour&&h[h.length-1].slotDay===slotDay)return;
-  entry.slotHour=nowHour;entry.slotDay=slotDay;
-  h.push(entry);
-  if(h.length>MAX_HISTORY)h=h.slice(h.length-MAX_HISTORY);
-  saveHistory(h);
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
@@ -930,13 +924,6 @@ function renderForecast(fc){
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
   function slotEpoch(i){var p=parseLocalTimeStr(times[i]);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
   var nowHour=localHourInTZ(tz);
-  var history=loadHistory(),histHtml="";
-  for(var hi=0;hi<history.length;hi++){
-    var h=history[hi],res=calc(h.temp,h.dp,h.wind),si2=scoreInfo(res.score);
-    var nc=SBANDS[bandForScore(res.score)].col.replace("0.92","1");
-    var tDisp=new Date(h.ts).toLocaleTimeString("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).toLowerCase().replace(" ","");
-    histHtml+="<div class='fc-slot fc-past' onclick='showHistorySlot("+hi+")'><div class='fc-time'>\u25D4 "+tDisp+"</div><div class='fc-score' style='color:"+nc+"'>"+res.score+"</div><div class='fc-lbl' style='color:"+nc+"'>"+si2.label+"</div><div class='fc-temp'>"+toDisp(h.temp).toFixed(1)+unitSym()+"</div></div>";
-  }
   var startHour=-1;
   for(var si=0;si<FC_SLOTS.length;si++){if(FC_SLOTS[si]>nowHour){startHour=FC_SLOTS[si];break;}}
   if(startHour===-1)startHour=FC_SLOTS[0];
@@ -949,14 +936,17 @@ function renderForecast(fc){
     if(FC_SLOTS.indexOf(hr)!==-1){
       var t=temps[idx],dp=dps[idx],w=winds[idx],res2=calc(t,dp,w),si3=scoreInfo(res2.score);
       var nc2=SBANDS[bandForScore(res2.score)].col.replace("0.92","1");
-      fcastHtml+="<div class='fc-slot' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div></div>";
+      var wxc=(fc.hourly.weather_code||[])[idx];if(wxc===undefined)wxc=null;
+      var wst=wxStyle(wxc);
+      var bgAttr=wst.bg?"background:"+wst.bg+";":"";
+      var wxDiv=wst.emoji?"<div class='fc-wx'>"+wst.emoji+"</div>":"";
+      fcastHtml+="<div class='fc-slot' style='"+bgAttr+"' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"+wxDiv+"</div>";
       added++;
     }
     idx++;
   }
-  document.getElementById("forecast-row").innerHTML=histHtml+fcastHtml;
+  document.getElementById("forecast-row").innerHTML=fcastHtml;
   document.getElementById("forecast-wrap").style.display="block";
-if(history.length){setTimeout(function(){var strip=document.querySelector(".forecast-strip");if(strip){strip.scrollLeft=Math.max(0,history.length*80-20);}},100);}
   render7Day(fc);
 }
 function showForecastSlot(idx){
@@ -967,17 +957,18 @@ function showForecastSlot(idx){
   var wxCode=(fc.hourly.weather_code||[])[idx];
   if(wxCode===undefined)wxCode=null;
   var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
-  var annText="";for(var i=0;i<anns.length;i++){annText+=(i>0?", ":"")+anns[i].t.replace(" \u2139\uFE0F","");}
-  showPop(fmtObsTime(fc.hourly.time[idx],tz)+" \u2014 Score "+r.score+" ("+si.label+")",toDisp(t).toFixed(1)+unitSym()+" | DP "+toDisp(dp).toFixed(1)+unitSym()+" | Wind "+Math.round(w)+" km/h"+(annText?" | "+annText:""));
-}
-function showHistorySlot(i){
-  var h=loadHistory()[i];if(!h)return;
-  var r=calc(h.temp,h.dp,h.wind),si=scoreInfo(r.score),s=gs();
-  var anns=getAnnotations(h.temp,h.dp,h.wind,r.score,s,r.iP,r.wP,null);
-  var annText="";for(var j=0;j<anns.length;j++){annText+=(j>0?", ":"")+anns[j].t.replace(" \u2139\uFE0F","");}
-  var tz=window._FC?window._FC.timezone:"UTC";
-  var tStr=new Date(h.ts).toLocaleString("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).replace(",","");
-  showPop(tStr+" \u2014 Score "+r.score+" ("+si.label+")",toDisp(h.temp).toFixed(1)+unitSym()+" | DP "+toDisp(h.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(h.wind)+" km/h"+(annText?" | "+annText:""));
+  var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
+  var annHtml="";
+  for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
+  var wearPill="<span class='ann ann-wear' onclick='showWearPop("+t+","+w+","+(wxCode===null?"null":wxCode)+")'>what to wear 🧥</span>";
+  var body="<div class='washing-reason'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" &mdash; "+si.label+"</div>"
+    +"<div style='margin-bottom:4px'>🌡️ "+toDisp(t).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(w)+" km/h</div>"
+    +"<div style='margin-top:8px'>"+annHtml+wearPill+"</div>"
+    +"</div>";
+  document.getElementById("pop-ttl").textContent=fmtObsTime(fc.hourly.time[idx],tz);
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
 }
 
 // ── Share ──────────────────────────────────────────────────────────────────
@@ -1164,16 +1155,16 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
+var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
     window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,res:res,wxCode:wxCode};
-    pushHistory({ts:Date.now(),temp:temp,dp:effDP,wind:wind},d.timezone);
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
     document.getElementById("washing-btn").style.display="inline-block";
+document.getElementById("clothing-btn").style.display="inline-block";
 document.getElementById("world-btn").style.display="inline-block";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind);
@@ -1201,12 +1192,12 @@ function fetchWU(stationId,apiKey,label,cb){
     window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,res:res,wxCode:null};
     window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;
     window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
-    pushHistory({ts:Date.now(),temp:temp,dp:dew,wind:wind},"UTC");
     document.getElementById("live-status").textContent="";
     document.getElementById("wu-status").textContent="";document.getElementById("wu-status").style.display="none";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=lbl;
     document.getElementById("washing-btn").style.display="inline-block";
+document.getElementById("clothing-btn").style.display="inline-block";
 document.getElementById("world-btn").style.display="inline-block";
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
@@ -1218,7 +1209,7 @@ document.getElementById("world-btn").style.display="inline-block";
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
-  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
+ fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
@@ -1279,7 +1270,7 @@ function findBetterWindow(tzOff,sunsetEpoch,dryHours){
     if(issues.length>0)continue;
     var res=calc(t,d,w);
     var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:6;
-    if(res.score>=75&&(!dryHours||hoursToSunset>=dryHours)){
+    if(res.score>=80&&res.temp>=10&&(!dryHours||hoursToSunset>=dryHours)){
       // Format time with day context — check if it's tomorrow
       var slotDate=new Date(slotEp);
       var nowDate=new Date(now);
@@ -1489,7 +1480,7 @@ function renderWorldBody(){
     return a.slice(0,5);
   }
   var top=topPool.length>5?pick5(topPool):topPool.slice(0,5);
-  var bottom=bottomPool.length>5?pick5(bottomPool):bottomPool.slice(-5).reverse();
+  var bottom=bottomPool.length>5?pick5(bottomPool):bottomPool.length>=5?bottomPool.slice(0,5):sorted.slice(-5).reverse();
   // Pinned cities
   var pinned=[];
   for(var pi=0;pi<PINNED_CITIES.length;pi++){
@@ -1752,7 +1743,20 @@ if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 th
 // Check for a better window — used by all failure paths below
   function betterWindowSuffix(){
     var bw=findBetterWindow(tzOff,sunsetEpoch,dryHours===999?3:dryHours);
-    if(bw&&bw.score>=75)return " Conditions should improve around "+bw.timeLabel+" ("+toDisp(bw.temp).toFixed(1)+unitSym()+", score "+bw.score+") — worth trying then.";
+    if(bw&&bw.score>=80&&bw.temp>=10){
+      var bwFreeze="";
+      if(fc.daily.sunrise.length>1){
+        var bwNextSunrise=toEpoch(fc.daily.sunrise[1],tzOff);
+        var bwTemps=fc.hourly.temperature_2m||[],bwTimes=fc.hourly.time;
+        for(var bwi=0;bwi<bwTimes.length;bwi++){
+          var bwMs=toEpoch(bwTimes[bwi],tzOff);
+          if(bwMs<=sunsetEpoch)continue;
+          if(bwMs>bwNextSunrise)break;
+          if(bwTemps[bwi]!==null&&bwTemps[bwi]<=0){bwFreeze=" \u26A0\uFE0F Bring it in before dark \u2014 forecast drops below freezing tonight.";break;}
+        }
+      }
+      return " Conditions should improve around "+bw.timeLabel+" ("+toDisp(bw.temp).toFixed(1)+unitSym()+", score "+bw.score+") \u2014 worth trying then."+bwFreeze;
+    }
     return "";
   }
 
@@ -1783,13 +1787,13 @@ if(dryHours===999){
   var conditionsArePoor=currentRes.score<75||currentIssues.length>0;
   if(conditionsArePoor){
     var better=findBetterWindow(tzOff,sunsetEpoch,dryHours===999?3:dryHours);
-    if(better&&better.score>=75&&better.score>currentRes.score+10){
+    if(better&&better.score>=80&&better.temp>=10&&better.score>currentRes.score+10){
       rsn+=" Might be worth waiting until "+better.timeLabel+" ("+toDisp(better.temp).toFixed(1)+unitSym()+", score "+better.score+").";
     }
   }
   var col=dryHours<=1.5?"#1a7a3a":dryHours<=3?"#3a9a2a":"#7a7000";
   var emoji=dryHours<=1.5?"\u2600\uFE0F":dryHours<=3?"\uD83D\uDC4D":"\uD83D\uDE10";
-  var sunsetCaveat=(hoursLeft-dryHours<1&&hoursLeft>dryHours)?" Bring it in before dark.":"";
+  var sunsetCaveat=(dryHours>=3&&hoursLeft>dryHours&&hoursLeft-dryHours<0.5&&hoursLeft<5)?" Bring it in before dark.":"";
   var fcDegradeCaveat="";
   var freezeCaveat="";
   if(fc.daily.sunrise.length>1){
@@ -1808,6 +1812,41 @@ function washingPop(title,reason,colour){
   document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
   document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"+reason+"</div>";
   document.getElementById("pop-ov").classList.add("open");
+}
+
+// ── Clothing recommendation ────────────────────────────────────────────────
+function whatToWear(temp,wind,wxCode,s){
+  var apparentTemp=temp-(wind*0.033);
+  var layers,layerLabel;
+  if(apparentTemp>=s.thi+3){layers=0;layerLabel="T-shirt 👕";}
+  else if(apparentTemp>=s.tlo){layers=1;layerLabel="Light top or shirt 👔";}
+  else if(apparentTemp>=s.tlo-6){layers=2;layerLabel="Light jacket 🧥";}
+  else if(apparentTemp>=s.tlo-12){layers=3;layerLabel="Warm jacket + mid layer 🧥";}
+  else{layers=4;layerLabel="Heavy winter gear 🧣";}
+  var windProof=wind>s.pwhi*1.5;
+  var rainProof=wxCode!==null&&wxCode>=51;
+  var extra="";
+  if(rainProof&&windProof)extra="+ windproof rain jacket ☔";
+  else if(rainProof)extra="+ rain jacket ☔";
+  else if(windProof)extra="+ windproof layer 🌬️";
+  return{layerLabel:layerLabel,extra:extra,apparentTemp:apparentTemp,layers:layers};
+}
+function showWearPop(temp,wind,wxCode){
+  var s=gs(),w=whatToWear(temp,wind,wxCode,s);
+  var nc=w.layers===0?"#c07020":w.layers===1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
+  var body="<div class='washing-reason'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+w.layerLabel+"</div>"
+    +(w.extra?"<div style='margin-bottom:6px'>"+w.extra+"</div>":"")
+    +"<div style='font-size:12px;color:var(--text-muted);margin-top:6px'>Based on your comfort range "+s.tlo+"–"+s.thi+"°C · feels like "+toDisp(w.apparentTemp).toFixed(1)+unitSym()+"</div>"
+    +"</div>";
+  document.getElementById("pop-ttl").innerHTML="What to wear?";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
+function checkWhatToWear(){
+  if(!window._LW)return;
+  var w=window._LW;
+  showWearPop(w.temp,w.wind,w.wxCode||null);
 }
 
 // ── Forecast scroll ────────────────────────────────────────────────────────
@@ -1878,34 +1917,71 @@ function show7DaySlot(di){
   if(!dateKey||!window._7dayData[dateKey])return;
   var slots=window._7dayData[dateKey];
   var tz=window._7dayTZ;
+  var fc=window._FC;
   var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
   for(var i=0;i<slots.length;i++){
-    var s=slots[i];
-    if(s.temp===null||s.dp===null||s.wind===null)continue;
-    var r=calc(s.temp,s.dp,s.wind);
-    if(r.score>maxScore){maxScore=r.score;maxSlot=s;}
-    if(r.score<minScore){minScore=r.score;minSlot=s;}
+    var sl=slots[i];
+    if(sl.temp===null||sl.dp===null||sl.wind===null)continue;
+    var r=calc(sl.temp,sl.dp,sl.wind);
+    if(r.score>maxScore){maxScore=r.score;maxSlot=sl;}
+    if(r.score<minScore){minScore=r.score;minSlot=sl;}
   }
   var gs2=gs();
-  // Max slot details
   var maxR=calc(maxSlot.temp,maxSlot.dp,maxSlot.wind);
+  var maxNc=SBANDS[bandForScore(maxScore)].col.replace("0.92","1");
   var maxAnns=getAnnotations(maxSlot.temp,maxSlot.dp,maxSlot.wind,maxR.score,gs2,maxR.iP,maxR.wP,null);
-  var maxAnnText="";for(var i=0;i<maxAnns.length;i++){maxAnnText+=(i>0?", ":"")+maxAnns[i].t.replace(" \u2139\uFE0F","");}
-  var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(maxSlot.utcMs)).replace(",","");
-  // Min slot details
+  var maxAnnHtml="";for(var i=0;i<maxAnns.length;i++){maxAnnHtml+="<span class='ann "+maxAnns[i].c+"'>"+maxAnns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
+  var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
   var minR=calc(minSlot.temp,minSlot.dp,minSlot.wind);
+  var minNc=SBANDS[bandForScore(minScore)].col.replace("0.92","1");
   var minAnns=getAnnotations(minSlot.temp,minSlot.dp,minSlot.wind,minR.score,gs2,minR.iP,minR.wP,null);
-  var minAnnText="";for(var i=0;i<minAnns.length;i++){minAnnText+=(i>0?", ":"")+minAnns[i].t.replace(" \u2139\uFE0F","");}
-  var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(minSlot.utcMs)).replace(",","");
+  var minAnnHtml="";for(var i=0;i<minAnns.length;i++){minAnnHtml+="<span class='ann "+minAnns[i].c+"'>"+minAnns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
+  var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
   var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"long",month:"short",day:"numeric"}).format(new Date(slots[0].utcMs));
-  showPop(dayLabel,
-    "\u2191 Best: "+maxScore+" ("+scoreInfo(maxScore).label+") at "+maxTime+"\n"
-    +toDisp(maxSlot.temp).toFixed(1)+unitSym()+" | DP "+toDisp(maxSlot.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(maxSlot.wind)+" km/h"
-    +(maxAnnText?"\n"+maxAnnText:"")+"\n\n"
-    +"\u2193 Worst: "+minScore+" ("+scoreInfo(minScore).label+") at "+minTime+"\n"
-    +toDisp(minSlot.temp).toFixed(1)+unitSym()+" | DP "+toDisp(minSlot.dp).toFixed(1)+unitSym()+" | Wind "+Math.round(minSlot.wind)+" km/h"
-    +(minAnnText?"\n"+minAnnText:"")
-  );
+  // Daily summary from API
+  var dailySummary="";
+  if(fc&&fc.daily){
+    var dIdx=window._7dayKeys.indexOf(dateKey);
+    var dCodes=fc.daily.weather_code||[];
+    var dRain=fc.daily.precipitation_sum||[];
+    var dRainHrs=fc.daily.precipitation_hours||[];
+    var dWindMax=fc.daily.wind_speed_10m_max||[];
+    var dTmax=fc.daily.temperature_2m_max||[];
+    var dTmin=fc.daily.temperature_2m_min||[];
+    // daily index is offset: daily[0]=today, keys start from tomorrow
+    var dOff=dIdx+1;
+    var wxDay=dCodes[dOff]!==undefined?dCodes[dOff]:null;
+    var wxInfo=wxDay!==null?wxStyle(wxDay):null;
+    var rainSum=dRain[dOff]!=null?dRain[dOff]:null;
+    var rainHrs=dRainHrs[dOff]!=null?Math.round(dRainHrs[dOff]):null;
+    var windMax=dWindMax[dOff]!=null?Math.round(dWindMax[dOff]):null;
+    var tMax=dTmax[dOff]!=null?toDisp(dTmax[dOff]).toFixed(1):null;
+    var tMin=dTmin[dOff]!=null?toDisp(dTmin[dOff]).toFixed(1):null;
+    var condLine=(wxInfo?wxInfo.emoji+" ":"")+( wxDay!==null?(wxFromCode(wxDay)||{t:""}).t:"");
+    var rainLine=rainSum!==null&&rainSum>0?(rainSum.toFixed(1)+"mm over "+rainHrs+"h"):"No rain expected";
+    var rangeLine=(tMax!==null&&tMin!==null)?(tMin+unitSym()+" – "+tMax+unitSym()):"";
+    var windLine=windMax!==null?("Peak wind "+windMax+" km/h"):"";
+    dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
+      +(condLine?"<div style='font-size:13px;color:var(--text)'>"+condLine+"</div>":"")
+      +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
+      +"<div>🌧️ "+rainLine+"</div>"
+      +(windLine?"<div>💨 "+windLine+"</div>":"")
+      +"</div>";
+  }
+  var wearPillMax="<span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null)'>what to wear 🧥</span>";
+  var body="<div class='washing-reason'>"+dailySummary
+    +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Best</div>"
+    +"<div style='font-size:15px;font-weight:800;color:"+maxNc+";margin-bottom:4px'>↑ "+maxScore+" &mdash; "+scoreInfo(maxScore).label+" <span style='font-size:12px;font-weight:700;color:var(--text-muted)'>"+maxTime+"</span></div>"
+    +"<div style='margin-bottom:4px'>🌡️ "+toDisp(maxSlot.temp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(maxSlot.dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(maxSlot.wind)+" km/h</div>"
+    +(maxAnnHtml?"<div style='margin-bottom:8px'>"+maxAnnHtml+wearPillMax+"</div>":"<div style='margin-bottom:8px'>"+wearPillMax+"</div>")
+    +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Worst</div>"
+    +"<div style='font-size:15px;font-weight:800;color:"+minNc+";margin-bottom:4px'>↓ "+minScore+" &mdash; "+scoreInfo(minScore).label+" <span style='font-size:12px;font-weight:700;color:var(--text-muted)'>"+minTime+"</span></div>"
+    +"<div style='margin-bottom:4px'>🌡️ "+toDisp(minSlot.temp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(minSlot.dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(minSlot.wind)+" km/h</div>"
+    +(minAnnHtml?"<div>"+minAnnHtml+"</div>":"")
+    +"</div>";
+  document.getElementById("pop-ttl").textContent=dayLabel;
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
 }
 function fcScroll(dir){var strip=document.getElementById("forecast-strip");if(!strip)return;strip.scrollBy({left:dir*220,behavior:"smooth"});}
 
