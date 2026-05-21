@@ -1422,7 +1422,7 @@ function findBetterWindow(tzOff,sunsetEpoch,dryHours){
     if(issues.length>0)continue;
     var res=calc(t,d,w);
     var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:6;
-    if(res.score>=80&&res.temp>=10&&(!dryHours||hoursToSunset>=dryHours)){
+    if(res.score>=80&&t>=10&&(!dryHours||hoursToSunset>=dryHours)){
       // Format time with day context — check if it's tomorrow
       var slotDate=new Date(slotEp);
       var nowDate=new Date(now);
@@ -1770,9 +1770,9 @@ function checkWashing(){
     }
     return washingPop("Sun hasn\u2019t risen yet \uD83C\uDF19",mornMsg,mornColour);
   }
-  if(sunsetEpoch<now&&fc.daily.sunrise.length>1){
-    sunriseEpoch=toEpoch(fc.daily.sunrise[1],tzOff);
-    sunsetEpoch=toEpoch(fc.daily.sunset[1],tzOff);
+  if(sunsetEpoch<now&&fc.daily.sunrise.length>todayDayIdx+1){
+    sunriseEpoch=toEpoch(fc.daily.sunrise[todayDayIdx+1],tzOff);
+    sunsetEpoch=toEpoch(fc.daily.sunset[todayDayIdx+1],tzOff);
   }
   window._sunsetEpoch=sunsetEpoch;
   var hoursLeft=sunsetEpoch?Math.max(0,(sunsetEpoch-now)/3600000):6;
@@ -1900,8 +1900,8 @@ if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 th
     var bw=findBetterWindow(tzOff,sunsetEpoch,dryHours===999?3:dryHours);
     if(bw&&bw.score>=80&&bw.temp>=10){
       var bwFreeze="";
-      if(fc.daily.sunrise.length>1){
-        var bwNextSunrise=toEpoch(fc.daily.sunrise[1],tzOff);
+      if(fc.daily.sunrise.length>todayDayIdx+1){
+        var bwNextSunrise=toEpoch(fc.daily.sunrise[todayDayIdx+1],tzOff);
         var bwTemps=fc.hourly.temperature_2m||[],bwTimes=fc.hourly.time;
         for(var bwi=0;bwi<bwTimes.length;bwi++){
           var bwMs=toEpoch(bwTimes[bwi],tzOff);
@@ -1951,8 +1951,8 @@ if(dryHours===999){
   var sunsetCaveat=(dryHours>=3&&hoursLeft>dryHours&&hoursLeft-dryHours<0.5&&hoursLeft<5)?" Bring it in before dark.":"";
   var fcDegradeCaveat="";
   var freezeCaveat="";
-  if(fc.daily.sunrise.length>1){
-    var nextSunrise=toEpoch(fc.daily.sunrise[1],tzOff);
+  if(fc.daily.sunrise.length>todayDayIdx+1){
+    var nextSunrise=toEpoch(fc.daily.sunrise[todayDayIdx+1],tzOff);
     var fctimes=fc.hourly.time,fctemps=fc.hourly.temperature_2m||[];
     for(var fci=0;fci<fctimes.length;fci++){
       var fcSlotMs=toEpoch(fctimes[fci],tzOff);
