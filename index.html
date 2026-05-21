@@ -786,7 +786,7 @@ function showFireDangerPop(ffdi,todayMax,df){
   var fromBody=document.getElementById("pop-body").innerHTML;
   var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody)+"\")'>\u2190 Back</div>":"";
   var body="<div class='washing-reason'>"
-    +(ffdi!==null?"<div style='font-size:15px;font-weight:800;color:"+ffdiInfo(ffdi).col+";margin-bottom:4px'>Now: "+ffdiInfo(ffdi).label+" ("+ffdi+")</div>":"")
+    +(ffdi!==null&&ffdiInfo(ffdi)?"<div style='font-size:15px;font-weight:800;color:"+ffdiInfo(ffdi).col+";margin-bottom:4px'>Now: "+ffdiInfo(ffdi).label+" ("+ffdi+")</div>":"")
     +(todayMax&&ffdiInfo(todayMax)?"<div style='font-size:13px;font-weight:700;color:"+ffdiInfo(todayMax).col+";margin-bottom:10px'>Today\u2019s peak: "+ffdiInfo(todayMax).label+" ("+todayMax+")</div>":"")
     +"<div style='font-size:12px;color:var(--text-muted);margin-bottom:8px'>Drought factor: "+df+"/10 (estimated from recent rainfall)</div>"
     +"<div style='font-size:12px;color:var(--text-muted);line-height:1.6'>Based on the McArthur Forest Fire Danger Index (FFDI). The drought factor is approximated from recent rainfall data and may understate risk during prolonged dry periods. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
