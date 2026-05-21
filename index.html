@@ -311,7 +311,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
       </div>
       <div id="forecast-wrap" style="display:none">
-        <div class="sec-lbl" style="margin-top:10px">Next 24 hours</div>
+        <div class="sec-lbl" style="margin-top:10px">Next 48 hours</div>
         <div class="forecast-wrap-inner">
           <button class="fc-nav fc-nav-l" onclick="fcScroll(-1)" aria-label="Scroll left">&#8249;</button>
           <div class="forecast-strip" id="forecast-strip"><div class="forecast-row" id="forecast-row"></div></div>
@@ -1073,7 +1073,7 @@ function renderForecast(fc){
   for(var i=0;i<times.length;i++){var h2=parseInt(times[i].slice(11,13));if(h2===startHour&&slotEpoch(i)>nowEpoch){startIdx=i;break;}}
   if(startIdx===-1)startIdx=0;
   var fcastHtml="",added=0,idx=startIdx;
-  while(added<8&&idx<times.length){
+  while(added<16&&idx<times.length){
     var hr=parseInt(times[idx].slice(11,13));
     if(FC_SLOTS.indexOf(hr)!==-1){
       var t=temps[idx],dp=dps[idx],w=winds[idx],res2=calc(t,dp,w),si3=scoreInfo(res2.score);
