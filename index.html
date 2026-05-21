@@ -1829,12 +1829,16 @@ function whatToWear(temp,wind,wxCode,s){
   return{layerLabel:layerLabel,extra:extra,apparentTemp:apparentTemp,layers:layers};
 }
 function showWearPop(temp,wind,wxCode){
+  var fromTitle=document.getElementById("pop-ttl").textContent;
+  var fromBody=document.getElementById("pop-body").innerHTML;
   var s=gs(),w=whatToWear(temp,wind,wxCode,s);
   var nc=w.layers===0?"#c07020":w.layers===1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
+  var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody||"")+"\")'>← Back</div>":"";
   var body="<div class='washing-reason'>"
     +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+w.layerLabel+"</div>"
     +(w.extra?"<div style='margin-bottom:6px'>"+w.extra+"</div>":"")
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:6px'>Based on your comfort range "+s.tlo+"–"+s.thi+"°C · feels like "+toDisp(w.apparentTemp).toFixed(1)+unitSym()+"</div>"
+    +backLink
     +"</div>";
   document.getElementById("pop-ttl").innerHTML="What to wear?";
   document.getElementById("pop-body").innerHTML=body;
