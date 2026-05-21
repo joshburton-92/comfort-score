@@ -935,9 +935,14 @@ function renderForecast(fc){
       var nc2=SBANDS[bandForScore(res2.score)].col.replace("0.92","1");
       var wxc=(fc.hourly.weather_code||[])[idx];if(wxc===undefined)wxc=null;
       var slotEp=slotEpoch(idx);
-      var srEp=fc.daily&&fc.daily.sunrise?toEpoch(fc.daily.sunrise[0],tzOff):null;
-      var ssEp=fc.daily&&fc.daily.sunset?toEpoch(fc.daily.sunset[0],tzOff):null;
-      var isNight=srEp&&ssEp?(slotEp<srEp||slotEp>ssEp):hr<6||hr>=20;
+      var isNight=hr<6||hr>=20;
+      if(fc.daily&&fc.daily.sunrise&&fc.daily.sunset){
+        var sunrises=fc.daily.sunrise,sunsets=fc.daily.sunset;
+        for(var si2=0;si2<sunrises.length;si2++){
+          var sr2=toEpoch(sunrises[si2],tzOff),ss2=toEpoch(sunsets[si2],tzOff);
+          if(slotEp>=sr2-3600000&&slotEp<=ss2+3600000){isNight=slotEp<sr2||slotEp>ss2;break;}
+        }
+      }
       var wst=wxStyle(wxc,isNight);
       var bgAttr=wst.bg?"background:"+wst.bg+";":"";
       var wxDiv=wst.emoji?"<div class='fc-wx'>"+wst.emoji+"</div>":"";
