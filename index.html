@@ -218,6 +218,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%}
 .pop-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px}
 .pop-body{font-size:clamp(13px,3.2vw,14px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line}
+.pop-body-scroll{max-height:60vh;overflow-y:auto;padding-right:4px}
 .pop-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700}
 .stars-pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%}
 .stars-list{margin-top:8px;max-height:260px;overflow-y:auto}
@@ -243,7 +244,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .world-loading{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;padding:20px 0}
 .washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
-.sources-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
+.howitworks-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 .clear-btn{font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 </style>
 </head>
@@ -402,7 +403,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </div>
 
   <div class="footer-row">
-    <button class="sources-btn" onclick="showSources()">Sources &#9432;</button>
+    <button class="howitworks-btn" onclick="showHowItWorks()">How it works &#9432;</button>
     <button class="clear-btn"   onclick="clearAndReload()">Clear cache &amp; reload</button>
   </div>
 </div>
@@ -709,6 +710,93 @@ function uvAnnotation(uv){
   return{c:"ann-uv",t:"UV extreme ☠️"};
 }
 
+// ── Fire Danger (FFDI) ─────────────────────────────────────────────────────
+function calcDroughtFactor(dailyRain){
+  // Weighted rainfall sum over past 20 days, recent days weighted more heavily
+  // Returns drought factor 1-10 (10 = most severe drought)
+  if(!dailyRain||!dailyRain.length)return 5;
+  var weightedRain=0;
+  var days=Math.min(dailyRain.length,20);
+  for(var i=0;i<days;i++){
+    var rain=dailyRain[i]||0;
+    var age=days-i; // 1=most recent, 20=oldest
+    var weight=Math.exp(-0.1*age);
+    weightedRain+=rain*weight;
+  }
+  // Map weighted rain to drought factor: 0mm->10, 50mm+->1
+  var df=10-Math.min(9,weightedRain/5);
+  return Math.max(1,Math.min(10,df));
+}
+function calcFFDI(temp,rh,wind,df){
+  // McArthur Forest Fire Danger Index
+  rh=Math.max(1,Math.min(100,rh));
+  df=Math.max(1,Math.min(10,df));
+  wind=Math.max(0,wind);
+  return Math.round(2*Math.exp(-0.45+0.987*Math.log(df)-0.0345*rh+0.0338*temp+0.0234*wind));
+}
+function ffdiInfo(ffdi){
+  if(ffdi<12)return null; // None, not shown
+  if(ffdi<24)return{label:"Moderate",col:"#64BF30",emoji:"🔥"};
+  if(ffdi<50)return{label:"High",col:"#FFDD39",emoji:"🔥"};
+  if(ffdi<100)return{label:"Extreme",col:"#F78100",emoji:"🔥"};
+  return{label:"Catastrophic",col:"#AD0A08",emoji:"🔥"};
+}
+function getFireDangerForFC(fc){
+  // Returns {currentFFDI, todayMaxFFDI, df} or null if data unavailable
+  if(!fc||!fc.hourly||!fc.hourly.relative_humidity_2m)return null;
+  var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
+  // past_days=20 means dailyRain[0..19] are past days, [20] is today
+  var pastRain=dailyRain.slice(0,20);
+  var df=calcDroughtFactor(pastRain);
+  var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
+  var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
+  // Today's date string in location timezone
+  var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var todayMaxFFDI=0;
+  for(var i=0;i<times.length;i++){
+    if(times[i].slice(0,10)!==todayStr)continue;
+    var ffdi=calcFFDI(temps[i],rhs[i],winds[i],df);
+    if(ffdi>todayMaxFFDI)todayMaxFFDI=ffdi;
+  }
+  // Current FFDI from _LW
+  var currentFFDI=null;
+  if(window._LW){
+    var rh=window._LW.rh!=null?window._LW.rh:50;
+    currentFFDI=calcFFDI(window._LW.temp,rh,window._LW.wind,df);
+  }
+  return{currentFFDI:currentFFDI,todayMaxFFDI:todayMaxFFDI,df:Math.round(df*10)/10};
+}
+function getMaxFFDIForDay(fc,dateStr){
+  if(!fc||!fc.hourly||!fc.hourly.relative_humidity_2m)return null;
+  var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
+  var pastRain=dailyRain.slice(0,20);
+  var df=calcDroughtFactor(pastRain);
+  var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
+  var maxFFDI=0;
+  for(var i=0;i<times.length;i++){
+    if(times[i].slice(0,10)!==dateStr)continue;
+    var ffdi=calcFFDI(temps[i],rhs[i],winds[i],df);
+    if(ffdi>maxFFDI)maxFFDI=ffdi;
+  }
+  return maxFFDI;
+}
+function showFireDangerPop(ffdi,todayMax,df){
+  var info=ffdiInfo(ffdi)||ffdiInfo(todayMax);
+  var fromTitle=document.getElementById("pop-ttl").textContent;
+  var fromBody=document.getElementById("pop-body").innerHTML;
+  var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody)+"\")'>\u2190 Back</div>":"";
+  var body="<div class='washing-reason'>"
+    +(ffdi!==null?"<div style='font-size:15px;font-weight:800;color:"+ffdiInfo(ffdi).col+";margin-bottom:4px'>Now: "+ffdiInfo(ffdi).label+" ("+ffdi+")</div>":"")
+    +(todayMax&&ffdiInfo(todayMax)?"<div style='font-size:13px;font-weight:700;color:"+ffdiInfo(todayMax).col+";margin-bottom:10px'>Today\u2019s peak: "+ffdiInfo(todayMax).label+" ("+todayMax+")</div>":"")
+    +"<div style='font-size:12px;color:var(--text-muted);margin-bottom:8px'>Drought factor: "+df+"/10 (estimated from recent rainfall)</div>"
+    +"<div style='font-size:12px;color:var(--text-muted);line-height:1.6'>Based on the McArthur Forest Fire Danger Index (FFDI). The drought factor is approximated from recent rainfall data and may understate risk during prolonged dry periods. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
+    +backLink
+    +"</div>";
+  document.getElementById("pop-ttl").innerHTML="Fire Danger 🔥";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
+
 // ── Onboarding ─────────────────────────────────────────────────────────────
 function initOnboard(){if(!localStorage.getItem("comfort_onboarded"))document.getElementById("onboard-card").style.display="block";}
 function dismissOnboard(){document.getElementById("onboard-card").style.display="none";localStorage.setItem("comfort_onboarded","1");}
@@ -784,7 +872,27 @@ var SETTINGS=[
 ];
 function showPop(title,text){document.getElementById("pop-ttl").textContent=title;document.getElementById("pop-body").textContent=text;document.getElementById("pop-ov").classList.add("open");}
 function closePop(){document.getElementById("pop-ov").classList.remove("open");}
-function showSources(){showPop("Data sources","Weather data: Open-Meteo (open-meteo.com) — free, open-source weather API, no key required.\n\nGeocoding & search: Nominatim / OpenStreetMap (nominatim.openstreetmap.org) — free, open-source.\n\nPersonal weather stations: Weather Underground API (wunderground.com) — requires a free API key.\n\nAll data fetched live. Settings and saved locations stored locally on your device only.");}
+function showHowItWorks(){
+  var body="<div class='washing-reason pop-body-scroll'>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>The Comfort Score</div>"
+    +"<div style='margin-bottom:12px'>A score from 0–100 representing how comfortable it is to be outside, personalised to your preferences. 100 is perfect. Penalties are applied for heat, cold, humidity, and wind based on your comfort range settings — so two people in the same place can get different scores.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Why dew point, not humidity?</div>"
+    +"<div style='margin-bottom:12px'>Relative humidity tells you how full the air is compared to its capacity — but capacity changes with temperature. A 70% humidity day at 10°C feels crisp; at 30°C it's oppressive. Dew point measures the actual moisture in the air regardless of temperature, making it a far better indicator of how sticky or clammy conditions feel.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Clothing recommendation</div>"
+    +"<div style='margin-bottom:12px'>Layers are calculated from your comfort floor and ceiling, adjusted for wind chill. The outer layer accounts for rain and wind independently — a rain jacket replaces rather than adds to the insulating layer recommendation.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
+    +"<div style='margin-bottom:12px'>A drying index is calculated from vapour pressure deficit, wind, and temperature. This estimates how quickly moisture evaporates from fabric. Forecast slots are scanned to find usable drying windows, accounting for sunset, incoming rain, and overnight freezes.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
+    +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Fire Danger 🔥</div>"
+    +"<div style='margin-bottom:12px'>Uses the McArthur FFDI formula — temperature, humidity, wind, and an estimated drought factor from recent rainfall — mapped to the current Australian Fire Danger Rating System (AFDRS) bands introduced in September 2022. The drought factor is approximated from recent rainfall only and may understate risk during prolonged dry periods. The official AFDRS also accounts for fuel type and vegetation, which this app cannot determine. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
+    +"<div>Weather data: Open-Meteo (open-meteo.com) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
+    +"</div>";
+  document.getElementById("pop-ttl").textContent="How it works";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
 function buildSettings(){
   var saved=JSON.parse(localStorage.getItem("comfort_settings")||"{}"),html="";
   for(var i=0;i<SETTINGS.length;i++){var s=SETTINGS[i];if(s.grp){html+="<div class='sgrp-title'>"+s.grp+"</div>";continue;}var v=(saved[s.id]!==undefined)?saved[s.id]:s.val;html+="<div class='sitem'><div class='sitem-hdr'><label for='"+s.id+"'>"+s.label+"</label><div class='ibtn' onclick='showPop(SETTINGS["+i+"].title,SETTINGS["+i+"].info)'>i</div></div><input type='number' id='"+s.id+"' value='"+v+"' step='"+s.step+"' onchange='onAdvChange()'/></div>";}
@@ -919,12 +1027,28 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP,wxCode);
   var annHtml="";
   for(var i=0;i<anns.length;i++){var ann=anns[i];annHtml+=ann.url?"<a class='ann "+ann.c+"' href='"+ann.url+"' target='_blank' rel='noopener' style='text-decoration:none'>"+ann.t+"</a>":ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>":"<span class='ann "+ann.c+"'>"+ann.t+"</span>";}
+  var fireHtml="";
+  if(areaId==="live-score-area"&&window._FC){
+    var fd=getFireDangerForFC(window._FC);
+    if(fd){
+      var curFI=fd.currentFFDI!==null?ffdiInfo(fd.currentFFDI):null;
+      var maxFI=ffdiInfo(fd.todayMaxFFDI);
+      if(curFI||maxFI){
+        var showFI=curFI||maxFI;
+        fireHtml="<div style='margin-top:6px;cursor:pointer' onclick='showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"
+          +"<span style='font-size:13px;font-weight:800;color:"+showFI.col+"'>🔥 Fire danger: "+showFI.label
+          +(maxFI&&curFI&&fd.todayMaxFFDI>fd.currentFFDI?" · peak: "+maxFI.label:"")
+          +"</span></div>";
+      }
+    }
+  }
   document.getElementById(areaId).innerHTML=
     "<div class='score-area'><canvas id='"+gaugeId+"'></canvas>"
     +"<div class='score-num' style='color:"+si.col+"'>"+score+"<button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
     +"<span class='score-emoji'>"+si.emoji+"</span>"
     +"<div class='score-lbl' style='color:"+si.col+"'>"+si.label+"</div>"
-    +"<div class='annotations'>"+annHtml+"</div></div>";
+    +"<div class='annotations'>"+annHtml+"</div>"
+    +fireHtml+"</div>";
   setTimeout(function(){drawGauge(gaugeId,score);},50);
 }
 
@@ -1180,7 +1304,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
+var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
@@ -1230,7 +1354,7 @@ function fetchWU(stationId,apiKey,label,cb){
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
- fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
+ fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20")
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
@@ -1999,11 +2123,16 @@ function show7DaySlot(di){
     var rainLine=rainSum!==null&&rainSum>0?(rainSum.toFixed(1)+"mm over "+rainHrs+"h"):"No rain expected";
     var rangeLine=(tMax!==null&&tMin!==null)?(tMin+unitSym()+" – "+tMax+unitSym()):"";
     var windLine=windMax!==null?("Peak wind "+windMax+" km/h"):"";
+    var fireLine="";
+    var dayMaxFFDI=getMaxFFDIForDay(fc,dateKey);
+    var dayFI=dayMaxFFDI!==null?ffdiInfo(dayMaxFFDI):null;
+    if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(0,20))*10)/10:5)+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
       +(condLine?"<div style='font-size:13px;color:var(--text)'>"+condLine+"</div>":"")
       +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
       +"<div>🌧️ "+rainLine+"</div>"
       +(windLine?"<div>💨 "+windLine+"</div>":"")
+      +fireLine
       +"</div>";
   }
   var wearPill="<div style='margin-bottom:10px'><span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null)'>at best 🧥</span> <span class='ann ann-wear' onclick='showWearPop("+minSlot.temp+","+minSlot.wind+",null)'>at worst 🧥</span></div>";
