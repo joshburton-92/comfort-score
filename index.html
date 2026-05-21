@@ -1965,12 +1965,12 @@ function show7DaySlot(di){
       +(windLine?"<div>💨 "+windLine+"</div>":"")
       +"</div>";
   }
-  var wearPillMax="<span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null)'>what to wear 🧥</span>";
-  var body="<div class='washing-reason'>"+dailySummary
+  var wearPill="<div style='margin-bottom:10px'><span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null)'>at best 🧥</span> <span class='ann ann-wear' onclick='showWearPop("+minSlot.temp+","+minSlot.wind+",null)'>at worst 🧥</span></div>";
+  var body="<div class='washing-reason'>"+dailySummary+wearPill
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Best</div>"
     +"<div style='font-size:15px;font-weight:800;color:"+maxNc+";margin-bottom:4px'>↑ "+maxScore+" &mdash; "+scoreInfo(maxScore).label+" <span style='font-size:12px;font-weight:700;color:var(--text-muted)'>"+maxTime+"</span></div>"
     +"<div style='margin-bottom:4px'>🌡️ "+toDisp(maxSlot.temp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(maxSlot.dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(maxSlot.wind)+" km/h</div>"
-    +(maxAnnHtml?"<div style='margin-bottom:8px'>"+maxAnnHtml+wearPillMax+"</div>":"<div style='margin-bottom:8px'>"+wearPillMax+"</div>")
+    +(maxAnnHtml?"<div style='margin-bottom:8px'>"+maxAnnHtml+"</div>":"")
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Worst</div>"
     +"<div style='font-size:15px;font-weight:800;color:"+minNc+";margin-bottom:4px'>↓ "+minScore+" &mdash; "+scoreInfo(minScore).label+" <span style='font-size:12px;font-weight:700;color:var(--text-muted)'>"+minTime+"</span></div>"
     +"<div style='margin-bottom:4px'>🌡️ "+toDisp(minSlot.temp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(minSlot.dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(minSlot.wind)+" km/h</div>"
