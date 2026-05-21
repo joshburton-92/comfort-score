@@ -769,8 +769,14 @@ function getFireDangerForFC(fc){
 function getMaxFFDIForDay(fc,dateStr){
   if(!fc||!fc.hourly||!fc.hourly.relative_humidity_2m)return null;
   var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
-  var pastRain=dailyRain.slice(0,20);
-  var df=calcDroughtFactor(pastRain);
+  var dailyDates=fc.daily&&fc.daily.time?fc.daily.time:[];
+  // Find how many forecast days precede dateStr and include their rain in drought factor
+  var rainUpToDate=dailyRain.slice(0,20); // past 20 days always included
+  for(var d=0;d<dailyDates.length;d++){
+    if(dailyDates[d]>=dateStr)break; // stop before the target date
+    if(d>=20)rainUpToDate.push(dailyRain[d]||0); // append forecast days before target
+  }
+  var df=calcDroughtFactor(rainUpToDate);
   var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
   var maxFFDI=0;
   for(var i=0;i<times.length;i++){
