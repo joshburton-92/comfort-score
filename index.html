@@ -1896,8 +1896,12 @@ function render7Day(fc){
     // Time labels for max/min
     var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
     var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
-html+="<div class='fc-slot-7' onclick='show7DaySlot("+di+")'>"
-         +"<div class='fc-day'>"+dayLabel+"</div>"
+    var dWxCode=(fc.daily&&fc.daily.weather_code)?fc.daily.weather_code[di+1]:null;
+    if(dWxCode===undefined)dWxCode=null;
+    var dWst=wxStyle(dWxCode);
+    var dBgAttr=dWst.bg?"background:"+dWst.bg+";":"";
+html+="<div class='fc-slot-7' style='"+dBgAttr+"' onclick='show7DaySlot("+di+")'>"
+         +"<div class='fc-day'>"+dayLabel+(dWst.emoji?" "+dWst.emoji:"")+"</div>"
          +"<div class='fc-hilo'>"
          +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
          +"<div class='fc-hitime'>"+maxTime+"</div>"
