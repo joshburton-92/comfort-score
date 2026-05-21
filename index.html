@@ -114,6 +114,7 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .ann-dry{background:rgba(180,130,60,0.15);color:#5a3a00;border-color:rgba(180,130,60,0.3)}
 .ann-vdry{background:rgba(160,100,30,0.18);color:#4a2000;border-color:rgba(160,100,30,0.35)}
 .ann-wx{background:rgba(100,160,200,0.15);color:#1a4060;border-color:rgba(100,160,200,0.3)}
+.ann-uv{background:rgba(220,160,0,0.15);color:#7a4a00;border-color:rgba(220,160,0,0.3)}
 .ann-info{cursor:pointer}
 @media(prefers-color-scheme:dark){
   .ann-great{background:rgba(30,140,65,0.25);color:#4ae880}
@@ -136,6 +137,7 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
   .ann-dry{background:rgba(160,110,40,0.25);color:#c08030}
   .ann-vdry{background:rgba(140,80,20,0.25);color:#b06020}
   .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
+  .ann-uv{background:rgba(220,160,0,0.25);color:#e8a800}
 }
 .forecast-wrap-inner{position:relative}
 .fc-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:32px;height:44px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text-sec);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none}
@@ -297,11 +299,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </div>
       <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
+      <div class="share-row" id="utility-row" style="display:none">
+        <button class="share-btn" id="washing-btn" onclick="checkWashing()">Will washing dry? &#129531;</button>
+        <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()">What to wear? &#129531;</button>
+        <button class="share-btn" id="world-btn" onclick="openWorldCheck()">Where in the world? &#127758;</button>
+      </div>
       <div class="share-row">
         <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
-        <button class="share-btn" id="washing-btn" onclick="checkWashing()" style="display:none">Will washing dry? &#129531;</button>
-        <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()" style="display:none">What to wear? &#129531;</button>
-        <button class="share-btn" id="world-btn" onclick="openWorldCheck()" style="display:none">Where in the world? &#127758;</button>
+        <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
       </div>
       <div id="forecast-wrap" style="display:none">
         <div class="sec-lbl" style="margin-top:10px">Next 24 hours</div>
@@ -695,6 +700,15 @@ function windBeaufort(wind,temp,s){
   return{c:"ann-wind",t:"storm force \uD83C\uDF2A\uFE0F"};
 }
 
+// ── UV Index ───────────────────────────────────────────────────────────────
+function uvAnnotation(uv){
+  if(uv===null||uv===undefined||uv<3)return null;
+  if(uv<6) return{c:"ann-uv",t:"UV moderate 🕶️"};
+  if(uv<8) return{c:"ann-uv",t:"UV high 🧴"};
+  if(uv<11)return{c:"ann-uv",t:"UV very high 🧴"};
+  return{c:"ann-uv",t:"UV extreme ☠️"};
+}
+
 // ── Onboarding ─────────────────────────────────────────────────────────────
 function initOnboard(){if(!localStorage.getItem("comfort_onboarded"))document.getElementById("onboard-card").style.display="block";}
 function dismissOnboard(){document.getElementById("onboard-card").style.display="none";localStorage.setItem("comfort_onboarded","1");}
@@ -946,7 +960,9 @@ function renderForecast(fc){
       var wst=wxStyle(wxc,isNight);
       var bgAttr=wst.bg?"background:"+wst.bg+";":"";
       var wxDiv=wst.emoji?"<div class='fc-wx'>"+wst.emoji+"</div>":"";
-      fcastHtml+="<div class='fc-slot' style='"+bgAttr+"' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"+wxDiv+"</div>";
+      var uvAnn=uvAnnotation(uvs[idx]);
+      var uvDiv=uvAnn?"<div class='fc-wx' style='font-size:10px;margin-top:2px'><span class='ann ann-uv' style='padding:1px 5px;font-size:9px'>"+uvAnn.t+"</span></div>":"";
+      fcastHtml+="<div class='fc-slot' style='"+bgAttr+"' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"+wxDiv+uvDiv+"</div>";
       added++;
     }
     idx++;
@@ -963,9 +979,12 @@ function showForecastSlot(idx){
   var wxCode=(fc.hourly.weather_code||[])[idx];
   if(wxCode===undefined)wxCode=null;
   var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
+  var uv=fc.hourly.uv_index?fc.hourly.uv_index[idx]:null;
+  var uvAnn=uvAnnotation(uv);
   var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
   var annHtml="";
   for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
+  if(uvAnn)annHtml+="<span class='ann "+uvAnn.c+"'>"+uvAnn.t+"</span> ";
   var wearPill="<span class='ann ann-wear' onclick='showWearPop("+t+","+w+","+(wxCode===null?"null":wxCode)+")'>what to wear 🧥</span>";
   var body="<div class='washing-reason'>"
     +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" &mdash; "+si.label+"</div>"
@@ -1161,7 +1180,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
+var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8";
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
@@ -1169,9 +1188,7 @@ var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
-    document.getElementById("washing-btn").style.display="inline-block";
-document.getElementById("clothing-btn").style.display="inline-block";
-document.getElementById("world-btn").style.display="inline-block";
+    document.getElementById("utility-row").style.display="flex";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
@@ -1202,9 +1219,7 @@ function fetchWU(stationId,apiKey,label,cb){
     document.getElementById("wu-status").textContent="";document.getElementById("wu-status").style.display="none";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=lbl;
-    document.getElementById("washing-btn").style.display="inline-block";
-document.getElementById("clothing-btn").style.display="inline-block";
-document.getElementById("world-btn").style.display="inline-block";
+    document.getElementById("utility-row").style.display="flex";
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
     renderChips(temp,dew,rh,wind);
@@ -1215,7 +1230,7 @@ document.getElementById("world-btn").style.display="inline-block";
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
- fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
+ fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8")
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
@@ -1876,7 +1891,7 @@ function fc7Scroll(dir){
 }
 
 function render7Day(fc){
-  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m;
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m,uvs=fc.hourly.uv_index||[];
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
   // Group hourly slots by local date
   var days={};
