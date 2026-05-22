@@ -1559,15 +1559,15 @@ function fetchForecastOnly(lat,lon){
   Promise.all([fcPromise,aqPromise]).then(function(results){
     var d=results[0],aq=results[1];
     window._AQ=aq;
-    if(window._LW){
-      if(d.current&&d.current.weather_code!==undefined){
-        window._LW.wxCode=d.current.weather_code;
-      }
-      var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
-      // Always re-render live score now that _AQ is set
-      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode||null);
+    if(d.current&&d.current.weather_code!==undefined&&window._LW){
+      window._LW.wxCode=d.current.weather_code;
     }
-    renderForecast(d);
+    renderForecast(d); // sets window._FC first
+    if(window._LW){
+      var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
+      // Re-render live score after _FC and _AQ are both set
+      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode!==undefined?w.wxCode:null);
+    }
   }).catch(function(){});
 }
 function showStatusWU(msg){var el=document.getElementById("wu-status");el.textContent=msg;el.style.display=msg?"":"none";}
