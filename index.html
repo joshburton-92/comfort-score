@@ -1559,10 +1559,13 @@ function fetchForecastOnly(lat,lon){
   Promise.all([fcPromise,aqPromise]).then(function(results){
     var d=results[0],aq=results[1];
     window._AQ=aq;
-    if(d.current&&d.current.weather_code!==undefined&&window._LW){
-      window._LW.wxCode=d.current.weather_code;
+    if(window._LW){
+      if(d.current&&d.current.weather_code!==undefined){
+        window._LW.wxCode=d.current.weather_code;
+      }
       var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
-      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode);
+      // Always re-render live score now that _AQ is set
+      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode||null);
     }
     renderForecast(d);
   }).catch(function(){});
