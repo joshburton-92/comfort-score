@@ -2261,19 +2261,23 @@ function whatToWear(temp,wind,wxCode,s,dp){
   if(apparentTemp>=s.thi+3){layers=0;layerLabel="T-shirt 👕";}
   else if(apparentTemp>=s.tlo){layers=1;layerLabel="Light top or shirt 👔";}
   else if(apparentTemp>=s.tlo-6){layers=2;layerLabel="Light jacket 🧥";}
-  else if(apparentTemp>=s.tlo-12){layers=3;layerLabel="Warm jacket + mid layer 🧥";}
-  else{layers=4;layerLabel="Heavy winter gear 🧣";}
+  else if(apparentTemp>=s.tlo-12){layers=3;layerLabel="Warm jacket + layers 🧣";}
+  else{layers=4;layerLabel="Bundle up — multiple layers essential 🧣";}
   var windProof=wind>s.pwhi*1.5;
-  var rainProof=wxCode!==null&&wxCode>=51;
+  var isSnow=wxCode!==null&&((wxCode>=71&&wxCode<=77)||(wxCode>=85&&wxCode<=86));
+  var isRain=!isSnow&&wxCode!==null&&wxCode>=51;
   var extra="";
-  var hotRain=rainProof&&temp>=26; // raining but warm enough that getting wet beats wearing a jacket
+  var hotRain=isRain&&temp>=26;
   if(hotRain){
-    // At t-shirt temperatures a rain jacket is worse than the rain
     extra=windProof?"It's raining and it's hot — light poncho if you must 🌂, honestly just get wet":"It's raining and it's hot — honestly just get wet 🌧️";
-  } else if(rainProof&&windProof){
+  } else if(isSnow){
+    // Snow: waterproof insulation over everything, boots matter
+    if(layers<=1)layerLabel="Warm jacket + layers 🧣";
+    extra="Waterproof outer layer + warm underlayers — and waterproof boots ❄️";
+  } else if(isRain&&windProof){
     extra=(layers>=3?"Over your mid layer: ":"")+"Windproof rain jacket ☔";
     if(layers>=2)layerLabel=layers>=3?"Warm mid layer":"Light top or shirt 👔";
-  } else if(rainProof){
+  } else if(isRain){
     extra=(layers>=3?"Over your mid layer: ":"")+"Rain jacket ☔";
     if(layers>=2)layerLabel=layers>=3?"Warm mid layer":"Light top or shirt 👔";
   } else if(windProof){
