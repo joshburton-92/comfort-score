@@ -745,13 +745,11 @@ function aqiAnnotation(aqi){
   return{c:"ann-aqi ann-info",t:"AQI hazardous ☣️"};
 }
 function showAQIPop(slotIdx){
-  // slotIdx: hourly index into window._AQ, or null to use current hour
   var aq=window._AQ;
   if(!aq||!aq.hourly)return;
   var fromTitle=document.getElementById("pop-ttl").textContent;
   var fromBody=document.getElementById("pop-body").innerHTML;
   var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody)+"\")'>\u2190 Back</div>":"";
-  // Find index: either passed in, or match current hour
   var idx=slotIdx;
   if(idx===null||idx===undefined){
     var fc=window._FC;
@@ -764,7 +762,7 @@ function showAQIPop(slotIdx){
     }
   }
   var h=aq.hourly;
-  function val(arr){var v=(arr||[])[idx];return(v===null||v===undefined)?"—":Math.round(v);}
+  function val(arr){var v=(arr||[])[idx];return(v===null||v===undefined)?null:Math.round(v);}
   var aqi=val(h.us_aqi);
   var pm25=val(h.pm2_5);
   var pm10=val(h.pm10);
@@ -773,25 +771,59 @@ function showAQIPop(slotIdx){
   var so2=val(h.sulphur_dioxide);
   var grassPollen=val(h.grass_pollen);
   var dust=val(h.dust);
-  function aqiLabel(v){if(v==="—")return"—";v=parseInt(v);if(v<=50)return"Good";if(v<=100)return"Moderate";if(v<=150)return"Unhealthy for sensitive groups";if(v<=200)return"Unhealthy";if(v<=300)return"Very unhealthy";return"Hazardous";}
-  function aqiCol(v){if(v==="—")return"var(--text-muted)";v=parseInt(v);if(v<=50)return"#1a7a3a";if(v<=100)return"#8a7000";if(v<=150)return"#b05010";if(v<=200)return"#a02020";if(v<=300)return"#7a0080";return"#4a0000";}
+
+  function aqiLabel(v){if(v===null)return"—";if(v<=50)return"Good";if(v<=100)return"Moderate";if(v<=150)return"Unhealthy for sensitive groups";if(v<=200)return"Unhealthy";if(v<=300)return"Very unhealthy";return"Hazardous";}
+  function aqiCol(v){if(v===null)return"var(--text-muted)";if(v<=50)return"#1a7a3a";if(v<=100)return"#8a7000";if(v<=150)return"#b05010";if(v<=200)return"#a02020";if(v<=300)return"#7a0080";return"#4a0000";}
+  // Tint: returns rgba bg and border for a tile given value and thresholds [good, moderate, high, vhigh]
+  function tint(v,t1,t2,t3,t4){
+    if(v===null)return{bg:"var(--card-inner)",border:"var(--card-inner-border)",col:"var(--text-muted)"};
+    if(v<=t1)return{bg:"rgba(26,122,58,0.12)",border:"rgba(26,122,58,0.3)",col:"#1a7a3a"};
+    if(v<=t2)return{bg:"rgba(138,112,0,0.12)",border:"rgba(138,112,0,0.3)",col:"#8a7000"};
+    if(v<=t3)return{bg:"rgba(176,80,16,0.12)",border:"rgba(176,80,16,0.3)",col:"#b05010"};
+    if(v<=t4)return{bg:"rgba(160,32,32,0.12)",border:"rgba(160,32,32,0.3)",col:"#a02020"};
+    return{bg:"rgba(122,0,128,0.12)",border:"rgba(122,0,128,0.3)",col:"#7a0080"};
+  }
+  // Per-pollutant thresholds (US EPA, μg/m³): good / moderate / USG / unhealthy / very unhealthy
+  var tPM25 =tint(pm25, 12,  35,  55, 150);
+  var tPM10 =tint(pm10, 55, 155, 255, 355);
+  var tO3   =tint(o3,   60, 100, 140, 180);
+  var tNO2  =tint(no2,  40,  80, 180, 280);
+  var tSO2  =tint(so2,  35,  75, 185, 305);
+  var tDust =tint(dust, 25,  50, 100, 200);
+  var tPoll =tint(grassPollen, 10, 30, 80, 200);
+
+  // Info tooltip: inline expand on tap using a hidden div pattern
+  // Each pollutant tile has a small ⓘ that toggles a detail div
+  function tile(id,label,value,t,infoText){
+    var disp=value===null?"—":value;
+    var col=t.col;
+    return "<div style='background:"+t.bg+";border:1px solid "+t.border+";border-radius:8px;padding:6px 8px;position:relative'>"
+      +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:2px'>"
+      +"<div style='font-size:10px;font-weight:700;color:var(--text-muted)'>"+label+"</div>"
+      +"<div class='ibtn' style='flex-shrink:0' onclick='(function(el){el.style.display=el.style.display===\"none\"?\"block\":\"none\";})(document.getElementById(\"aqti-"+id+"\"))'>i</div>"
+      +"</div>"
+      +"<div style='font-size:18px;font-weight:800;color:"+col+"'>"+disp+"</div>"
+      +"<div id='aqti-"+id+"' style='display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--divider);font-size:10px;font-weight:600;color:var(--text-muted);line-height:1.5'>"+infoText+"</div>"
+      +"</div>";
+  }
+
   var body="<div class='washing-reason'>"
-    +"<div style='font-size:22px;font-weight:800;color:"+aqiCol(aqi)+";margin-bottom:2px'>"+aqi+"</div>"
+    +"<div style='font-size:24px;font-weight:800;color:"+aqiCol(aqi)+";margin-bottom:2px'>"+(aqi===null?"—":aqi)+"</div>"
     +"<div style='font-size:15px;font-weight:800;color:"+aqiCol(aqi)+";margin-bottom:10px'>"+aqiLabel(aqi)+"</div>"
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Pollutants</div>"
     +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px'>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>PM2.5 (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+pm25+"</div></div>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>PM10 (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+pm10+"</div></div>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Ozone O₃ (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+o3+"</div></div>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>NO₂ (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+no2+"</div></div>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>SO₂ (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+so2+"</div></div>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Dust (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+dust+"</div></div>"
+    +tile("pm25","PM2.5 (μg/m³)",pm25,tPM25,"Fine particles &lt;2.5μm. Penetrate deep into lungs and bloodstream. Main risk in bushfire smoke &amp; traffic. Good ≤12 · Moderate ≤35 · High ≤55 · Unhealthy ≤150")
+    +tile("pm10","PM10 (μg/m³)",pm10,tPM10,"Coarser particles &lt;10μm. Dust, pollen, smoke. Irritate eyes, nose &amp; throat. Good ≤55 · Moderate ≤155 · High ≤255 · Unhealthy ≤355")
+    +tile("o3","Ozone O₃ (μg/m³)",o3,tO3,"Ground-level ozone formed by sunlight &amp; traffic fumes. Triggers asthma, reduces lung function. Worst on hot sunny afternoons. Good ≤60 · Moderate ≤100 · High ≤140")
+    +tile("no2","NO₂ (μg/m³)",no2,tNO2,"Nitrogen dioxide from vehicles &amp; industry. Inflames airways, worsens asthma. Good ≤40 · Moderate ≤80 · High ≤180")
+    +tile("so2","SO₂ (μg/m³)",so2,tSO2,"Sulphur dioxide from power plants &amp; volcanoes. Causes breathing difficulty. Good ≤35 · Moderate ≤75 · High ≤185")
+    +tile("dust","Dust (μg/m³)",dust,tDust,"Windblown mineral dust. Can travel thousands of km. Reduces visibility and worsens respiratory conditions. Good ≤25 · Moderate ≤50 · High ≤100")
     +"</div>"
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Pollen</div>"
     +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px'>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Grass pollen</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+grassPollen+"</div></div>"
+    +tile("gpoll","Grass pollen",grassPollen,tPoll,"Grass pollen count (grains/m³). Main trigger for hay fever in Australia. Low ≤10 · Moderate ≤30 · High ≤80 · Very high &gt;80. Only available in Europe — shown as — elsewhere.")
     +"</div>"
-    +"<div style='font-size:11px;color:var(--text-muted);font-weight:600;line-height:1.5'>US AQI scale. PM2.5 is the primary driver of health risk. Pollen data available for Europe only — shown as — elsewhere.</div>"
+    +"<div style='font-size:11px;color:var(--text-muted);font-weight:600;line-height:1.5'>US AQI scale. Tap ⓘ on any tile for details.</div>"
     +backLink
     +"</div>";
   document.getElementById("pop-ttl").innerHTML="Air Quality 😷";
