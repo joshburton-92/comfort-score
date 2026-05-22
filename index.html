@@ -1580,7 +1580,7 @@ function fetchWU(stationId,apiKey,label,cb){
     document.getElementById("wu-status").textContent="";document.getElementById("wu-status").style.display="none";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=lbl;
-    document.getElementById("utility-row").style.display="flex";
+    document.getElementById("utility-row").style.display="block";
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
     renderChips(temp,dew,rh,wind);
