@@ -1375,7 +1375,7 @@ function showForecastSlot(idx){
     var fcAqiAnn=aqiAnnotation(fcAqiVal);
     if(fcAqiAnn)annHtml+="<span class='ann "+fcAqiAnn.c+"' onclick='showAQIPop("+fcAqiIdx+")'>"+fcAqiAnn.t+"</span> ";
   }
-  var wearPill="<span class='ann ann-wear' onclick='showWearPop("+t+","+w+","+(wxCode===null?"null":wxCode)+")'>what to wear 🧥</span>";
+  var wearPill="<span class='ann ann-wear' onclick='showWearPop("+t+","+w+","+(wxCode===null?"null":wxCode)+","+dp+")'>what to wear 🧥</span>";
   var body="<div class='washing-reason'>"
     +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" &mdash; "+si.label+"</div>"
     +"<div style='margin-bottom:4px'>🌡️ "+toDisp(t).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(w)+" km/h</div>"
@@ -2245,8 +2245,15 @@ function washingPop(title,reason,colour){
 }
 
 // ── Clothing recommendation ────────────────────────────────────────────────
-function whatToWear(temp,wind,wxCode,s){
-  var apparentTemp=temp-(wind*0.033);
+function whatToWear(temp,wind,wxCode,s,dp){
+  // BOM apparent temperature: Ta + 0.33×e − 0.70×ws − 4.00
+  // e = vapour pressure from dew point, ws = wind in m/s
+  var e=dp!==null&&dp!==undefined?6.105*Math.exp(25.22*(dp-273.16)/dp-5.31*Math.log(dp/273.16)):null;
+  // Simpler: e from dew point in Celsius directly
+  var dpC=dp!==null&&dp!==undefined?dp:temp-10; // fallback if no dp
+  var eVp=6.105*Math.exp(17.27*dpC/(237.7+dpC));
+  var wsMs=wind/3.6; // km/h to m/s
+  var apparentTemp=temp+0.33*eVp-0.70*wsMs-4.00;
   var layers,layerLabel;
   if(apparentTemp>=s.thi+3){layers=0;layerLabel="T-shirt 👕";}
   else if(apparentTemp>=s.tlo){layers=1;layerLabel="Light top or shirt 👔";}
@@ -2271,10 +2278,11 @@ function whatToWear(temp,wind,wxCode,s){
   }
   return{layerLabel:layerLabel,extra:extra,apparentTemp:apparentTemp,layers:layers};
 }
-function showWearPop(temp,wind,wxCode){
+function showWearPop(temp,wind,wxCode,dp){
   var fromTitle=document.getElementById("pop-ttl").textContent;
   var fromBody=document.getElementById("pop-body").innerHTML;
-  var s=gs(),w=whatToWear(temp,wind,wxCode,s);
+  var dpVal=dp!==null&&dp!==undefined?dp:(window._LW?window._LW.effDP:null);
+  var s=gs(),w=whatToWear(temp,wind,wxCode,s,dpVal);
   var nc=w.layers===0?"#c07020":w.layers===1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
   var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody||"")+"\")'>← Back</div>":"";
   var body="<div class='washing-reason'>"
@@ -2292,7 +2300,7 @@ function checkWhatToWear(){
   var w=window._LW;
   document.getElementById("pop-ttl").textContent="";
   document.getElementById("pop-body").innerHTML="";
-  showWearPop(w.temp,w.wind,w.wxCode||null);
+  showWearPop(w.temp,w.wind,w.wxCode||null,w.effDP);
 }
 
 // ── Forecast scroll ────────────────────────────────────────────────────────
@@ -2431,7 +2439,7 @@ function show7DaySlot(di){
       +fireLine
       +"</div>";
   }
-  var wearPill="<div style='margin-bottom:10px'><span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null)'>at best 🧥</span> <span class='ann ann-wear' onclick='showWearPop("+minSlot.temp+","+minSlot.wind+",null)'>at worst 🧥</span></div>";
+  var wearPill="<div style='margin-bottom:10px'><span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null,"+maxSlot.dp+")'>at best 🧥</span> <span class='ann ann-wear' onclick='showWearPop("+minSlot.temp+","+minSlot.wind+",null,"+minSlot.dp+")'>at worst 🧥</span></div>";
   var totalDays=window._7dayKeys.length;
   var prevLabel=di>0?new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di-1]][0].utcMs)):"";
   var nextLabel=di<totalDays-1?new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di+1]][0].utcMs)):"";
