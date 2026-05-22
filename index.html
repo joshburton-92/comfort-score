@@ -308,7 +308,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
       <div id="utility-row" style="display:none">
-        <div style="width:100%;height:1px;background:var(--divider);margin:8px 0 4px"></div>
+        <div style="width:100%;height:1px;background:var(--divider);margin:8px 0 6px;display:block"></div>
         <div class="utility-section">
           <div class="share-row">
             <button class="share-btn" id="washing-btn" onclick="checkWashing()">Will washing dry? &#129531;</button>
@@ -1552,7 +1552,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
-    document.getElementById("utility-row").style.display="flex";
+    document.getElementById("utility-row").style.display="block";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
