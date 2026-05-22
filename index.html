@@ -772,7 +772,6 @@ function showAQIPop(slotIdx){
   var no2=val(h.nitrogen_dioxide);
   var so2=val(h.sulphur_dioxide);
   var grassPollen=val(h.grass_pollen);
-  var treePollen=val(h.tree_pollen); // will be — if not in response
   var dust=val(h.dust);
   function aqiLabel(v){if(v==="—")return"—";v=parseInt(v);if(v<=50)return"Good";if(v<=100)return"Moderate";if(v<=150)return"Unhealthy for sensitive groups";if(v<=200)return"Unhealthy";if(v<=300)return"Very unhealthy";return"Hazardous";}
   function aqiCol(v){if(v==="—")return"var(--text-muted)";v=parseInt(v);if(v<=50)return"#1a7a3a";if(v<=100)return"#8a7000";if(v<=150)return"#b05010";if(v<=200)return"#a02020";if(v<=300)return"#7a0080";return"#4a0000";}
@@ -791,7 +790,6 @@ function showAQIPop(slotIdx){
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Pollen</div>"
     +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px'>"
     +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Grass pollen</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+grassPollen+"</div></div>"
-    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Tree pollen</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+treePollen+"</div></div>"
     +"</div>"
     +"<div style='font-size:11px;color:var(--text-muted);font-weight:600;line-height:1.5'>US AQI scale. PM2.5 is the primary driver of health risk. Pollen data available for Europe only — shown as — elsewhere.</div>"
     +backLink
@@ -1465,7 +1463,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
   var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
-  var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen,tree_pollen&timezone=auto&forecast_days=5";
+  var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
   var weatherPromise=fetch(url).then(function(r){return r.json();});
@@ -1521,7 +1519,7 @@ function fetchWU(stationId,apiKey,label,cb){
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
-  var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen,tree_pollen&timezone=auto&forecast_days=5";
+  var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
   window._AQ=null;
   var fcPromise=fetch(fcUrl).then(function(r){return r.json();});
