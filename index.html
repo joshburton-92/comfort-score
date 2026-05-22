@@ -2223,7 +2223,7 @@ function whatToWear(temp,wind,wxCode,s){
   var hotRain=rainProof&&temp>=26; // raining but warm enough that getting wet beats wearing a jacket
   if(hotRain){
     // At t-shirt temperatures a rain jacket is worse than the rain
-    extra=windProof?"Light poncho if you must 🌂 — honestly just get wet":"Honestly just get wet 🌧️";
+    extra=windProof?"It's raining and it's hot — light poncho if you must 🌂, honestly just get wet":"It's raining and it's hot — honestly just get wet 🌧️";
   } else if(rainProof&&windProof){
     extra=(layers>=3?"Over your mid layer: ":"")+"Windproof rain jacket ☔";
     if(layers>=2)layerLabel=layers>=3?"Warm mid layer":"Light top or shirt 👔";
