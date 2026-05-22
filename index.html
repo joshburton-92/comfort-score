@@ -191,7 +191,7 @@ input[type=range].locked{pointer-events:none;opacity:0.5}
 input[type=range]{width:100%;height:6px;border-radius:3px;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;background:var(--range-bg);border:1px solid var(--card-border)}
 input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;box-shadow:0 2px 8px rgba(42,127,180,0.35);cursor:pointer}
 input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2a9fd6,#1a7ab0);border:2px solid #fff;cursor:pointer}
-.adv-tog{font-size:clamp(12px,3vw,14px);color:var(--text-sec);cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--divider);font-weight:700}
+.adv-tog{font-size:clamp(12px,3vw,14px);color:var(--text-sec);cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;font-weight:700}
 .adv-tog svg{transition:transform 0.2s;flex-shrink:0}
 .adv-tog.open svg{transform:rotate(90deg)}
 .s-panel{display:none;margin-top:10px}.s-panel.open{display:block}
@@ -356,45 +356,47 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
   </div>
 
-  <div class="slider-card">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-<div style="display:flex;align-items:center;gap:6px">
-  <div class="sec-lbl" style="margin-bottom:0">Preferences</div>
-  <div class="ibtn" onclick="showPop('How preferences work','The temperature inputs set your personal comfort thresholds — the point at which you start feeling hot or cold.\n\nThe sensitivity sliders control how much it bothers you once you cross those thresholds. Mild means the score drops gradually; Severe means it drops steeply.\n\nHumidity and wind sliders work the same way — they adjust how much those conditions affect your score.\n\nAll preferences are saved automatically.')">i</div>
-</div>
-    <button class="slider-lock-btn" id="slider-lock-btn" onclick="toggleSliderLock()">&#128275; Unlocked</button>
+  <div class="card" style="margin-bottom:10px">
+    <div class="adv-tog" id="pref-tog" onclick="togglePref()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Preferences</span>
+      <div class="ibtn" onclick="event.stopPropagation();showPop('How preferences work','The temperature inputs set your personal comfort thresholds — the point at which you start feeling hot or cold.\n\nThe sensitivity sliders control how much it bothers you once you cross those thresholds. Mild means the score drops gradually; Severe means it drops steeply.\n\nHumidity and wind sliders work the same way — they adjust how much those conditions affect your score.\n\nAll preferences are saved automatically.')">i</div>
+      <div style="flex:1"></div>
+      <button class="slider-lock-btn" id="slider-lock-btn" onclick="event.stopPropagation();toggleSliderLock()">&#128275; Unlocked</button>
+    </div>
+    <div class="s-panel" id="pref-panel">
+      <div class="temp-input-row" style="margin-top:10px">
+        <label>I feel hot above</label>
+        <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
+        <span class="temp-input-unit" id="pref-thi-unit">&#176;C</span>
+      </div>
+      <div class="slider-row">
+        <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
+        <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
+        <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+      </div>
+      <div class="temp-input-row" style="margin-top:10px">
+        <label>I feel cold below</label>
+        <input type="number" id="pref-tlo" value="15" step="1" onchange="onTempPref()"/>
+        <span class="temp-input-unit" id="pref-tlo-unit">&#176;C</span>
+      </div>
+      <div class="slider-row">
+        <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
+        <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
+        <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-lbl-row"><span class="slider-name">Humidity tolerance</span><span class="slider-val" id="hum-val">Moderate</span></div>
+        <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
+        <div class="slider-ends"><span class="slider-end">Prefer dry</span><span class="slider-end">Tolerant</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-lbl-row"><span class="slider-name">Wind preference</span><span class="slider-val" id="wind-val">Moderate</span></div>
+        <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
+        <div class="slider-ends"><span class="slider-end">Hate wind</span><span class="slider-end">Love wind</span></div>
+      </div>
+    </div>
   </div>
-  <div class="temp-input-row">
-    <label>I feel hot above</label>
-    <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
-    <span class="temp-input-unit" id="pref-thi-unit">&#176;C</span>
-  </div>
-  <div class="slider-row">
-    <div class="slider-lbl-row"><span class="slider-name">Heat sensitivity</span><span class="slider-val" id="heat-val">Moderate</span></div>
-    <input type="range" id="sl-heat" min="0" max="100" value="50" oninput="onSlider('heat')"/>
-    <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
-  </div>
-  <div class="temp-input-row" style="margin-top:10px">
-    <label>I feel cold below</label>
-    <input type="number" id="pref-tlo" value="15" step="1" onchange="onTempPref()"/>
-    <span class="temp-input-unit" id="pref-tlo-unit">&#176;C</span>
-  </div>
-  <div class="slider-row">
-    <div class="slider-lbl-row"><span class="slider-name">Cold sensitivity</span><span class="slider-val" id="cold-val">Moderate</span></div>
-    <input type="range" id="sl-cold" min="0" max="100" value="50" oninput="onSlider('cold')"/>
-    <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
-  </div>
-  <div class="slider-row">
-    <div class="slider-lbl-row"><span class="slider-name">Humidity tolerance</span><span class="slider-val" id="hum-val">Moderate</span></div>
-    <input type="range" id="sl-hum" min="0" max="100" value="50" oninput="onSlider('hum')"/>
-    <div class="slider-ends"><span class="slider-end">Prefer dry</span><span class="slider-end">Tolerant</span></div>
-  </div>
-  <div class="slider-row">
-    <div class="slider-lbl-row"><span class="slider-name">Wind preference</span><span class="slider-val" id="wind-val">Moderate</span></div>
-    <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
-    <div class="slider-ends"><span class="slider-end">Hate wind</span><span class="slider-end">Love wind</span></div>
-  </div>
-</div>
 
   <div class="card" style="margin-bottom:0">
     <div class="adv-tog" id="adv-tog" onclick="toggleAdv()">
@@ -1471,6 +1473,7 @@ function calcManual(){
   renderScore("manual-score-area","gauge-manual",r,temp,effDP,wind,null);
 }
 function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
+function togglePref(){document.getElementById("pref-tog").classList.toggle("open");document.getElementById("pref-panel").classList.toggle("open");}
 
 // ── Sliders ────────────────────────────────────────────────────────────────
 var SLIDER_MAPS={
