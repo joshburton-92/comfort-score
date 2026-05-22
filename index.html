@@ -1553,7 +1553,8 @@ function checkWashingManual(){
   } else if(effDP>18&&dryHours<3){
     humCaveat=" Note: dew point is high \u2014 washing may feel damp longer than expected.";
   }
-  if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
+  if(effDP>24){dryHours=999;}
+  else if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
 
 if(dryHours===999){
     var badRsns=[];
