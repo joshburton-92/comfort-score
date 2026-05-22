@@ -837,8 +837,10 @@ function showAQIPop(slotIdx){
 }
 
 // ── Fire Danger (FFDI) ─────────────────────────────────────────────────────
-function calcDroughtFactor(dailyRain){
-  // Weighted rainfall sum over past 20 days, recent days weighted more heavily
+function calcDroughtFactor(dailyRain,dailyTmax,dailyRhMin){
+  // Evaporation-weighted rainfall sum over past 20 days
+  // Rain suppresses fire risk less in hot/dry conditions (faster decay)
+  // and more in cool/humid conditions (slower decay)
   // Returns drought factor 1-10 (10 = most severe drought)
   if(!dailyRain||!dailyRain.length)return 5;
   var weightedRain=0;
@@ -846,12 +848,41 @@ function calcDroughtFactor(dailyRain){
   for(var i=0;i<days;i++){
     var rain=dailyRain[i]||0;
     var age=days-i; // 1=most recent, 20=oldest
-    var weight=Math.exp(-0.1*age);
+    // Evaporative demand for this day: 0=cool/humid, 1=hot/dry
+    var tMax=dailyTmax?dailyTmax[i]:null;
+    var rhMin=dailyRhMin?dailyRhMin[i]:null;
+    var evapDemand=0.5; // neutral fallback if no data
+    if(tMax!==null&&tMax!==undefined&&rhMin!==null&&rhMin!==undefined){
+      var tFactor=Math.max(0,Math.min(1,(tMax-10)/30)); // 0 at 10C, 1 at 40C+
+      var rhFactor=Math.max(0,Math.min(1,(100-rhMin)/70)); // 0 at 100% RH, 1 at 30% RH
+      evapDemand=tFactor*rhFactor;
+    }
+    // Decay rate: 0.05 (cool/humid, slow) to 0.20 (hot/dry, fast)
+    var decayRate=0.05+0.15*evapDemand;
+    var weight=Math.exp(-decayRate*age);
     weightedRain+=rain*weight;
   }
   // Map weighted rain to drought factor: 0mm->10, 50mm+->1
   var df=10-Math.min(9,weightedRain/5);
   return Math.max(1,Math.min(10,df));
+}
+function getDailyTmaxRhMin(fc,dateKeys){
+  // Extracts daily max temp and min RH from hourly data for given date strings
+  // Returns {tmax:[...], rhmin:[...]} parallel to dateKeys
+  var tmax=[],rhmin=[];
+  if(!fc||!fc.hourly)return{tmax:tmax,rhmin:rhmin};
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,rhs=fc.hourly.relative_humidity_2m;
+  for(var d=0;d<dateKeys.length;d++){
+    var key=dateKeys[d],dayTmax=null,dayRhMin=null;
+    for(var i=0;i<times.length;i++){
+      if(times[i].slice(0,10)!==key)continue;
+      if(temps[i]!==null&&(dayTmax===null||temps[i]>dayTmax))dayTmax=temps[i];
+      if(rhs[i]!==null&&(dayRhMin===null||rhs[i]<dayRhMin))dayRhMin=rhs[i];
+    }
+    tmax.push(dayTmax);
+    rhmin.push(dayRhMin);
+  }
+  return{tmax:tmax,rhmin:rhmin};
 }
 function calcFFDI(temp,rh,wind,df){
   // McArthur Forest Fire Danger Index
@@ -871,9 +902,12 @@ function getFireDangerForFC(fc){
   // Returns {currentFFDI, todayMaxFFDI, df} or null if data unavailable
   if(!fc||!fc.hourly||!fc.hourly.relative_humidity_2m)return null;
   var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
+  var dailyDates=fc.daily&&fc.daily.time?fc.daily.time:[];
   // past_days=20 means dailyRain[0..19] are past days, [20] is today
   var pastRain=dailyRain.slice(0,20);
-  var df=calcDroughtFactor(pastRain);
+  var pastDates=dailyDates.slice(0,20);
+  var evap=getDailyTmaxRhMin(fc,pastDates);
+  var df=calcDroughtFactor(pastRain,evap.tmax,evap.rhmin);
   var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
   // Today's date string in location timezone
@@ -897,12 +931,14 @@ function getMaxFFDIForDay(fc,dateStr){
   var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
   var dailyDates=fc.daily&&fc.daily.time?fc.daily.time:[];
   // Find how many forecast days precede dateStr and include their rain in drought factor
+  var datesUpToDate=dailyDates.slice(0,20);
   var rainUpToDate=dailyRain.slice(0,20); // past 20 days always included
   for(var d=0;d<dailyDates.length;d++){
     if(dailyDates[d]>=dateStr)break; // stop before the target date
-    if(d>=20)rainUpToDate.push(dailyRain[d]||0); // append forecast days before target
+    if(d>=20){rainUpToDate.push(dailyRain[d]||0);datesUpToDate.push(dailyDates[d]);}
   }
-  var df=calcDroughtFactor(rainUpToDate);
+  var evap=getDailyTmaxRhMin(fc,datesUpToDate);
+  var df=calcDroughtFactor(rainUpToDate,evap.tmax,evap.rhmin);
   var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
   var maxFFDI=0;
   for(var i=0;i<times.length;i++){
@@ -1055,7 +1091,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
     +"<div style='margin-bottom:12px'>Shows the US AQI (Air Quality Index) from 0–500. The pill appears when AQI is Good (≤50) or above. Tapping it shows a breakdown of PM2.5, PM10, ozone, nitrogen dioxide, sulphur dioxide, dust, and pollen. PM2.5 (fine particulate matter) is the primary driver of health risk — it penetrates deep into the lungs and is the main concern during bushfire smoke events. Pollen data is only available for Europe. Data from Open-Meteo Air Quality API.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Fire Danger 🔥</div>"
-    +"<div style='margin-bottom:12px'>Uses the McArthur FFDI formula — temperature, humidity, wind, and an estimated drought factor from recent rainfall — mapped to the current Australian Fire Danger Rating System (AFDRS) bands introduced in September 2022. The drought factor is approximated from recent rainfall only and may understate risk during prolonged dry periods. The official AFDRS also accounts for fuel type and vegetation, which this app cannot determine. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
+    +"<div style='margin-bottom:12px'>Uses the McArthur FFDI formula — temperature, humidity, wind, and an estimated drought factor — mapped to the current Australian Fire Danger Rating System (AFDRS) bands introduced in September 2022. The drought factor is calculated from recent rainfall weighted by daily evaporative demand: rain suppresses fire risk for longer in cool, humid conditions and decays faster in hot, dry conditions. It may still understate risk during prolonged dry periods. The official AFDRS also accounts for fuel type and vegetation, which this app cannot determine. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
     +"<div>Weather data: Open-Meteo (open-meteo.com) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
