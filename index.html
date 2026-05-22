@@ -1422,7 +1422,7 @@ function findBetterWindow(tzOff,sunsetEpoch,dryHours){
     if(issues.length>0)continue;
     var res=calc(t,d,w);
     var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:6;
-    if(res.score>=80&&t>=10&&(!dryHours||hoursToSunset>=dryHours)){
+    if(res.score>=80&&t>=10&&(!dryHours||hoursToSunset>=dryHours*0.8)){
       // Format time with day context — check if it's tomorrow
       var slotDate=new Date(slotEp);
       var nowDate=new Date(now);
@@ -1886,14 +1886,14 @@ if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 th
     var afterRainWindow=findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch);
     if(afterRainWindow&&afterRainWindow.usable&&afterRainWindow.hoursToSunset>=dryHours){
       return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" \u26A0\uFE0F",
-        "Rain arrives around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+
+        "Rain arrives around "+fmtFcTime(times[rainStartIdx],tz)+
         " but should clear by "+formatHour(afterRainWindow.hour)+
         " with "+Math.round(afterRainWindow.hoursToSunset)+" hours of daylight left. You could hang washing out then.","#b06010");
     }
     if(dryHours<=rainInHours-0.5&&dryHours!==999){
       return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F","Might just get it dry in time if you hang it out now. "+rsn+" Bring it in before the rain arrives.","#b06010");
     }
-    return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+formatHour(new Date(toEpoch(times[rainStartIdx],tzOff)).getHours())+". Probably not enough time to dry. Best inside today.","#c03020");
+    return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+fmtFcTime(times[rainStartIdx],tz)+". Probably not enough time to dry. Best inside today.","#c03020");
   }
 // Check for a better window — used by all failure paths below
   function betterWindowSuffix(){
