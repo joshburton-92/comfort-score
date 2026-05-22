@@ -1193,10 +1193,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
       }
       var aqiVal=aqiNowIdx!==null?(window._AQ.hourly.us_aqi||[])[aqiNowIdx]:null;
       var aqAnn=aqiAnnotation(aqiVal);
-      // Always show AQI pill (show "Good" when <=50 so it's always present like UV)
       var aqLabel=aqAnn?aqAnn.t:(aqiVal!==null&&aqiVal!==undefined?"AQI good 😊":"AQI —");
       var aqClass=aqAnn?aqAnn.c:"ann-aqi ann-info";
-      annHtml+="<span class='ann "+aqClass+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showAQIPop("+aqiNowIdx+")'>"+aqLabel+"</span>";
+      var aqiIdxArg=(aqiNowIdx!==null?aqiNowIdx:"null");
+      annHtml+="<span class='ann "+aqClass+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showAQIPop("+aqiIdxArg+")'>"+aqLabel+"</span>";
     }
     // Fire danger pill
     var fd=getFireDangerForFC(window._FC);
