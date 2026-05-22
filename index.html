@@ -115,6 +115,8 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .ann-vdry{background:rgba(160,100,30,0.18);color:#4a2000;border-color:rgba(160,100,30,0.35)}
 .ann-wx{background:rgba(100,160,200,0.15);color:#1a4060;border-color:rgba(100,160,200,0.3)}
 .ann-uv{background:rgba(220,160,0,0.15);color:#7a4a00;border-color:rgba(220,160,0,0.3)}
+.ann-aqi{background:rgba(120,80,180,0.15);color:#4a1a7a;border-color:rgba(120,80,180,0.3)}
+.ann-fire{background:rgba(210,80,20,0.15);color:#7a2a00;border-color:rgba(210,80,20,0.3);cursor:pointer}
 .ann-info{cursor:pointer}
 @media(prefers-color-scheme:dark){
   .ann-great{background:rgba(30,140,65,0.25);color:#4ae880}
@@ -138,6 +140,8 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
   .ann-vdry{background:rgba(140,80,20,0.25);color:#b06020}
   .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
   .ann-uv{background:rgba(220,160,0,0.25);color:#e8a800}
+  .ann-aqi{background:rgba(120,80,180,0.25);color:#b080f0}
+  .ann-fire{background:rgba(210,80,20,0.25);color:#ff7040}
 }
 .forecast-wrap-inner{position:relative}
 .fc-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:32px;height:44px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text-sec);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none}
@@ -710,6 +714,92 @@ function uvAnnotation(uv){
   if(uv<11)return{c:"ann-uv",t:"UV very high 🧴"};
   return{c:"ann-uv",t:"UV extreme ☠️"};
 }
+function uvAnnotationDaytime(uv){
+  // Like uvAnnotation but shows a "low UV" pill during daylight even when UV<3
+  if(uv===null||uv===undefined)return null;
+  if(uv<3) return{c:"ann-uv",t:"UV low ✅"};
+  if(uv<6) return{c:"ann-uv",t:"UV moderate 🕶️"};
+  if(uv<8) return{c:"ann-uv",t:"UV high 🧴"};
+  if(uv<11)return{c:"ann-uv",t:"UV very high 🧴"};
+  return{c:"ann-uv",t:"UV extreme ☠️"};
+}
+function isCurrentlyDaytime(fc){
+  // Returns true if current time is between today's sunrise and sunset
+  if(!fc||!fc.daily||!fc.daily.sunrise||!fc.daily.sunset)return false;
+  var tz=fc.timezone,tzOff=getTZOffsetMin(tz),now=Date.now();
+  var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var todayDayIdx=fc.daily.time?fc.daily.time.indexOf(todayStr):0;
+  if(todayDayIdx<0)todayDayIdx=0;
+  var sr=toEpoch(fc.daily.sunrise[todayDayIdx],tzOff);
+  var ss=toEpoch(fc.daily.sunset[todayDayIdx],tzOff);
+  return now>=sr&&now<=ss;
+}
+
+// ── Air Quality ────────────────────────────────────────────────────────────
+function aqiAnnotation(aqi){
+  if(aqi===null||aqi===undefined||aqi<=50)return null;
+  if(aqi<=100)return{c:"ann-aqi ann-info",t:"AQI moderate 😷"};
+  if(aqi<=150)return{c:"ann-aqi ann-info",t:"AQI unhealthy* 😷"};
+  if(aqi<=200)return{c:"ann-aqi ann-info",t:"AQI unhealthy 😷"};
+  if(aqi<=300)return{c:"ann-aqi ann-info",t:"AQI very unhealthy 😷"};
+  return{c:"ann-aqi ann-info",t:"AQI hazardous ☣️"};
+}
+function showAQIPop(slotIdx){
+  // slotIdx: hourly index into window._AQ, or null to use current hour
+  var aq=window._AQ;
+  if(!aq||!aq.hourly)return;
+  var fromTitle=document.getElementById("pop-ttl").textContent;
+  var fromBody=document.getElementById("pop-body").innerHTML;
+  var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody)+"\")'>\u2190 Back</div>":"";
+  // Find index: either passed in, or match current hour
+  var idx=slotIdx;
+  if(idx===null||idx===undefined){
+    var fc=window._FC;
+    var tz=fc?fc.timezone:"UTC";
+    var nowHour=localHourInTZ(tz);
+    var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    idx=0;
+    for(var i=0;i<(aq.hourly.time||[]).length;i++){
+      if(aq.hourly.time[i].slice(0,10)===todayStr&&parseInt(aq.hourly.time[i].slice(11,13))===nowHour){idx=i;break;}
+    }
+  }
+  var h=aq.hourly;
+  function val(arr){var v=(arr||[])[idx];return(v===null||v===undefined)?"—":Math.round(v);}
+  var aqi=val(h.us_aqi);
+  var pm25=val(h.pm2_5);
+  var pm10=val(h.pm10);
+  var o3=val(h.ozone);
+  var no2=val(h.nitrogen_dioxide);
+  var so2=val(h.sulphur_dioxide);
+  var grassPollen=val(h.grass_pollen);
+  var treePollen=val(h.tree_pollen); // will be — if not in response
+  var dust=val(h.dust);
+  function aqiLabel(v){if(v==="—")return"—";v=parseInt(v);if(v<=50)return"Good";if(v<=100)return"Moderate";if(v<=150)return"Unhealthy for sensitive groups";if(v<=200)return"Unhealthy";if(v<=300)return"Very unhealthy";return"Hazardous";}
+  function aqiCol(v){if(v==="—")return"var(--text-muted)";v=parseInt(v);if(v<=50)return"#1a7a3a";if(v<=100)return"#8a7000";if(v<=150)return"#b05010";if(v<=200)return"#a02020";if(v<=300)return"#7a0080";return"#4a0000";}
+  var body="<div class='washing-reason'>"
+    +"<div style='font-size:22px;font-weight:800;color:"+aqiCol(aqi)+";margin-bottom:2px'>"+aqi+"</div>"
+    +"<div style='font-size:15px;font-weight:800;color:"+aqiCol(aqi)+";margin-bottom:10px'>"+aqiLabel(aqi)+"</div>"
+    +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Pollutants</div>"
+    +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px'>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>PM2.5 (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+pm25+"</div></div>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>PM10 (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+pm10+"</div></div>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Ozone O₃ (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+o3+"</div></div>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>NO₂ (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+no2+"</div></div>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>SO₂ (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+so2+"</div></div>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Dust (μg/m³)</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+dust+"</div></div>"
+    +"</div>"
+    +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Pollen</div>"
+    +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px'>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Grass pollen</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+grassPollen+"</div></div>"
+    +"<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:8px;padding:6px 8px'><div style='font-size:10px;font-weight:700;color:var(--text-muted)'>Tree pollen</div><div style='font-size:16px;font-weight:800;color:var(--text)'>"+treePollen+"</div></div>"
+    +"</div>"
+    +"<div style='font-size:11px;color:var(--text-muted);font-weight:600;line-height:1.5'>US AQI scale. PM2.5 is the primary driver of health risk. Pollen data available for Europe only — shown as — elsewhere.</div>"
+    +backLink
+    +"</div>";
+  document.getElementById("pop-ttl").innerHTML="Air Quality 😷";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
 
 // ── Fire Danger (FFDI) ─────────────────────────────────────────────────────
 function calcDroughtFactor(dailyRain){
@@ -891,6 +981,8 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>A drying index is calculated from vapour pressure deficit, wind, and temperature. This estimates how quickly moisture evaporates from fabric. Forecast slots are scanned to find usable drying windows, accounting for sunset, incoming rain, and overnight freezes.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
     +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
+    +"<div style='margin-bottom:12px'>Shows the US AQI (Air Quality Index) from 0–500. The pill appears when AQI is Good (≤50) or above. Tapping it shows a breakdown of PM2.5, PM10, ozone, nitrogen dioxide, sulphur dioxide, dust, and pollen. PM2.5 (fine particulate matter) is the primary driver of health risk — it penetrates deep into the lungs and is the main concern during bushfire smoke events. Pollen data is only available for Europe. Data from Open-Meteo Air Quality API.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Fire Danger 🔥</div>"
     +"<div style='margin-bottom:12px'>Uses the McArthur FFDI formula — temperature, humidity, wind, and an estimated drought factor from recent rainfall — mapped to the current Australian Fire Danger Rating System (AFDRS) bands introduced in September 2022. The drought factor is approximated from recent rainfall only and may understate risk during prolonged dry periods. The official AFDRS also accounts for fuel type and vegetation, which this app cannot determine. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
@@ -1032,30 +1124,70 @@ function drawGauge(id,score){
 function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=gs();
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP,wxCode);
+  // Build pill HTML — unified order: comfort conditions, then hazards, then verdict
+  // getAnnotations already returns: temp > humidity > dry > hot&steamy > wind > wx > verdict
+  // We split out the verdict pills (ann-great) and insert hazard pills before them
+  var condAnns=[],verdictAnns=[];
+  for(var i=0;i<anns.length;i++){
+    if(anns[i].c.indexOf("ann-great")!==-1)verdictAnns.push(anns[i]);
+    else condAnns.push(anns[i]);
+  }
+  function annSpan(ann){
+    return ann.url?"<a class='ann "+ann.c+"' href='"+ann.url+"' target='_blank' rel='noopener' style='text-decoration:none'>"+ann.t+"</a>"
+      :ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>"
+      :"<span class='ann "+ann.c+"'>"+ann.t+"</span>";
+  }
   var annHtml="";
-  for(var i=0;i<anns.length;i++){var ann=anns[i];annHtml+=ann.url?"<a class='ann "+ann.c+"' href='"+ann.url+"' target='_blank' rel='noopener' style='text-decoration:none'>"+ann.t+"</a>":ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>":"<span class='ann "+ann.c+"'>"+ann.t+"</span>";}
-  var fireHtml="";
+  for(var i=0;i<condAnns.length;i++)annHtml+=annSpan(condAnns[i]);
+  // Hazard pills: UV, AQI, Fire — inserted between conditions and verdict
   if(areaId==="live-score-area"&&window._FC){
+    // UV — always shown during daylight, even when low
+    var curUV=null;
+    if(window._FC.hourly&&window._FC.hourly.uv_index){
+      var tz2=window._FC.timezone,nowH=localHourInTZ(tz2);
+      var todayStr2=new Intl.DateTimeFormat("en-CA",{timeZone:tz2,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      for(var j=0;j<window._FC.hourly.time.length;j++){
+        if(window._FC.hourly.time[j].slice(0,10)===todayStr2&&parseInt(window._FC.hourly.time[j].slice(11,13))===nowH){curUV=window._FC.hourly.uv_index[j];break;}
+      }
+    }
+    var isDaytime=isCurrentlyDaytime(window._FC);
+    var uvAnn=isDaytime?uvAnnotationDaytime(curUV):uvAnnotation(curUV);
+    if(uvAnn)annHtml+="<span class='ann "+uvAnn.c+"'>"+uvAnn.t+"</span>";
+    // AQI pill
+    if(window._AQ&&window._AQ.hourly){
+      var aqiNowIdx=null;
+      var aqTz=window._FC.timezone,aqNowH=localHourInTZ(aqTz);
+      var aqTodayStr=new Intl.DateTimeFormat("en-CA",{timeZone:aqTz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      for(var k=0;k<(window._AQ.hourly.time||[]).length;k++){
+        if(window._AQ.hourly.time[k].slice(0,10)===aqTodayStr&&parseInt(window._AQ.hourly.time[k].slice(11,13))===aqNowH){aqiNowIdx=k;break;}
+      }
+      var aqiVal=aqiNowIdx!==null?(window._AQ.hourly.us_aqi||[])[aqiNowIdx]:null;
+      var aqAnn=aqiAnnotation(aqiVal);
+      // Always show AQI pill (show "Good" when <=50 so it's always present like UV)
+      var aqLabel=aqAnn?aqAnn.t:(aqiVal!==null&&aqiVal!==undefined?"AQI good 😊":"AQI —");
+      var aqClass=aqAnn?aqAnn.c:"ann-aqi ann-info";
+      annHtml+="<span class='ann "+aqClass+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showAQIPop("+aqiNowIdx+")'>"+aqLabel+"</span>";
+    }
+    // Fire danger pill
     var fd=getFireDangerForFC(window._FC);
     if(fd){
       var curFI=fd.currentFFDI!==null?ffdiInfo(fd.currentFFDI):null;
       var maxFI=ffdiInfo(fd.todayMaxFFDI);
       if(curFI||maxFI){
         var showFI=curFI||maxFI;
-        fireHtml="<div style='margin-top:6px;cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"
-          +"<span style='font-size:13px;font-weight:800;color:"+showFI.col+"'>🔥 Fire danger: "+showFI.label
-          +(maxFI&&curFI&&fd.todayMaxFFDI>fd.currentFFDI?" · peak: "+maxFI.label:"")
-          +"</span></div>";
+        var fireLabel="🔥 "+showFI.label+(maxFI&&curFI&&fd.todayMaxFFDI>fd.currentFFDI?" · peak: "+maxFI.label:"");
+        annHtml+="<span class='ann ann-fire' style='color:"+showFI.col+";border-color:"+showFI.col.replace("1)","0.4)")+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"+fireLabel+"</span>";
       }
     }
   }
+  for(var i=0;i<verdictAnns.length;i++)annHtml+=annSpan(verdictAnns[i]);
   document.getElementById(areaId).innerHTML=
     "<div class='score-area'><canvas id='"+gaugeId+"'></canvas>"
     +"<div class='score-num' style='color:"+si.col+"'>"+score+"<button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
     +"<span class='score-emoji'>"+si.emoji+"</span>"
     +"<div class='score-lbl' style='color:"+si.col+"'>"+si.label+"</div>"
     +"<div class='annotations'>"+annHtml+"</div>"
-    +fireHtml+"</div>";
+    +"</div>";
   setTimeout(function(){drawGauge(gaugeId,score);},50);
 }
 
@@ -1093,7 +1225,17 @@ function renderForecast(fc){
       var wxDiv=wst.emoji?"<div class='fc-wx'>"+wst.emoji+"</div>":"";
       var uvAnn=uvAnnotation(uvs[idx]);
       var uvDiv=uvAnn?"<div class='fc-wx' style='font-size:10px;margin-top:2px'><span class='ann ann-uv' style='padding:1px 5px;font-size:9px'>"+uvAnn.t+"</span></div>":"";
-      fcastHtml+="<div class='fc-slot' style='"+bgAttr+"' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"+wxDiv+uvDiv+"</div>";
+      var aqiSlotVal=null;
+      if(window._AQ&&window._AQ.hourly){
+        // Match AQ hourly slot by time string (same format YYYY-MM-DDTHH:00)
+        var fcTimeStr=times[idx].slice(0,13);
+        for(var ai=0;ai<(window._AQ.hourly.time||[]).length;ai++){
+          if((window._AQ.hourly.time[ai]||"").slice(0,13)===fcTimeStr){aqiSlotVal=(window._AQ.hourly.us_aqi||[])[ai];break;}
+        }
+      }
+      var aqiSlotAnn=aqiAnnotation(aqiSlotVal);
+      var aqiDiv=aqiSlotAnn?"<div class='fc-wx' style='font-size:10px;margin-top:2px'><span class='ann ann-aqi' style='padding:1px 5px;font-size:9px'>"+aqiSlotAnn.t.replace(" 😷","")+"</span></div>":"";
+      fcastHtml+="<div class='fc-slot' style='"+bgAttr+"' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"+wxDiv+uvDiv+aqiDiv+"</div>";
       added++;
     }
     idx++;
@@ -1116,6 +1258,17 @@ function showForecastSlot(idx){
   var annHtml="";
   for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
   if(uvAnn)annHtml+="<span class='ann "+uvAnn.c+"'>"+uvAnn.t+"</span> ";
+  // AQI pill in forecast slot popup
+  if(window._AQ&&window._AQ.hourly){
+    var fcSlotTimeStr=(fc.hourly.time[idx]||"").slice(0,13);
+    var fcAqiIdx=null;
+    for(var ai=0;ai<(window._AQ.hourly.time||[]).length;ai++){
+      if((window._AQ.hourly.time[ai]||"").slice(0,13)===fcSlotTimeStr){fcAqiIdx=ai;break;}
+    }
+    var fcAqiVal=fcAqiIdx!==null?(window._AQ.hourly.us_aqi||[])[fcAqiIdx]:null;
+    var fcAqiAnn=aqiAnnotation(fcAqiVal);
+    if(fcAqiAnn)annHtml+="<span class='ann "+fcAqiAnn.c+"' onclick='showAQIPop("+fcAqiIdx+")'>"+fcAqiAnn.t+"</span> ";
+  }
   var wearPill="<span class='ann ann-wear' onclick='showWearPop("+t+","+w+","+(wxCode===null?"null":wxCode)+")'>what to wear 🧥</span>";
   var body="<div class='washing-reason'>"
     +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" &mdash; "+si.label+"</div>"
@@ -1311,7 +1464,11 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
+  var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen,tree_pollen&timezone=auto&forecast_days=5";
+  // Fetch weather and AQ in parallel; render once weather resolves, AQ updates when ready
+  window._AQ=null;
+  fetch(aqUrl).then(function(r){return r.json();}).then(function(aq){window._AQ=aq;}).catch(function(){window._AQ=null;});
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
@@ -1324,6 +1481,10 @@ var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon
     renderChips(temp,effDP,rh,wind);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
     renderForecast(d);
+    // Re-render once AQ resolves if it hasn't yet (small race window)
+    setTimeout(function(){
+      if(window._AQ){renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);renderForecast(window._FC);}
+    },2000);
     if(cb)cb();
   }).catch(function(e){document.getElementById("live-status").textContent="Fetch failed: "+e.message;if(cb)cb();});
 }
@@ -1361,7 +1522,10 @@ function fetchWU(stationId,apiKey,label,cb){
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
 function fetchForecastOnly(lat,lon){
- fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20")
+  var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen,tree_pollen&timezone=auto&forecast_days=5";
+  window._AQ=null;
+  fetch(aqUrl).then(function(r){return r.json();}).then(function(aq){window._AQ=aq;}).catch(function(){window._AQ=null;});
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20")
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
