@@ -117,6 +117,8 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
 .ann-uv{background:rgba(220,160,0,0.15);color:#7a4a00;border-color:rgba(220,160,0,0.3)}
 .ann-aqi{background:rgba(120,80,180,0.15);color:#4a1a7a;border-color:rgba(120,80,180,0.3)}
 .ann-fire{background:rgba(210,80,20,0.15);color:#7a2a00;border-color:rgba(210,80,20,0.3);cursor:pointer}
+.ann-divider{width:100%;height:1px;background:var(--divider);margin:10px 0 8px;border:none}
+.utility-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;background:var(--toggle-bg);border-radius:16px;padding:10px 12px;margin-top:2px}
 .ann-info{cursor:pointer}
 @media(prefers-color-scheme:dark){
   .ann-great{background:rgba(30,140,65,0.25);color:#4ae880}
@@ -305,14 +307,19 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </div>
       <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
-      <div class="share-row" id="utility-row" style="display:none">
-        <button class="share-btn" id="washing-btn" onclick="checkWashing()">Will washing dry? &#129531;</button>
-        <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()">What to wear? &#129531;</button>
-        <button class="share-btn" id="world-btn" onclick="openWorldCheck()">Where in the world? &#127758;</button>
-      </div>
-      <div class="share-row">
-        <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
-        <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
+      <div id="utility-row" style="display:none">
+        <div style="width:100%;height:1px;background:var(--divider);margin:8px 0 4px"></div>
+        <div class="utility-section">
+          <div class="share-row">
+            <button class="share-btn" id="washing-btn" onclick="checkWashing()">Will washing dry? &#129531;</button>
+            <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()">What to wear? &#129531;</button>
+            <button class="share-btn" id="world-btn" onclick="openWorldCheck()">Where in the world? &#127758;</button>
+          </div>
+          <div class="share-row">
+            <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
+            <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
+          </div>
+        </div>
       </div>
       <div id="forecast-wrap" style="display:none">
         <div class="sec-lbl" style="margin-top:10px">Next 48 hours</div>
@@ -952,14 +959,50 @@ function initUnit(){
   document.getElementById("unit-temp").textContent=unitSym();
   document.getElementById("unit-dp").textContent=unitSym();
 }
-function renderChips(temp,effDP,rh,wind){
+function moonPhase(){
+  // Calculates moon age in days and returns emoji + name
+  var known=new Date(Date.UTC(2000,0,6,18,14,0)); // known new moon
+  var now=new Date();
+  var age=((now-known)/(1000*60*60*24))%29.53059;
+  if(age<0)age+=29.53059;
+  var emoji,name;
+  if(age<1.85)      {emoji="🌑";name="New moon";}
+  else if(age<5.54) {emoji="🌒";name="Waxing crescent";}
+  else if(age<9.22) {emoji="🌓";name="First quarter";}
+  else if(age<12.91){emoji="🌔";name="Waxing gibbous";}
+  else if(age<16.61){emoji="🌕";name="Full moon";}
+  else if(age<20.30){emoji="🌖";name="Waning gibbous";}
+  else if(age<23.99){emoji="🌗";name="Last quarter";}
+  else if(age<27.68){emoji="🌘";name="Waning crescent";}
+  else              {emoji="🌑";name="New moon";}
+  return{emoji:emoji,name:name};
+}
+function renderChips(temp,effDP,rh,wind,fc){
+  var moon=moonPhase();
+  var srChip="",ssChip="";
+  if(fc&&fc.daily&&fc.daily.sunrise&&fc.daily.sunset){
+    var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
+    var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    var di=fc.daily.time?fc.daily.time.indexOf(todayStr):0;
+    if(di<0)di=0;
+    var srStr=fc.daily.sunrise[di],ssStr=fc.daily.sunset[di];
+    if(srStr){
+      var srP=parseLocalTimeStr(srStr),srUtc=Date.UTC(srP.yr,srP.mo,srP.dy,srP.hr,srP.mn,0)-tzOff*60000;
+      srChip="<span class='chip'>🌅 "+new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(srUtc)).toLowerCase().replace(" ","")+"</span>";
+    }
+    if(ssStr){
+      var ssP=parseLocalTimeStr(ssStr),ssUtc=Date.UTC(ssP.yr,ssP.mo,ssP.dy,ssP.hr,ssP.mn,0)-tzOff*60000;
+      ssChip="<span class='chip'>🌇 "+new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(ssUtc)).toLowerCase().replace(" ","")+"</span>";
+    }
+  }
   document.getElementById("live-chips").innerHTML=
     "<span class='chip'>"+toDisp(temp).toFixed(1)+unitSym()+"</span>"
    +"<span class='chip'>"+rh+"% RH</span>"
    +"<span class='chip'>DP "+toDisp(effDP).toFixed(1)+unitSym()+"</span>"
-   +"<span class='chip'>Wind "+Math.round(wind)+" km/h</span>";
+   +"<span class='chip'>Wind "+Math.round(wind)+" km/h</span>"
+   +srChip+ssChip
+   +"<span class='chip' title='"+moon.name+"'>"+moon.emoji+" "+moon.name+"</span>";
 }
-
 // ── Time helpers ───────────────────────────────────────────────────────────
 function parseLocalTimeStr(s){var p=s.split("T"),d=p[0].split("-"),t=(p[1]||"00:00").split(":");return{yr:+d[0],mo:+d[1]-1,dy:+d[2],hr:+t[0],mn:+t[1]};}
 function getTZOffsetMin(tz){
@@ -1511,7 +1554,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     document.getElementById("live-locname").textContent=label;
     document.getElementById("utility-row").style.display="flex";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
-    renderChips(temp,effDP,rh,wind);
+    renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
     renderForecast(d);
     if(cb)cb();
@@ -2279,9 +2322,11 @@ html+="<div class='fc-slot-7' style='"+dBgAttr+"' onclick='show7DaySlot("+di+")'
   }
   document.getElementById("forecast-row-7").innerHTML=html;
   // Store days data for tap handler
-window._7dayData=days;
+  window._7dayData=days;
   window._7dayKeys=dateKeys;
   window._7dayTZ=tz;
+  // Refresh chips with sunrise/sunset now that fc is available (covers WU path)
+  if(window._LW){var lw=window._LW;renderChips(lw.temp,lw.effDP,lw.rh,lw.wind,fc);}
 }
 
 function show7DaySlot(di){
@@ -2351,6 +2396,13 @@ function show7DaySlot(di){
       +"</div>";
   }
   var wearPill="<div style='margin-bottom:10px'><span class='ann ann-wear' onclick='showWearPop("+maxSlot.temp+","+maxSlot.wind+",null)'>at best 🧥</span> <span class='ann ann-wear' onclick='showWearPop("+minSlot.temp+","+minSlot.wind+",null)'>at worst 🧥</span></div>";
+  var totalDays=window._7dayKeys.length;
+  var prevLabel=di>0?new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di-1]][0].utcMs)):"";
+  var nextLabel=di<totalDays-1?new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di+1]][0].utcMs)):"";
+  var navHtml="<div style='display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"
+    +(di>0?"<span style='font-size:13px;font-weight:800;color:var(--text-sec);cursor:pointer;padding:4px 8px' onclick='show7DaySlot("+(di-1)+")'>← "+prevLabel+"</span>":"<span></span>")
+    +(di<totalDays-1?"<span style='font-size:13px;font-weight:800;color:var(--text-sec);cursor:pointer;padding:4px 8px' onclick='show7DaySlot("+(di+1)+")'>"+nextLabel+" →</span>":"<span></span>")
+    +"</div>";
   var body="<div class='washing-reason'>"+dailySummary+wearPill
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Best</div>"
     +"<div style='font-size:15px;font-weight:800;color:"+maxNc+";margin-bottom:4px'>↑ "+maxScore+" &mdash; "+scoreInfo(maxScore).label+" <span style='font-size:12px;font-weight:700;color:var(--text-muted)'>"+maxTime+"</span></div>"
@@ -2360,6 +2412,7 @@ function show7DaySlot(di){
     +"<div style='font-size:15px;font-weight:800;color:"+minNc+";margin-bottom:4px'>↓ "+minScore+" &mdash; "+scoreInfo(minScore).label+" <span style='font-size:12px;font-weight:700;color:var(--text-muted)'>"+minTime+"</span></div>"
     +"<div style='margin-bottom:4px'>🌡️ "+toDisp(minSlot.temp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(minSlot.dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(minSlot.wind)+" km/h</div>"
     +(minAnnHtml?"<div>"+minAnnHtml+"</div>":"")
+    +navHtml
     +"</div>";
   document.getElementById("pop-ttl").textContent=dayLabel;
   document.getElementById("pop-body").innerHTML=body;
