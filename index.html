@@ -656,8 +656,6 @@ var WORLD_CITIES=[
   {name:"Ushuaia",lat:-54.8,lon:-68.3,cc:"AR"}
 ];
 var PINNED_CITIES=["New York","London","Dubai","Tokyo","Sydney"];
-var STEAMY_TITLE="Hot & steamy";
-var STEAMY_TEXT="When both temperature and dew point are above your comfortable range at the same time, this condition fires. It captures the real-world effect of humid heat — your body struggles to cool itself through sweat evaporation, so it feels far worse than either condition alone.";
 var FC_SLOTS=[0,3,6,9,12,15,18,21];
 var _tlo=18;
 var _thi=22;
@@ -1167,7 +1165,6 @@ if(temp>=0){
     if(firesVdry)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
     else if(firesDry)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
   }
-  if(iP>3)a.push({c:"ann-steamy ann-info",t:"hot & steamy \uD83E\uDD2F \u2139\uFE0F",info:true});
  if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
   else if(wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
   else if(wind>=12&&wind<20){a.push({c:"ann-breeze",t:"gentle breeze \uD83C\uDF43"});}
