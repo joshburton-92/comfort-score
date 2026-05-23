@@ -1851,7 +1851,9 @@ if(dryHours===999){
     if(!badRsns.length)badRsns.push("conditions are too cool, still and humid for effective drying");
     var badRsn=badRsns.length?(badRsns[0].charAt(0).toUpperCase()+badRsns[0].slice(1)+(badRsns.length>1?", and "+badRsns.slice(1).join(", "):"")+"."):
       "Conditions aren\u2019t suitable for drying.";
-    return washingPop("Probably not today \u274C",badRsn+" Best inside.","#c03020");
+    var bwBad=findBetterWindow(tzOff,sunsetEpoch,3);
+    var bwBadMsg=bwBad?" Conditions may improve around "+bwBad.timeLabel+" — worth checking back then.":"";
+    return washingPop("Probably not today \u274C",badRsn+(bwBadMsg||" Best inside."),"#c03020");
   }
 
   // No daylight check in manual mode — just give the drying estimate
@@ -2163,11 +2165,13 @@ if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 th
         return washingPop("Raining now \uD83C\uDF27\uFE0F",rainBody+" Rain may clear around "+formatHour(clearWindow.hour)+" but "+postRainIssue+". Best to dry inside.","#c03020");
       }
     }
-    return washingPop("Raining now \uD83C\uDF27\uFE0F",rainBody+" Best to dry inside.","#c03020");
+    var bwRain=findBetterWindow(tzOff,sunsetEpoch,3);
+    var bwRainMsg=bwRain?" Conditions may improve around "+bwRain.timeLabel+".":"";
+    return washingPop("Raining now \uD83C\uDF27\uFE0F",rainBody+(bwRainMsg||" Best to dry inside."),"#c03020");
   }
   // Rain forecast
   if(rainInHours!==null){
-    if(rainInHours<=1)return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour. Best to dry inside today.","#c03020");
+    if(rainInHours<=1){var bwIm=findBetterWindow(tzOff,sunsetEpoch,3);var bwImMsg=bwIm?" Conditions may improve around "+bwIm.timeLabel+".":"";return washingPop("Rain on the way \uD83C\uDF27\uFE0F","Rain expected within the hour."+(bwImMsg||" Best to dry inside today."),"#c03020");}
     var afterRainWindow=findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch);
     if(afterRainWindow&&afterRainWindow.usable&&afterRainWindow.hoursToSunset>=dryHours){
       return washingPop("Rain expected in ~"+rainInHours+" hour"+(rainInHours===1?"":"s")+" \u26A0\uFE0F",
@@ -2178,7 +2182,7 @@ if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 th
     if(dryHours<=rainInHours-0.5&&dryHours!==999){
       return washingPop("Rain in ~"+rainInHours+" hours \u26A0\uFE0F","Might just get it dry in time if you hang it out now. "+rsn+" Bring it in before the rain arrives.","#b06010");
     }
-    return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+fmtFcTime(times[rainStartIdx],tz)+". Probably not enough time to dry. Best inside today.","#c03020");
+    var bwLater=findBetterWindow(tzOff,sunsetEpoch,3);var bwLaterMsg=bwLater?" Conditions may improve around "+bwLater.timeLabel+".":"";return washingPop("Rain expected later \uD83C\uDF27\uFE0F","Rain arriving around "+fmtFcTime(times[rainStartIdx],tz)+". Probably not enough time to dry."+(bwLaterMsg||" Best inside today."),"#c03020");
   }
 // Check for a better window — used by all failure paths below
   function betterWindowSuffix(){
