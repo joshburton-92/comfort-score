@@ -1697,9 +1697,16 @@ function findBetterWindow(tzOff,sunsetEpoch,dryHours){
     if(sunsetEpoch&&slotEp>sunsetEpoch)break;
     var issues=checkConditions(t,d,w,c);
     if(issues.length>0)continue;
-    var res=calc(t,d,w);
     var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:6;
-    if(res.score>=80&&t>=10&&(!dryHours||hoursToSunset>=dryHours*0.8)){
+    // Drying quality — based on VPD, wind, temp only; not comfort score
+    var slotSvp=0.6108*Math.exp(17.27*t/(t+237.3));
+    var slotAvp=0.6108*Math.exp(17.27*d/(d+237.3));
+    var slotVpd=slotSvp-slotAvp;
+    var slotWmult=1+Math.min(1.5,w/20);
+    var slotTfact=Math.max(0.3,Math.min(1.0,(t-5)/20));
+    var slotDpPenalty=d>20?0.35:d>16?Math.max(0.35,1.0-(d-16)*0.1625):1.0;
+    var slotDryIdx=slotVpd*slotWmult*slotTfact*slotDpPenalty;
+    if(slotDryIdx>=0.7&&t>=10&&(!dryHours||hoursToSunset>=dryHours*0.8)){
       // Format time with day context — check if it's tomorrow
       var slotDate=new Date(slotEp);
       var nowDate=new Date(now);
