@@ -59,6 +59,8 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .unit-btn.active{background:var(--toggle-active);color:var(--text-head)}
 .star-btn{position:absolute;top:16px;left:0;width:34px;height:28px;border-radius:20px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .tabs{display:flex;gap:6px;margin-bottom:12px}
+.announce-btn{width:100%;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid rgba(90,180,120,0.4);border-radius:10px;background:rgba(90,180,120,0.12);color:#1a7a3a;text-align:center;margin-bottom:6px;display:block}
+@media(prefers-color-scheme:dark){.announce-btn{background:rgba(90,180,120,0.15);color:#60d090;border-color:rgba(90,180,120,0.3)}}
 .tab{flex:1;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid var(--card-border);border-radius:10px;background:var(--toggle-bg);color:var(--text-sec);text-align:center}
 .tab.active{background:var(--toggle-active);color:var(--text-head)}
 .page{display:none}.page.active{display:block}
@@ -73,7 +75,12 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .status{font-size:clamp(12px,3vw,14px);color:var(--text-sec);padding:4px 0;font-weight:600}
 .loc-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
 .loc-name{font-size:clamp(15px,4.5vw,18px);font-weight:800;color:var(--text);flex:1}
-.loc-star{font-size:18px;cursor:pointer;color:var(--text-sec);flex-shrink:0;background:none;border:none;padding:0}
+.loc-star{font-size:20px;cursor:pointer;color:var(--text-sec);flex-shrink:0;background:none;border:none;padding:2px 4px;border-radius:8px;transition:background 0.15s}
+.loc-star:hover{background:var(--toggle-bg)}
+.loc-star.saved{color:#e8a800}
+.loc-home{font-size:20px;cursor:pointer;color:var(--text-sec);flex-shrink:0;background:none;border:none;padding:2px 4px;border-radius:8px;transition:background 0.15s}
+.loc-home:hover{background:var(--toggle-bg)}
+.loc-home.is-default{color:#2a9fd6}
 .obs-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .obs-time{font-size:clamp(11px,3vw,13px);color:var(--text-muted);font-weight:600;flex:1}
 .refresh-btn{background:none;border:none;cursor:pointer;color:var(--text-sec);font-size:16px;padding:2px 4px;line-height:1;flex-shrink:0}
@@ -280,6 +287,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="btn btn-p" onclick="installApp()">Install</button>
   </div>
 
+  <div id="announce-wrap" style="display:none">
+    <div class="announce-btn" onclick="showAnnouncePop()">✨ New score calculation — tap to see what changed</div>
+  </div>
   <div class="tabs">
     <div class="tab active" id="tab-live"   onclick="switchTab('live')">Live weather</div>
     <div class="tab"        id="tab-manual" onclick="switchTab('manual')">Manual input</div>
@@ -299,7 +309,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div class="card" id="live-result" style="display:none">
       <div class="loc-row">
         <div class="loc-name" id="live-locname"></div>
-        <button class="loc-star" onclick="promptSaveLoc()" title="Save location">&#9733;</button>
+        <button class="loc-home" id="loc-home-btn" onclick="toggleDefaultLoc()" title="Set as default location">&#8962;</button>
+        <button class="loc-star" id="loc-star-btn" onclick="promptSaveLoc()" title="Save location">&#9733;</button>
       </div>
       <div class="obs-row">
         <div class="obs-time" id="live-obstime"></div>
@@ -1150,6 +1161,11 @@ tP=Math.min(s.tmax,tP);
   if(dp<s.dp)hP=Math.max(0,(dp+5))*0.5/Math.max(1,s.dp+5);
   else{var hf=Math.min(1,(dp-s.dp)/Math.max(1,s.hdp_ceil-s.dp));hP=Math.pow(hf,s.hexp)*s.hmax;}
   hP=Math.min(s.hmax,hP);
+  // Scale humidity penalty by temperature — humidity is irrelevant below cold threshold,
+  // full strength at and above heat threshold, smooth curve between
+  var mid2=(s.tlo+s.thi)/2;
+  var hTempScale=Math.max(0,Math.min(1,(temp-s.tlo)/(s.thi-s.tlo)));
+  hP=hP*hTempScale;
   var iP=0;
   if(temp>s.thi&&dp>s.dp)iP=Math.min(s.int,s.int*Math.min(1,(temp-s.thi)/10)*Math.min(1,(dp-s.dp)/10)*s.iscale);
   var mid=(s.tlo+s.thi)/2,wBase=0;
@@ -1474,6 +1490,26 @@ function calcManual(){
 }
 function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
 function togglePref(){document.getElementById("pref-tog").classList.toggle("open");document.getElementById("pref-panel").classList.toggle("open");}
+function initAnnounce(){
+  if(localStorage.getItem("announce_humidity_temp_v1")==="dismissed")return;
+  document.getElementById("announce-wrap").style.display="block";
+}
+function showAnnouncePop(){
+  document.getElementById("pop-ttl").textContent="New score calculation ✨";
+  document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"
+    +"<div style='font-size:15px;font-weight:800;color:var(--text-head);margin-bottom:8px'>Humidity now affects your score less in cooler weather</div>"
+    +"<div style='margin-bottom:10px'>Previously, humidity penalised your comfort score equally regardless of temperature — a dew point of 14°C would drag the score down whether it was 17°C or 30°C outside.</div>"
+    +"<div style='margin-bottom:10px'>In reality, humidity only becomes uncomfortable when your body is trying to cool itself through sweating — which mainly happens above your heat threshold. On a cool day, a higher dew point is barely noticeable.</div>"
+    +"<div style='margin-bottom:14px'>The humidity penalty now scales with temperature — zero effect at your cold threshold, ramping up to full strength at your heat threshold. So at 17°C the humidity penalty is only about 15% of what it would be at 28°C+, rather than the same penalty regardless of temperature.</div>"
+    +"<div style='text-align:center'><button onclick='dismissAnnounce()' style='background:rgba(90,180,120,0.15);border:1px solid rgba(90,180,120,0.4);border-radius:20px;padding:8px 24px;font-size:13px;font-weight:800;color:#1a7a3a;cursor:pointer'>Got it — dismiss</button></div>"
+    +"</div>";
+  document.getElementById("pop-ov").classList.add("open");
+}
+function dismissAnnounce(){
+  localStorage.setItem("announce_humidity_temp_v1","dismissed");
+  document.getElementById("announce-wrap").style.display="none";
+  document.getElementById("pop-ov").classList.remove("open");
+}
 
 // ── Sliders ────────────────────────────────────────────────────────────────
 var SLIDER_MAPS={
@@ -1593,6 +1629,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
     renderForecast(d);
+    updateHomeBtn();
     if(cb)cb();
   }).catch(function(e){document.getElementById("live-status").textContent="Fetch failed: "+e.message;if(cb)cb();});
 }
@@ -1659,6 +1696,35 @@ function closeStars(){document.getElementById("stars-ov").classList.remove("open
 function renderStarsList(){var stars=loadStars(),html="";if(!stars.length){html="<div class='star-empty'>No saved locations yet.<br/>Search or detect a location then tap \u2605 to save it.</div>";}else{for(var i=0;i<stars.length;i++){var s=stars[i],sub=s.type==="wunderground"?"WU station: "+s.stationId:"";html+="<div class='star-item' onclick='loadStar("+i+")'><div><div class='star-item-name'>\u2605 "+s.name+"</div>"+(sub?"<div class='star-item-type'>"+sub+"</div>":"")+"</div><button class='star-item-del' onclick='deleteStar(event,"+i+")'>&#10005;</button></div>";}}document.getElementById("stars-list").innerHTML=html;}
 function loadStar(i){var s=loadStars()[i];closeStars();if(s.type==="wunderground")fetchWU(s.stationId,s.apiKey,s.name,null);else fetchWeather(s.lat,s.lon,s.name);}
 function deleteStar(e,i){e.stopPropagation();var stars=loadStars();stars.splice(i,1);saveStars(stars);renderStarsList();}
+function toggleDefaultLoc(){
+  if(!window._currentLat||!window._currentLabel)return;
+  var existing=localStorage.getItem("default_loc");
+  var current=JSON.stringify({lat:window._currentLat,lon:window._currentLon,label:window._currentLabel});
+  if(existing===current){
+    localStorage.removeItem("default_loc");
+    updateHomeBtn();
+    showToast("Default location cleared");
+  } else {
+    localStorage.setItem("default_loc",current);
+    updateHomeBtn();
+    showToast("\u2302 Default set to "+window._currentLabel.split(",")[0]);
+  }
+}
+function updateHomeBtn(){
+  var btn=document.getElementById("loc-home-btn");
+  if(!btn)return;
+  var existing=localStorage.getItem("default_loc");
+  var current=window._currentLat?JSON.stringify({lat:window._currentLat,lon:window._currentLon,label:window._currentLabel}):null;
+  if(existing&&existing===current){btn.classList.add("is-default");}
+  else{btn.classList.remove("is-default");}
+}
+function showToast(msg){
+  var t=document.getElementById("toast");
+  if(!t){t=document.createElement("div");t.id="toast";t.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,40,60,0.92);color:#c8e8f0;font-size:13px;font-weight:700;padding:8px 18px;border-radius:20px;z-index:9999;pointer-events:none;transition:opacity 0.3s";document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity="1";
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(function(){t.style.opacity="0";},2200);
+}
 function promptSaveLoc(){if(!window._currentLabel)return;document.getElementById("star-name-input").value=window._currentLabel.split(",")[0];document.getElementById("star-save-row").style.display="block";renderStarsList();document.getElementById("stars-ov").classList.add("open");setTimeout(function(){document.getElementById("star-name-input").focus();},100);}
 function cancelSaveLoc(){document.getElementById("star-save-row").style.display="none";}
 function confirmSaveLoc(){var name=document.getElementById("star-name-input").value.trim();if(!name)return;var stars=loadStars(),entry;if(window._currentWU){entry={type:"wunderground",name:name,stationId:window._currentWU.stationId,apiKey:window._currentWU.apiKey};}else{if(!window._currentLat)return;entry={type:"location",name:name,lat:window._currentLat,lon:window._currentLon};}for(var i=0;i<stars.length;i++){var s=stars[i],dup=false;if(entry.type==="wunderground"&&s.type==="wunderground"&&s.stationId===entry.stationId)dup=true;if(entry.type==="location"&&s.type==="location"&&Math.abs(s.lat-entry.lat)<0.001&&Math.abs(s.lon-entry.lon)<0.001)dup=true;if(dup){stars[i]=entry;saveStars(stars);document.getElementById("star-save-row").style.display="none";renderStarsList();return;}}stars.push(entry);saveStars(stars);document.getElementById("star-save-row").style.display="none";renderStarsList();}
@@ -1781,42 +1847,7 @@ function checkWashingManual(){
   else if(dryIdx>0.3){dryHours=5;dryLabel="4\u20136 hours";}
   else{dryHours=999;dryLabel=null;}
 
-  // Forecast drying window check
-  var fcDryIdx=dryIdx,fcDegradeCaveat="";
-  if(dryHours!==999){
-    var fdtimes=fc.hourly.time,fdtemps=fc.hourly.temperature_2m,fddps=fc.hourly.dew_point_2m,fdwinds=fc.hourly.wind_speed_10m;
-    var fdTotal=dryIdx,fdCount=1,fdWorstIdx=null,fdWorstTime=null;
-    for(var fdi=0;fdi<fdtimes.length;fdi++){
-      var fdMs=toEpoch(fdtimes[fdi],tzOff);
-      if(fdMs<=now)continue;
-      if(fdMs>now+dryHours*3600000)break;
-      if(sunsetEpoch&&fdMs>sunsetEpoch)break;
-      var fdT=fdtemps[fdi],fdD=fddps[fdi],fdW=fdwinds[fdi];
-      if(fdT===null||fdD===null||fdW===null)continue;
-      var fdSvp=0.6108*Math.exp(17.27*fdT/(fdT+237.3));
-      var fdAvp=0.6108*Math.exp(17.27*fdD/(fdD+237.3));
-      var fdVpd=fdSvp-fdAvp;
-      var fdWm=1+Math.min(1.5,fdW/20);
-      var fdTf=Math.max(0.3,Math.min(1.0,(fdT-5)/20));
-      var fdDpPen=fdD>20?0.35:fdD>16?Math.max(0.35,1.0-(fdD-16)*0.1625):1.0;
-      var fdSlotIdx=fdVpd*fdWm*fdTf*fdDpPen;
-      fdTotal+=fdSlotIdx;fdCount++;
-      if(fdWorstIdx===null||fdSlotIdx<fdWorstIdx){fdWorstIdx=fdSlotIdx;fdWorstTime=fmtFcTime(fdtimes[fdi],tz);}
-    }
-    fcDryIdx=fdTotal/fdCount;
-    var newDryHours=dryHours,newDryLabel=dryLabel;
-    if(fcDryIdx>1.8){newDryHours=0.75;newDryLabel="30\u201360 minutes";}
-    else if(fcDryIdx>1.2){newDryHours=1.5;newDryLabel="1\u20132 hours";}
-    else if(fcDryIdx>0.7){newDryHours=3;newDryLabel="2\u20134 hours";}
-    else if(fcDryIdx>0.3){newDryHours=5;newDryLabel="4\u20136 hours";}
-    else{newDryHours=999;newDryLabel=null;}
-    if(newDryHours>dryHours){dryHours=newDryHours;dryLabel=newDryLabel;}
-    if(fdWorstIdx!==null&&fdWorstIdx<0.3&&dryHours!==999){
-      fcDegradeCaveat=" Conditions may deteriorate around "+fdWorstTime+" \u2014 bring it in if the weather turns.";
-    }
-  }
-
-  // Reason string
+// Reason string
   var rsns=[];
   if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
   else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
@@ -2489,7 +2520,18 @@ initUnit();
 initOnboard();
 applySliderLock();
 initTempPrefs();
-detectLocation();
+initAnnounce();
+(function(){
+  var def=localStorage.getItem("default_loc");
+  if(def){
+    try{
+      var d=JSON.parse(def);
+      fetchWeather(d.lat,d.lon,d.label);
+      return;
+    }catch(e){}
+  }
+  detectLocation();
+})();
 </script>
 </body>
 </html>
