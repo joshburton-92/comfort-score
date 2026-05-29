@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#a8d8ea" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0d1e2e" media="(prefers-color-scheme: dark)"/>
+<meta name="description" content="Monthly comfort climate averages for any location worldwide."/>
+<title>Comfort Climatology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --font:'Nunito',Arial,sans-serif;
+  --bg:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e0 100%);
+  --card:rgba(255,255,255,0.72);--card-border:rgba(255,255,255,0.9);
+  --card-inner:rgba(255,255,255,0.55);--card-inner-border:rgba(255,255,255,0.85);
+  --input-bg:rgba(255,255,255,0.65);--btn-bg:rgba(255,255,255,0.55);
+  --text:#1a3a4a;--text-sec:#3a8fa8;--text-muted:#5a9ab0;--text-head:#1a5f7a;
+  --toggle-bg:rgba(255,255,255,0.3);--toggle-active:rgba(255,255,255,0.85);
+  --pop-bg:rgba(238,250,255,0.97);--pop-border:rgba(120,200,230,0.6);
+  --result-item:rgba(255,255,255,0.65);--divider:rgba(255,255,255,0.5);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:linear-gradient(160deg,#0d1e2e 0%,#102030 35%,#0e2018 70%,#0f2220 100%);
+    --card:rgba(255,255,255,0.07);--card-border:rgba(255,255,255,0.12);
+    --card-inner:rgba(255,255,255,0.06);--card-inner-border:rgba(255,255,255,0.1);
+    --input-bg:rgba(255,255,255,0.08);--btn-bg:rgba(255,255,255,0.08);
+    --text:#c8e8f0;--text-sec:#5ab8d0;--text-muted:#4a8898;--text-head:#7ad0e8;
+    --toggle-bg:rgba(255,255,255,0.08);--toggle-active:rgba(255,255,255,0.18);
+    --pop-bg:rgba(10,25,40,0.97);--pop-border:rgba(60,140,180,0.4);
+    --result-item:rgba(255,255,255,0.07);--divider:rgba(255,255,255,0.1);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font);-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var(--text)}
+.app{max-width:480px;margin:0 auto;padding:max(env(safe-area-inset-top,12px),12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
+.header{padding:16px 0 14px;text-align:center;position:relative}
+.header-icon{width:48px;height:48px;margin:0 auto 8px;background:var(--card);border:1px solid var(--card-border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.header h1{font-size:clamp(18px,5.5vw,24px);font-weight:800;color:var(--text-head);letter-spacing:-0.3px}
+.header p{font-size:clamp(11px,3vw,13px);color:var(--text-sec);margin-top:2px;font-weight:600}
+.back-btn{position:absolute;top:16px;left:0;height:28px;border-radius:20px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 10px;text-decoration:none;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
+.sec-lbl{font-size:11px;font-weight:800;color:var(--text-sec);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.search-row{display:flex;gap:6px;margin-bottom:8px}
+.search-row input{flex:1;min-width:0;padding:10px 12px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+.search-row input::placeholder{color:var(--text-muted)}
+.btn{padding:10px clamp(10px,3vw,16px);font-size:clamp(13px,3.5vw,15px);font-weight:700;border:1px solid var(--card-border);border-radius:10px;background:var(--btn-bg);color:var(--text-head);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn:active{opacity:0.75}
+.btn-p{background:linear-gradient(135deg,#2a9fd6,#1a7ab0);color:#fff;border-color:rgba(255,255,255,0.4)}
+.status{font-size:clamp(12px,3vw,14px);color:var(--text-sec);padding:4px 0;font-weight:600;min-height:1.6em}
+.results-list{margin-top:4px;border-radius:10px;overflow:hidden;border:1px solid var(--card-border);display:none}
+.result-item{padding:11px 14px;background:var(--result-item);cursor:pointer;border-bottom:1px solid var(--divider);font-size:clamp(13px,3.5vw,14px);color:var(--text);font-weight:600}
+.result-item:last-child{border-bottom:none}
+.result-sub{font-size:clamp(11px,2.8vw,12px);color:var(--text-muted);margin-top:2px;font-weight:600}
+/* chart */
+.chart-wrap{margin:4px 0 0}
+.chart-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:flex-end;height:140px;padding-bottom:0}
+.bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}
+.bar-num{font-size:9px;font-weight:800;color:var(--text-head);line-height:1}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:3px;cursor:default}
+.month-row{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:5px;margin-bottom:14px}
+.month-lbl{text-align:center;font-size:9px;font-weight:800;color:var(--text-muted);letter-spacing:0.04em;text-transform:uppercase}
+/* table */
+.detail-table{width:100%;border-collapse:collapse;font-size:clamp(11px,2.8vw,13px)}
+.detail-table th{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.08em;text-transform:uppercase;padding:6px 8px 8px;text-align:left;border-bottom:1px solid var(--divider)}
+.detail-table td{padding:8px 8px;border-bottom:1px solid var(--divider);font-weight:600;color:var(--text);vertical-align:middle}
+.detail-table tr:last-child td{border-bottom:none}
+.detail-table tr:hover td{background:rgba(255,255,255,0.15)}
+.score-chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:800;text-align:center}
+.mini-bar-wrap{height:4px;background:var(--divider);border-radius:2px;overflow:hidden;min-width:40px}
+.mini-bar{height:100%;border-radius:2px}
+/* live link button */
+.live-row{display:flex;justify-content:center;margin-top:2px;margin-bottom:4px}
+/* location label */
+.loc-label{font-size:clamp(11px,3vw,13px);font-weight:700;color:var(--text-muted);margin-bottom:12px}
+.loc-label span{color:var(--text-sec);font-weight:800}
+/* footer */
+.footer-row{display:flex;align-items:center;justify-content:center;padding:20px 0 8px}
+.footer-note{font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;line-height:1.6}
+.howitworks-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
+.pop-ov{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,60,80,0.45);padding:20px;align-items:center;justify-content:center}
+.pop-ov.open{display:flex}
+.pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%;max-height:85vh;display:flex;flex-direction:column}
+.pop-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px;flex-shrink:0}
+.pop-body{font-size:clamp(13px,3.2vw,14px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line;overflow-y:auto;flex:1;min-height:0}
+.pop-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <a class="back-btn" href="index.html">&#8592; Live</a>
+    <div class="header-icon">&#128197;</div>
+    <h1>Comfort Climatology</h1>
+    <p>30-year monthly averages &middot; 1991&ndash;2020</p>
+  </div>
+
+  <div class="card">
+    <div class="sec-lbl">Location</div>
+    <div class="search-row">
+      <input type="text" id="city-input" placeholder="Search city or suburb..." onkeydown="if(event.key==='Enter')searchCity()"/>
+      <button class="btn btn-p" onclick="searchCity()">Search</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="results-list" id="results-list"></div>
+  </div>
+
+  <div id="results-card" style="display:none">
+    <div class="card">
+      <div class="sec-lbl">Monthly comfort score</div>
+      <div class="loc-label" id="loc-label"></div>
+      <div class="chart-wrap">
+        <div class="chart-grid" id="chart-grid"></div>
+        <div class="month-row" id="month-row"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-lbl">Monthly breakdown</div>
+      <table class="detail-table" id="detail-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>T&deg; max</th>
+            <th>T&deg; min</th>
+            <th>DP&deg;</th>
+            <th>Rain mm †</th>
+            <th>Snow cm</th>
+          </tr>
+        </thead>
+        <tbody id="detail-body"></tbody>
+      </table>
+    </div>
+
+    <div class="live-row">
+      <button class="btn btn-p" id="live-btn" onclick="goLive()">&#127780;&#65039; View live conditions</button>
+    </div>
+  </div>
+
+  <div class="footer-row">
+    <button class="howitworks-btn" onclick="showHowItWorks()">How it works &#9432;</button>
+  </div>
+  <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;padding-bottom:16px;line-height:1.6">† Rainfall is a gridded ERA5 estimate and may underestimate totals in hilly or coastal terrain.</div>
+
+</div>
+
+<div class="pop-ov" id="pop-ov" onclick="closePop()">
+  <div class="pop" onclick="event.stopPropagation()">
+    <div class="pop-ttl" id="pop-ttl"></div>
+    <div class="pop-body" id="pop-body"></div>
+    <span class="pop-close" onclick="closePop()">Tap to close</span>
+  </div>
+</div>
+
+<script>
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var MDAYS=[31,28.25,31,30,31,30,31,31,30,31,30,31];
+var SBANDS=[{max:35,col:'rgba(190,50,50,0.92)'},{max:55,col:'rgba(210,120,20,0.92)'},{max:75,col:'rgba(190,185,20,0.92)'},{max:90,col:'rgba(100,180,50,0.92)'},{max:100,col:'rgba(25,140,65,0.92)'}];
+
+var _currentLat=null,_currentLon=null,_currentLabel=null,_currentElev=null,_currentTrueElev=null;
+window._SR=null;
+
+// ── Score formula (matches index.html calc() with default gs() values) ──────
+function loadPrefs(){
+  var p={tlo:15,thi:22,hw:1.2,tmax:70,coolmax:35,coldfloor:-15,coldmax:100,coldexp:1.2,dp:12,hmax:50,hdp_ceil:26,hexp:0.6,int:8,iscale:1.2,wmax:20,wchill_thresh:10,cws:1.5,pwlo:10,pwhi:20,swt:35};
+  try{var adv=JSON.parse(localStorage.getItem('comfort_adv')||'{}');for(var k in adv){if(adv[k]!==undefined&&!isNaN(adv[k]))p[k]=adv[k];}}catch(e){}
+  try{var pr=JSON.parse(localStorage.getItem('comfort_prefs')||'{}');if(pr.tlo!==undefined)p.tlo=pr.tlo;if(pr.thi!==undefined)p.thi=pr.thi;}catch(e){}
+  return p;
+}
+function calc(temp,dp,wind){
+  var s=loadPrefs();
+  var tlo=s.tlo,thi=s.thi,hw=s.hw,tmax=s.tmax,coolmax=s.coolmax,coldfloor=s.coldfloor,coldmax=s.coldmax,coldexp=s.coldexp;
+  var dpThresh=s.dp,hmax=s.hmax,hdp_ceil=s.hdp_ceil,hexp=s.hexp;
+  var int_=s.int,iscale=s.iscale,wmax=s.wmax,wchill_thresh=s.wchill_thresh,cws=s.cws,pwlo=s.pwlo,pwhi=s.pwhi,swt=s.swt;
+  var tP=0;
+  if(temp>=thi){tP=Math.min(1,(temp-thi)/Math.max(1,45-thi))*tmax*hw;}
+  else if(temp>=tlo){tP=0;}
+  else if(temp>=0){tP=((tlo-temp)/Math.max(1,tlo))*coolmax;}
+  else{var cf=Math.min(1,Math.abs(temp)/Math.max(1,Math.abs(coldfloor)));tP=coolmax+Math.pow(cf,coldexp)*coldmax;}
+  tP=Math.min(tmax,tP);
+  var hP=0;
+  if(dp<dpThresh)hP=Math.max(0,(dp+5))*0.5/Math.max(1,dpThresh+5);
+  else{var hf=Math.min(1,(dp-dpThresh)/Math.max(1,hdp_ceil-dpThresh));hP=Math.pow(hf,hexp)*hmax;}
+  hP=Math.min(hmax,hP);
+  var hTempScale=Math.max(0,Math.min(1,(temp-tlo)/(thi-tlo)));
+  hP=hP*hTempScale;
+  var iP=0;
+  if(temp>thi&&dp>dpThresh)iP=Math.min(int_,int_*Math.min(1,(temp-thi)/10)*Math.min(1,(dp-dpThresh)/10)*iscale);
+  var mid=(tlo+thi)/2,wBase=0;
+  if(wind>=pwlo){if(wind<=pwhi)wBase=-2*(1-Math.min(1,Math.max(0,Math.abs(temp-mid)/5)));else if(wind<=swt)wBase=(wind-pwhi)/(swt-pwhi)*wmax*0.4;else wBase=wmax*0.4+(wind-swt)/Math.max(1,120-swt)*wmax*0.6;}
+  var wChill=0;
+  if(temp<wchill_thresh){var cf2=Math.min(1,(wchill_thresh-temp)/Math.max(1,wchill_thresh-coldfloor));wChill=cf2*Math.min(1,wind/50)*wmax*cws;}
+  var evap=(temp>thi&&dp<dpThresh)?Math.min(3,(temp-thi)/5*(dpThresh-dp)/5):0;
+  var wP=Math.max(-5,Math.min(wmax*2.5,wBase+wChill-evap));
+  return{score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP))),tP:tP,hP:hP,iP:iP,wP:wP};
+}
+
+function bandForScore(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<SBANDS.length;i++)if(v<=SBANDS[i].max)return i;return SBANDS.length-1;}
+function scoreCol(s){return SBANDS[bandForScore(s)].col.replace('0.92','1');}
+
+// ── Nominatim helpers (identical to index.html) ───────────────────────────
+function nomLabel(p){var a=p.address||{};var name=a.suburb||a.town||a.village||a.city_district||a.city||a.municipality||a.county||p.display_name.split(',')[0].trim();return[name,a.state||'',a.country||''].filter(Boolean).join(', ');}
+function nomSub(p){var a=p.address||{},parts=[];if(a.suburb&&(a.city||a.municipality))parts.push(a.city||a.municipality);if(a.state)parts.push(a.state);if(a.country)parts.push(a.country);return parts.filter(Boolean).join(', ')||(p.type||'');}
+
+function searchCity(){
+  var city=document.getElementById('city-input').value.trim();
+  if(!city)return;
+  setStatus('Searching...');
+  document.getElementById('results-list').style.display='none';
+  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(city)+'&format=json&limit=10&addressdetails=1',{headers:{'Accept-Language':'en','User-Agent':'ComfortScoreApp/1.0'}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d||!d.length){setStatus('No results found. Try adding a country name.');return;}
+    if(d.length===1){setStatus('');runClimatology(parseFloat(d[0].lat),parseFloat(d[0].lon),nomLabel(d[0]));return;}
+    setStatus('Multiple results — tap one:');
+    var list=document.getElementById('results-list'),html='';
+    for(var i=0;i<d.length;i++){html+="<div class='result-item' onclick='selectResult("+i+")'><div>"+nomLabel(d[i])+"</div><div class='result-sub'>"+nomSub(d[i])+"</div></div>";}
+    list.innerHTML=html;list.style.display='block';
+    window._SR=d;
+  })
+  .catch(function(e){setStatus('Search failed: '+e.message);});
+}
+
+function selectResult(i){
+  document.getElementById('results-list').style.display='none';
+  setStatus('');
+  var p=window._SR[i];
+  runClimatology(parseFloat(p.lat),parseFloat(p.lon),nomLabel(p));
+}
+
+// ── Main fetch + process ──────────────────────────────────────────────────
+function makeUrl(lat,lon){
+  return 'https://archive-api.open-meteo.com/v1/archive?'
+    +'latitude='+lat+'&longitude='+lon
+    +'&start_date=1991-01-01&end_date=2020-12-31'
+    +'&daily=temperature_2m_max,temperature_2m_min,dewpoint_2m_mean,wind_speed_10m_mean,rain_sum,snowfall_sum'
+    +'&wind_speed_unit=kmh&timezone=auto';
+}
+
+function fetchWithRetry(url,delay){
+  return new Promise(function(resolve,reject){
+    setTimeout(function(){
+      fetch(url).then(function(r){
+        if(r.status===429){
+          setTimeout(function(){
+            fetch(url).then(function(r2){
+              if(r2.status===429){reject(new Error('Rate limited — wait a moment and try again.'));return;}
+              if(!r2.ok){reject(new Error('API error '+r2.status));return;}
+              r2.json().then(resolve).catch(reject);
+            }).catch(reject);
+          },8000);
+          return;
+        }
+        if(!r.ok){reject(new Error('API error '+r.status));return;}
+        r.json().then(resolve).catch(reject);
+      }).catch(reject);
+    },delay);
+  });
+}
+
+function mergeData(chunks){
+  var out=JSON.parse(JSON.stringify(chunks[0]));
+  var keys=Object.keys(out.daily);
+  for(var c=1;c<chunks.length;c++){
+    for(var k=0;k<keys.length;k++){
+      out.daily[keys[k]]=out.daily[keys[k]].concat(chunks[c].daily[keys[k]]);
+    }
+  }
+  return out;
+}
+
+function runClimatology(lat,lon,label){
+  _currentLat=lat;_currentLon=lon;_currentLabel=label;
+  _currentElev=null;_currentTrueElev=null;
+  document.getElementById('results-card').style.display='none';
+  setStatus('Fetching 30 years of data\u2026');
+  var elevUrl='https://api.open-meteo.com/v1/elevation?latitude='+lat+'&longitude='+lon;
+  fetch(elevUrl).then(function(r){return r.json();}).then(function(e){
+    if(e&&e.elevation&&e.elevation[0]!=null)_currentTrueElev=e.elevation[0];
+  }).catch(function(){});
+  fetchWithRetry(makeUrl(lat,lon),500)
+  .then(function(data){
+    setStatus('Calculating\u2026');
+    setTimeout(function(){processData(data,lat,lon,label);},10);
+  })
+  .catch(function(e){setStatus('Failed: '+e.message);});
+}
+
+function processData(data,lat,lon,label){
+  _currentElev=data.elevation!==undefined?data.elevation:null;
+  var dates=data.daily.time;
+  var tmaxA=data.daily.temperature_2m_max;
+  var tminA=data.daily.temperature_2m_min;
+  var dpA=data.daily.dewpoint_2m_mean;
+  var windA=data.daily.wind_speed_10m_mean;
+  var rainA=data.daily.rain_sum;
+  var snowA=data.daily.snowfall_sum;
+  var buckets=[];
+  for(var i=0;i<12;i++)buckets.push({tmax:[],tmin:[],dp:[],wind:[],rain:[],snow:[]});
+  for(var i=0;i<dates.length;i++){
+    var m=parseInt(dates[i].slice(5,7))-1;
+    if(tmaxA[i]!=null)buckets[m].tmax.push(tmaxA[i]);
+    if(tminA[i]!=null)buckets[m].tmin.push(tminA[i]);
+    if(dpA[i]!=null)buckets[m].dp.push(dpA[i]);
+    if(windA[i]!=null)buckets[m].wind.push(windA[i]);
+    if(rainA[i]!=null)buckets[m].rain.push(rainA[i]);
+    if(snowA[i]!=null)buckets[m].snow.push(snowA[i]);
+  }
+  function avg(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0)/arr.length:0;}
+  function sum(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0):0;}
+  var monthly=buckets.map(function(b,mi){
+    var T=avg(b.tmax),dp=avg(b.dp),wind=avg(b.wind);
+    var r=calc(T,dp,wind);
+    return{
+      month:MONTHS[mi],
+      T:T,tmin:avg(b.tmin),dp:dp,wind:wind,
+      rain:avg(b.rain)*MDAYS[mi],
+      snow:avg(b.snow)*MDAYS[mi],
+      score:r.score,tP:r.tP,hP:r.hP,iP:r.iP,wP:r.wP,
+      days:b.tmax.length
+    };
+  });
+  setStatus('');
+  renderResults(monthly,lat,lon,label,data.timezone);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function renderResults(monthly,lat,lon,label,tz){
+  // location label
+  var trueElev=(_currentTrueElev!==null)?Math.round(_currentTrueElev)+'m':null;
+  var gridElev=(_currentElev!==null&&_currentElev!==undefined)?Math.round(_currentElev)+'m':null;
+  var elevStr='';
+  if(trueElev&&gridElev&&trueElev!==gridElev)elevStr=' &nbsp;&middot;&nbsp; '+trueElev+' <span style="font-size:10px;color:var(--text-muted)" title="ERA5 grid cell elevation used for climate modelling">ERA5: '+gridElev+'</span>';
+  else if(trueElev)elevStr=' &nbsp;&middot;&nbsp; '+trueElev;
+  else if(gridElev)elevStr=' &nbsp;&middot;&nbsp; '+gridElev;
+  document.getElementById('loc-label').innerHTML='<span>'+label+'</span>'+elevStr;
+
+  // bar chart
+  var maxScore=Math.max.apply(null,monthly.map(function(m){return m.score;}));
+  var chartHtml='',monthHtml='';
+  for(var i=0;i<monthly.length;i++){
+    var m=monthly[i];
+    var h=Math.round((m.score/100)*120);
+    var col=scoreCol(m.score);
+    chartHtml+="<div class='bar-col'>"
+      +"<span class='bar-num'>"+m.score+"</span>"
+      +"<div class='bar' style='height:"+h+"px;background:"+col+";opacity:0.85'></div>"
+      +"</div>";
+    monthHtml+="<div class='month-lbl'>"+m.month+"</div>";
+  }
+  document.getElementById('chart-grid').innerHTML=chartHtml;
+  document.getElementById('month-row').innerHTML=monthHtml;
+
+  // detail table
+  function fNum(v,dec){return(v!==null&&v!==undefined&&!isNaN(v))?v.toFixed(dec):'—';}
+  var totRain=0,totSnow=0;
+  for(var i=0;i<monthly.length;i++){totRain+=monthly[i].rain;totSnow+=monthly[i].snow;}
+  var annRain=totRain,annSnow=totSnow;
+  var allTmax=monthly.map(function(m){return m.T;}),allTmin=monthly.map(function(m){return m.tmin;});
+  var annTmax=allTmax.reduce(function(a,b){return a+b;},0)/12;
+  var annTmin=allTmin.reduce(function(a,b){return a+b;},0)/12;
+  var annDp=monthly.map(function(m){return m.dp;}).reduce(function(a,b){return a+b;},0)/12;
+  var tbodyHtml='';
+  for(var i=0;i<monthly.length;i++){
+    var m=monthly[i];
+    var snowStr=m.snow>0.05?fNum(m.snow,1):'—';
+    var col=scoreCol(m.score);
+    tbodyHtml+="<tr style='border-left:3px solid "+col+"'>"
+      +"<td style='font-weight:800;color:"+col+"'>"+m.month+"</td>"
+      +"<td style='color:var(--text)'>"+fNum(m.T,1)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+fNum(m.tmin,1)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+fNum(m.dp,1)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+fNum(m.rain,0)+"</td>"
+      +"<td style='color:var(--text-muted)'>"+snowStr+"</td>"
+      +"</tr>";
+  }
+  tbodyHtml+="<tr style='border-top:2px solid var(--divider)'>"
+    +"<td style='font-weight:800;color:var(--text-sec);font-size:10px;letter-spacing:0.06em;text-transform:uppercase'>Year</td>"
+    +"<td style='color:var(--text);font-weight:800'>"+fNum(annTmax,1)+"&deg;</td>"
+    +"<td style='color:var(--text-muted);font-weight:700'>"+fNum(annTmin,1)+"&deg;</td>"
+    +"<td style='color:var(--text-muted);font-weight:700'>"+fNum(annDp,1)+"&deg;</td>"
+    +"<td style='color:var(--text-muted);font-weight:700'>"+fNum(annRain,0)+"</td>"
+    +"<td style='color:var(--text-muted);font-weight:700'>"+(annSnow>0.05?fNum(annSnow,1):'—')+"</td>"
+    +"</tr>";
+  document.getElementById('detail-body').innerHTML=tbodyHtml;
+
+  document.getElementById('results-card').style.display='block';
+}
+
+function goLive(){
+  if(_currentLat===null)return;
+  window.location.href='index.html?lat='+_currentLat+'&lon='+_currentLon+'&label='+encodeURIComponent(_currentLabel||'');
+}
+
+function setStatus(msg){document.getElementById('status').textContent=msg;}
+
+(function(){
+  var p=new URLSearchParams(window.location.search);
+  var lat=parseFloat(p.get('lat')),lon=parseFloat(p.get('lon')),label=p.get('label')||'';
+  if(!isNaN(lat)&&!isNaN(lon)){
+    document.getElementById('city-input').value=label;
+    runClimatology(lat,lon,label);
+  }
+})();
+
+function showHowItWorks(){
+  var prefs=loadPrefs();
+  var prefsNote='Using your saved Comfort Score preferences (tlo='+prefs.tlo+'\u00B0C, thi='+prefs.thi+'\u00B0C).';
+  var noPrefs=localStorage.getItem('comfort_adv')===null&&localStorage.getItem('comfort_prefs')===null;
+  if(noPrefs)prefsNote='Using default preferences. Open Comfort Score and set your personal thresholds to apply them here automatically.';
+  showPop('How it works',
+    'Comfort Climatology fetches 30 years of daily weather data (1991\u20132020) from the Open-Meteo ERA5 climate archive and calculates a monthly average comfort score for any location worldwide.\n\n'
+   +'For each month, it averages the daily maximum temperature, mean dew point, and mean wind speed, then runs those values through the same comfort score formula used in the main app.\n\n'
+   +'SCORE FORMULA\n'
+   +'Score = 100 \u2212 temperature penalty \u2212 humidity penalty \u2212 interaction penalty \u2212 wind penalty. Each penalty increases as conditions move away from the ideal range. The result is clamped to 0\u2013100.\n\n'
+   +'YOUR PREFERENCES\n'
+   +prefsNote+'\n\n'
+   +'DATA\n'
+   +'Weather archive: Open-Meteo ERA5 (archive-api.open-meteo.com)\nGeocoding: Nominatim / OpenStreetMap'
+  );
+}
+
+function showPop(title,body){
+  var ov=document.getElementById('pop-ov');
+  document.getElementById('pop-ttl').textContent=title;
+  document.getElementById('pop-body').textContent=body;
+  ov.classList.add('open');
+}
+function closePop(){document.getElementById('pop-ov').classList.remove('open');}
+</script>
+</body>
+</html>
