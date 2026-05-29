@@ -93,6 +93,15 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 <body>
 <div class="app">
 
+  <div id="ann-bar" style="background:linear-gradient(135deg,rgba(42,159,214,0.18),rgba(26,122,176,0.18));border:1px solid rgba(42,159,214,0.35);border-radius:clamp(10px,3vw,14px);padding:10px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;position:relative">
+    <span style="font-size:18px;flex-shrink:0">&#127381;</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:800;color:var(--text-head);margin-bottom:2px">New from Comfort Score</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.5">Search any city in the world to see how comfortable it is month by month — based on 30 years of climate data. Tap a month to explore.</div>
+    </div>
+    <span onclick="dismissAnn()" style="font-size:18px;cursor:pointer;color:var(--text-muted);flex-shrink:0;line-height:1">&#215;</span>
+  </div>
+
   <div class="header">
     <a class="back-btn" href="index.html">&#8592; Live</a>
     <div class="header-icon">&#128197;</div>
@@ -279,16 +288,18 @@ function runClimatology(lat,lon,label){
   _currentElev=null;_currentTrueElev=null;
   document.getElementById('results-card').style.display='none';
   setStatus('Fetching 30 years of data\u2026');
-  var elevUrl='https://api.open-meteo.com/v1/elevation?latitude='+lat+'&longitude='+lon;
+  var elevUrl='https://api.opentopodata.org/v1/srtm30m?locations='+lat+','+lon;
   fetch(elevUrl).then(function(r){return r.json();}).then(function(e){
-    if(e&&e.elevation&&e.elevation[0]!=null)_currentTrueElev=e.elevation[0];
-  }).catch(function(){});
-  fetchWithRetry(makeUrl(lat,lon),500)
-  .then(function(data){
-    setStatus('Calculating\u2026');
-    setTimeout(function(){processData(data,lat,lon,label);},10);
-  })
-  .catch(function(e){setStatus('Failed: '+e.message);});
+    console.log('SRTM response:',JSON.stringify(e));
+    if(e&&e.results&&e.results[0]&&e.results[0].elevation!=null)_currentTrueElev=e.results[0].elevation;
+  }).catch(function(err){console.log('SRTM error:',err);}).finally(function(){
+    fetchWithRetry(makeUrl(lat,lon),500)
+    .then(function(data){
+      setStatus('Calculating\u2026');
+      setTimeout(function(){processData(data,lat,lon,label);},10);
+    })
+    .catch(function(e){setStatus('Failed: '+e.message);});
+  });
 }
 
 function processData(data,lat,lon,label){
@@ -399,6 +410,18 @@ function goLive(){
 
 function setStatus(msg){document.getElementById('status').textContent=msg;}
 
+function dismissAnn(){
+  var el=document.getElementById('ann-bar');
+  if(el)el.style.display='none';
+  localStorage.setItem('ann_climatology_v1','dismissed');
+}
+(function(){
+  if(localStorage.getItem('ann_climatology_v1')==='dismissed'){
+    var el=document.getElementById('ann-bar');
+    if(el)el.style.display='none';
+  }
+})();
+
 (function(){
   var p=new URLSearchParams(window.location.search);
   var lat=parseFloat(p.get('lat')),lon=parseFloat(p.get('lon')),label=p.get('label')||'';
@@ -420,6 +443,10 @@ function showHowItWorks(){
    +'Score = 100 \u2212 temperature penalty \u2212 humidity penalty \u2212 interaction penalty \u2212 wind penalty. Each penalty increases as conditions move away from the ideal range. The result is clamped to 0\u2013100.\n\n'
    +'YOUR PREFERENCES\n'
    +prefsNote+'\n\n'
+   +'ELEVATION\n'
+   +'Elevation is sourced from the ERA5 grid cell covering your location. In hilly or mountainous terrain, this may differ significantly from the true elevation as ERA5 averages over a ~25km grid. This also affects temperature and rainfall accuracy in complex terrain.\n\n'
+   +'RAINFALL\n'
+   +'Rainfall figures are ERA5 gridded estimates and may underestimate totals in hilly or coastal areas for the same reason.\n\n'
    +'DATA\n'
    +'Weather archive: Open-Meteo ERA5 (archive-api.open-meteo.com)\nGeocoding: Nominatim / OpenStreetMap'
   );
