@@ -1704,8 +1704,8 @@ function renderStarsList(){
       var defObj=JSON.parse(def);
       var defName=defObj.label||defObj.name||"Unknown";
       var defSub=defObj.type==="wunderground"?"WU station: "+defObj.stationId:"Saved location";
-      html+="<div class='star-item' style='border-color:rgba(42,159,214,0.4);background:rgba(42,159,214,0.06);cursor:default'>"
-        +"<div style='flex:1'>"
+      html+="<div class='star-item' style='border-color:rgba(42,159,214,0.4);background:rgba(42,159,214,0.06)'>"
+        +"<div style='flex:1' onclick='loadDefault()'>"
         +"<div id='def-name-display' class='star-item-name' style='color:#2a9fd6'>\u2302 "+defName+"</div>"
         +"<div class='star-item-type'>Default · "+defSub+"</div>"
         +"<input id='def-name-input' class='star-item-input' style='display:none' value='"+defName.replace(/'/g,"&#39;")+"' onkeydown='if(event.key===\"Enter\")saveDefaultName()'/>"
@@ -1779,6 +1779,16 @@ function saveDefaultName(){
 }
 function loadStar(i){var s=loadStars()[i];closeStars();if(s.type==="wunderground")fetchWU(s.stationId,s.apiKey,s.name,null);else fetchWeather(s.lat,s.lon,s.name);}
 function deleteStar(e,i){e.stopPropagation();var stars=loadStars();stars.splice(i,1);saveStars(stars);renderStarsList();}
+function loadDefault(){
+  var def=localStorage.getItem("default_loc");
+  if(!def)return;
+  try{
+    var d=JSON.parse(def);
+    closeStars();
+    if(d.type==="wunderground"){fetchWU(d.stationId,d.apiKey,d.label,null);}
+    else{fetchWeather(d.lat,d.lon,d.label);}
+  }catch(e){}
+}
 function clearDefaultLoc(){
   localStorage.removeItem("default_loc");
   updateHomeBtn();
