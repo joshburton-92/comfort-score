@@ -1693,30 +1693,68 @@ function loadStars(){return JSON.parse(localStorage.getItem("comfort_stars")||"[
 function saveStars(s){localStorage.setItem("comfort_stars",JSON.stringify(s));}
 function openStars(){document.getElementById("star-save-row").style.display="none";renderStarsList();document.getElementById("stars-ov").classList.add("open");}
 function closeStars(){document.getElementById("stars-ov").classList.remove("open");}
-function renderStarsList(){var stars=loadStars(),html="";if(!stars.length){html="<div class='star-empty'>No saved locations yet.<br/>Search or detect a location then tap \u2605 to save it.</div>";}else{for(var i=0;i<stars.length;i++){var s=stars[i],sub=s.type==="wunderground"?"WU station: "+s.stationId:"";html+="<div class='star-item' onclick='loadStar("+i+")'><div><div class='star-item-name'>\u2605 "+s.name+"</div>"+(sub?"<div class='star-item-type'>"+sub+"</div>":"")+"</div><button class='star-item-del' onclick='deleteStar(event,"+i+")'>&#10005;</button></div>";}}document.getElementById("stars-list").innerHTML=html;}
+function renderStarsList(){
+  var stars=loadStars(),html="";
+  // Default location row at top
+  var def=localStorage.getItem("default_loc");
+  if(def){
+    try{
+      var defObj=JSON.parse(def);
+      var defName=defObj.label||defObj.name||"Unknown";
+      var defSub=defObj.type==="wunderground"?"WU station: "+defObj.stationId:"Saved location";
+      html+="<div class='star-item' style='border-color:rgba(42,159,214,0.4);background:rgba(42,159,214,0.06)'>"
+        +"<div><div class='star-item-name' style='color:#2a9fd6'>\u2302 "+defName+"</div>"
+        +"<div class='star-item-type'>Default · "+defSub+"</div></div>"
+        +"<button class='star-item-del' title='Clear default' onclick='clearDefaultLoc()'>&#10005;</button>"
+        +"</div>";
+    }catch(e){}
+  }
+  if(!stars.length){html+="<div class='star-empty'>No saved locations yet.<br/>Search or detect a location then tap \u2605 to save it.</div>";}
+  else{for(var i=0;i<stars.length;i++){var s=stars[i],sub=s.type==="wunderground"?"WU station: "+s.stationId:"";html+="<div class='star-item' onclick='loadStar("+i+")'><div><div class='star-item-name'>\u2605 "+s.name+"</div>"+(sub?"<div class='star-item-type'>"+sub+"</div>":"")+"</div><button class='star-item-del' onclick='deleteStar(event,"+i+")'>&#10005;</button></div>";}}
+  document.getElementById("stars-list").innerHTML=html;
+}
 function loadStar(i){var s=loadStars()[i];closeStars();if(s.type==="wunderground")fetchWU(s.stationId,s.apiKey,s.name,null);else fetchWeather(s.lat,s.lon,s.name);}
 function deleteStar(e,i){e.stopPropagation();var stars=loadStars();stars.splice(i,1);saveStars(stars);renderStarsList();}
+function clearDefaultLoc(){
+  localStorage.removeItem("default_loc");
+  updateHomeBtn();
+  renderStarsList();
+  showToast("Default location cleared");
+}
 function toggleDefaultLoc(){
-  if(!window._currentLat||!window._currentLabel)return;
+  if(!window._currentLat&&!window._currentWU)return;
   var existing=localStorage.getItem("default_loc");
-  var current=JSON.stringify({lat:window._currentLat,lon:window._currentLon,label:window._currentLabel});
+  var current;
+  if(window._currentWU){
+    current=JSON.stringify({type:"wunderground",stationId:window._currentWU.stationId,apiKey:window._currentWU.apiKey,label:window._currentWU.label,lat:window._currentLat,lon:window._currentLon});
+  } else {
+    current=JSON.stringify({type:"location",lat:window._currentLat,lon:window._currentLon,label:window._currentLabel});
+  }
   if(existing===current){
     localStorage.removeItem("default_loc");
     updateHomeBtn();
+    renderStarsList();
     showToast("Default location cleared");
   } else {
     localStorage.setItem("default_loc",current);
     updateHomeBtn();
-    showToast("\u2302 Default set to "+window._currentLabel.split(",")[0]);
+    renderStarsList();
+    var name=(window._currentWU?window._currentWU.label:window._currentLabel)||"";
+    showToast("\u2302 Default set to "+name.split(",")[0]);
   }
 }
 function updateHomeBtn(){
   var btn=document.getElementById("loc-home-btn");
   if(!btn)return;
   var existing=localStorage.getItem("default_loc");
-  var current=window._currentLat?JSON.stringify({lat:window._currentLat,lon:window._currentLon,label:window._currentLabel}):null;
-  if(existing&&existing===current){btn.classList.add("is-default");}
-  else{btn.classList.remove("is-default");}
+  if(!existing){btn.classList.remove("is-default");return;}
+  try{
+    var def=JSON.parse(existing);
+    var match=false;
+    if(def.type==="wunderground"&&window._currentWU&&def.stationId===window._currentWU.stationId)match=true;
+    if(def.type==="location"&&window._currentLat&&Math.abs(def.lat-window._currentLat)<0.001&&Math.abs(def.lon-window._currentLon)<0.001)match=true;
+    if(match)btn.classList.add("is-default");else btn.classList.remove("is-default");
+  }catch(e){btn.classList.remove("is-default");}
 }
 function showToast(msg){
   var t=document.getElementById("toast");
@@ -2526,6 +2564,7 @@ initAnnounce();
   if(def){
     try{
       var d=JSON.parse(def);
+      if(d.type==="wunderground"){fetchWU(d.stationId,d.apiKey,d.label,null);return;}
       fetchWeather(d.lat,d.lon,d.label);
       return;
     }catch(e){}
