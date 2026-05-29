@@ -327,6 +327,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <button class="share-btn" id="washing-btn" onclick="checkWashing()">Will washing dry? &#129531;</button>
             <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()">What to wear? &#129531;</button>
             <button class="share-btn" id="world-btn" onclick="openWorldCheck()">Where in the world? &#127758;</button>
+            <button class="share-btn" onclick="openClimatology()">Monthly climate &#128197;</button>
           </div>
           <div class="share-row">
             <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
@@ -2005,6 +2006,12 @@ if(dryHours===999){
   return washingPop("Should dry in about "+dryLabel+" "+emoji,rsn+humCaveat+" (No forecast data \u2014 rain and sunset not checked.)",col);
 }
 
+function openClimatology(){
+  var lat=window._currentLat,lon=window._currentLon,label=window._currentLabel;
+  if(lat===undefined||lat===null){return;}
+  window.open('comfort-climatology.html?lat='+lat+'&lon='+lon+'&label='+encodeURIComponent(label||''),'_blank');
+}
+
 function openWorldCheck(){
   document.getElementById("world-ov").classList.add("open");
   document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking 200 cities\u2026</div>";
@@ -2634,6 +2641,9 @@ applySliderLock();
 initTempPrefs();
 initAnnounce();
 (function(){
+  var p=new URLSearchParams(window.location.search);
+  var lat=parseFloat(p.get('lat')),lon=parseFloat(p.get('lon')),label=p.get('label')||'';
+  if(!isNaN(lat)&&!isNaN(lon)){fetchWeather(lat,lon,label||null);return;}
   var def=localStorage.getItem("default_loc");
   if(def){
     try{
