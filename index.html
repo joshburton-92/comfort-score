@@ -328,6 +328,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()">What to wear? &#129531;</button>
             <button class="share-btn" id="world-btn" onclick="openWorldCheck()">Where in the world? &#127758;</button>
             <button class="share-btn" onclick="openClimatology()">Monthly climate &#128197;</button>
+<button class="share-btn" onclick="openLiveability()">World liveability &#127758;</button>
           </div>
           <div class="share-row">
             <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
@@ -2011,6 +2012,7 @@ function openClimatology(){
   if(lat===undefined||lat===null){return;}
   window.open('comfort-climatology.html?lat='+lat+'&lon='+lon+'&label='+encodeURIComponent(label||''),'_blank');
 }
+function openLiveability(){window.open('liveability.html','_blank');}
 
 function openWorldCheck(){
   document.getElementById("world-ov").classList.add("open");
