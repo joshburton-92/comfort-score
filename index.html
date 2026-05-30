@@ -1613,7 +1613,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
@@ -1672,7 +1672,7 @@ function fetchWU(stationId,apiKey,label,cb){
 }
 function fetchForecastOnly(lat,lon){
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
-  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
+  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
   window._AQ=null;
   var fcPromise=fetch(fcUrl).then(function(r){return r.json();});
   var aqPromise=fetch(aqUrl).then(function(r){return r.json();}).catch(function(){return null;});
@@ -2577,6 +2577,7 @@ function show7DaySlot(di){
     var dCodes=fc.daily.weather_code||[];
     var dRain=fc.daily.precipitation_sum||[];
     var dRainHrs=fc.daily.precipitation_hours||[];
+    var dSnow=fc.daily.snowfall_sum||[];
     var dWindMax=fc.daily.wind_speed_10m_max||[];
     var dTmax=fc.daily.temperature_2m_max||[];
     var dTmin=fc.daily.temperature_2m_min||[];
@@ -2590,11 +2591,19 @@ function show7DaySlot(di){
     var wxInfo=wxDay!==null?wxStyle(wxDay):null;
     var rainSum=dRain[dOff]!=null?dRain[dOff]:null;
     var rainHrs=dRainHrs[dOff]!=null?Math.round(dRainHrs[dOff]):null;
+    var snowSum=dSnow[dOff]!=null?dSnow[dOff]:null;
     var windMax=dWindMax[dOff]!=null?Math.round(dWindMax[dOff]):null;
     var tMax=dTmax[dOff]!=null?toDisp(dTmax[dOff]).toFixed(1):null;
     var tMin=dTmin[dOff]!=null?toDisp(dTmin[dOff]).toFixed(1):null;
     var condLine=(wxInfo?wxInfo.emoji+" ":"")+( wxDay!==null?(wxFromCode(wxDay)||{t:""}).t:"");
-    var rainLine=rainSum!==null&&rainSum>0?(rainSum.toFixed(1)+"mm over "+rainHrs+"h"):"No rain expected";
+    var rainLine;
+    if(snowSum!=null&&snowSum>=0.5&&(rainSum==null||snowSum*10>rainSum)){
+      rainLine="❄️ "+snowSum.toFixed(1)+"cm snow"+(rainSum!=null&&rainSum>0?" + "+rainSum.toFixed(1)+"mm rain":"")+" over "+rainHrs+"h";
+    }else if(rainSum!=null&&rainSum>0){
+      rainLine="🌧️ "+rainSum.toFixed(1)+"mm over "+rainHrs+"h";
+    }else{
+      rainLine="No rain expected";
+    }
     var rangeLine=(tMax!==null&&tMin!==null)?(tMin+unitSym()+" – "+tMax+unitSym()):"";
     var windLine=windMax!==null?("Peak wind "+windMax+" km/h"):"";
     var fireLine="";

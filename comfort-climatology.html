@@ -177,6 +177,40 @@ var MDAYS=[31,28.25,31,30,31,30,31,31,30,31,30,31];
 var SBANDS=[{max:35,col:'rgba(190,50,50,0.92)'},{max:55,col:'rgba(210,120,20,0.92)'},{max:75,col:'rgba(190,185,20,0.92)'},{max:90,col:'rgba(100,180,50,0.92)'},{max:100,col:'rgba(25,140,65,0.92)'}];
 
 var _currentLat=null,_currentLon=null,_currentLabel=null,_currentElev=null,_currentTrueElev=null;
+var _cache=null,_cacheLoading=false;
+
+function loadCache(){
+  if(_cache!==null||_cacheLoading)return;
+  _cacheLoading=true;
+  fetch('climatology-cache.json')
+  .then(function(r){if(!r.ok)throw new Error('Cache not found');return r.json();})
+  .then(function(data){_cache=data;console.log('Cache loaded: '+Object.keys(data).length+' cities');})
+  .catch(function(){_cache={};console.log('No cache file found — using ERA5 only');});
+}
+
+function haversineKm(lat1,lon1,lat2,lon2){
+  var R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function findCacheHit(lat,lon,elev){
+  if(!_cache||!Object.keys(_cache).length)return null;
+  var best=null,bestDist=Infinity;
+  var elevKnown=elev!==null&&elev!==undefined;
+  for(var key in _cache){
+    var c=_cache[key];
+    if(!c||c.lat===undefined)continue;
+    var dist=haversineKm(lat,lon,c.lat,c.lon);
+    if(dist>20)continue;
+    // Elevation check — only apply if we have both elevations
+    if(elevKnown&&c.elev!==null&&c.elev!==undefined){
+      if(Math.abs(elev-c.elev)>100)continue;
+    }
+    if(dist<bestDist){bestDist=dist;best={entry:c,dist:dist};}
+  }
+  return best;
+}
 window._SR=null;
 
 // ── Score formula (matches index.html calc() with default gs() values) ──────
@@ -292,6 +326,27 @@ function runClimatology(lat,lon,label){
   _currentLat=lat;_currentLon=lon;_currentLabel=label;
   _currentElev=null;_currentTrueElev=null;
   document.getElementById('results-card').style.display='none';
+
+  // Check cache first
+  if(_cache!==null){
+    var hit=findCacheHit(lat,lon,_currentTrueElev);
+    if(hit){
+      var distStr=hit.dist<1?'<1km':Math.round(hit.dist)+'km';
+      var fromStr=hit.entry.name!==label?' (data from '+hit.entry.name+', '+distStr+' away)':'';
+      setStatus('');
+      _currentElev=hit.entry.elev||null;
+      window._monthly=hit.entry.monthly;
+      renderResults(hit.entry.monthly,lat,lon,label+(fromStr?' *':''),null);
+      if(fromStr)setStatus('* '+hit.entry.name+' used as nearest climate station ('+distStr+')');
+      return;
+    }
+  } else if(_cacheLoading){
+    // Cache still loading — wait briefly then retry
+    setStatus('Loading cache\u2026');
+    setTimeout(function(){runClimatology(lat,lon,label);},600);
+    return;
+  }
+
   setStatus('Fetching 30 years of data\u2026');
   var elevUrl='https://api.opentopodata.org/v1/srtm30m?locations='+lat+','+lon;
   fetch(elevUrl).then(function(r){return r.json();}).then(function(e){
@@ -329,12 +384,25 @@ function processData(data,lat,lon,label){
   }
   function avg(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0)/arr.length:0;}
   function sum(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0):0;}
+  // For each month, group daily values by year to get each year's single hottest/coldest day
+  var yearlyMaxByMonth=[];var yearlyMinByMonth=[];
+  for(var mi=0;mi<12;mi++){yearlyMaxByMonth.push({});yearlyMinByMonth.push({});}
+  for(var i=0;i<dates.length;i++){
+    var mi=parseInt(dates[i].slice(5,7))-1;
+    var yr=dates[i].slice(0,4);
+    if(tmaxA[i]!=null){if(yearlyMaxByMonth[mi][yr]===undefined||tmaxA[i]>yearlyMaxByMonth[mi][yr])yearlyMaxByMonth[mi][yr]=tmaxA[i];}
+    if(tminA[i]!=null){if(yearlyMinByMonth[mi][yr]===undefined||tminA[i]<yearlyMinByMonth[mi][yr])yearlyMinByMonth[mi][yr]=tminA[i];}
+  }
+  function avgObj(obj){var vals=Object.values(obj);return vals.length?vals.reduce(function(a,b){return a+b;},0)/vals.length:null;}
   var monthly=buckets.map(function(b,mi){
     var T=avg(b.tmax),dp=avg(b.dp),wind=avg(b.wind);
     var r=calc(T,dp,wind);
+    var tmaxMax=avgObj(yearlyMaxByMonth[mi]);
+    var tminMin=avgObj(yearlyMinByMonth[mi]);
     return{
       month:MONTHS[mi],
       T:T,tmin:avg(b.tmin),dp:dp,wind:wind,
+      tmaxMax:tmaxMax,tminMin:tminMin,
       rain:avg(b.rain)*MDAYS[mi],
       snow:avg(b.snow)*MDAYS[mi],
       score:r.score,tP:r.tP,hP:r.hP,iP:r.iP,wP:r.wP,
@@ -342,6 +410,7 @@ function processData(data,lat,lon,label){
     };
   });
   setStatus('');
+  window._monthly=monthly;
   renderResults(monthly,lat,lon,label,data.timezone);
 }
 
@@ -363,11 +432,11 @@ function renderResults(monthly,lat,lon,label,tz){
     var m=monthly[i];
     var h=Math.round((m.score/100)*120);
     var col=scoreCol(m.score);
-    chartHtml+="<div class='bar-col'>"
+    chartHtml+="<div class='bar-col' style='cursor:pointer' onclick='showMonthPop("+i+")'>"
       +"<span class='bar-num'>"+m.score+"</span>"
       +"<div class='bar' style='height:"+h+"px;background:"+col+";opacity:0.85'></div>"
       +"</div>";
-    monthHtml+="<div class='month-lbl'>"+m.month+"</div>";
+    monthHtml+="<div class='month-lbl' style='cursor:pointer' onclick='showMonthPop("+i+")'>"+m.month+"</div>";
   }
   document.getElementById('chart-grid').innerHTML=chartHtml;
   document.getElementById('month-row').innerHTML=monthHtml;
@@ -415,6 +484,9 @@ function goLive(){
 
 function setStatus(msg){document.getElementById('status').textContent=msg;}
 
+// Pre-load cache as soon as page is ready
+window.addEventListener('load',function(){loadCache();});
+
 function dismissAnn(){
   var el=document.getElementById('ann-bar');
   if(el)el.style.display='none';
@@ -457,10 +529,35 @@ function showHowItWorks(){
   );
 }
 
-function showPop(title,body){
+function showMonthPop(i){
+  if(!window._monthly)return;
+  var m=window._monthly[i];
+  var fN=function(v,d){return(v!==null&&v!==undefined&&!isNaN(v))?v.toFixed(d):'—';};
+  var sc=function(v,dp){if(v===null||v===undefined||isNaN(v))return null;return calc(v,dp,0).score;};
+  var col=function(s){return s!==null?scoreCol(s):'var(--text-muted)';};
+  var chip=function(s){if(s===null)return '<span style="color:var(--text-muted)">—</span>';return '<span style="display:inline-block;padding:1px 7px;border-radius:12px;font-size:11px;font-weight:800;background:'+col(s)+'22;color:'+col(s)+'">'+s+'</span>';};
+  var sWarmDay=sc(m.tmaxMax,m.dp);
+  var sAvgHigh=sc(m.T,m.dp);
+  var sAvgLow=sc(m.tmin,m.dp);
+  var sColdNight=sc(m.tminMin,m.dp);
+  var tempRows=''
+    +'<tr><td style="color:var(--text-muted);font-size:12px;padding:5px 0">Warmest day avg</td><td style="text-align:right;font-weight:800;font-size:13px">'+fN(m.tmaxMax,1)+'°</td><td style="text-align:right;padding-left:8px">'+chip(sWarmDay)+'</td></tr>'
+    +'<tr><td style="color:var(--text);font-size:12px;padding:5px 0">Average high</td><td style="text-align:right;font-weight:800;font-size:13px">'+fN(m.T,1)+'°</td><td style="text-align:right;padding-left:8px">'+chip(sAvgHigh)+'</td></tr>'
+    +'<tr><td style="color:var(--text);font-size:12px;padding:5px 0">Average low</td><td style="text-align:right;font-weight:800;font-size:13px">'+fN(m.tmin,1)+'°</td><td style="text-align:right;padding-left:8px">'+chip(sAvgLow)+'</td></tr>'
+    +'<tr><td style="color:var(--text-muted);font-size:12px;padding:5px 0">Coldest night avg</td><td style="text-align:right;font-weight:800;font-size:13px">'+fN(m.tminMin,1)+'°</td><td style="text-align:right;padding-left:8px">'+chip(sColdNight)+'</td></tr>';
+  var divider='<tr><td colspan="3" style="padding:4px 0"><div style="height:1px;background:var(--divider)"></div></td></tr>';
+  var dpRow='<tr><td style="color:var(--text-muted);font-size:12px;padding:5px 0">Avg dew point</td><td style="text-align:right;font-weight:800;font-size:13px" colspan="2">'+fN(m.dp,1)+'°</td></tr>';
+  var rainRow='<tr><td style="color:var(--text-muted);font-size:12px;padding:5px 0">Rainfall</td><td style="text-align:right;font-weight:800;font-size:13px" colspan="2">'+fN(m.rain,0)+' mm</td></tr>';
+  var snowRow=m.snow>0.05?'<tr><td style="color:var(--text-muted);font-size:12px;padding:5px 0">Snowfall</td><td style="text-align:right;font-weight:800;font-size:13px" colspan="2">'+fN(m.snow,1)+' cm</td></tr>':'';
+  var body='<table style="width:100%;border-collapse:collapse">'+tempRows+divider+dpRow+rainRow+snowRow+'</table>'
+    +'<div style="font-size:10px;color:var(--text-muted);margin-top:10px;line-height:1.5">Comfort scores calculated at avg dew point, calm wind. Warmest/coldest are the avg of each year\'s single extreme day.</div>';
+  showPop(m.month,body,true);
+}
+function showPop(title,body,isHtml){
   var ov=document.getElementById('pop-ov');
   document.getElementById('pop-ttl').textContent=title;
-  document.getElementById('pop-body').textContent=body;
+  if(isHtml){document.getElementById('pop-body').innerHTML=body;}
+  else{document.getElementById('pop-body').textContent=body;}
   ov.classList.add('open');
 }
 function closePop(){document.getElementById('pop-ov').classList.remove('open');}
