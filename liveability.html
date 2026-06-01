@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#a8d8ea" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0d1e2e" media="(prefers-color-scheme: dark)"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="description" content="World climate liveability survey — year-round comfort scores for thousands of locations."/>
+<title>World Liveability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --font:'Nunito',Arial,sans-serif;
+  --bg:linear-gradient(160deg,#cce8f7 0%,#a8d8ea 35%,#b8e8c8 70%,#d4f0e0 100%);
+  --card:rgba(255,255,255,0.72);--card-border:rgba(255,255,255,0.9);
+  --card-inner:rgba(255,255,255,0.55);--card-inner-border:rgba(255,255,255,0.85);
+  --input-bg:rgba(255,255,255,0.65);--btn-bg:rgba(255,255,255,0.55);
+  --text:#1a3a4a;--text-sec:#3a8fa8;--text-muted:#5a9ab0;--text-head:#1a5f7a;
+  --toggle-bg:rgba(255,255,255,0.3);--toggle-active:rgba(255,255,255,0.85);
+  --pop-bg:rgba(238,250,255,0.97);--pop-border:rgba(120,200,230,0.6);
+  --result-item:rgba(255,255,255,0.65);--divider:rgba(255,255,255,0.5);
+  --range-fill:#2a9fd6;--range-bg:rgba(255,255,255,0.5);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:linear-gradient(160deg,#0d1e2e 0%,#102030 35%,#0e2018 70%,#0f2220 100%);
+    --card:rgba(255,255,255,0.07);--card-border:rgba(255,255,255,0.12);
+    --card-inner:rgba(255,255,255,0.06);--card-inner-border:rgba(255,255,255,0.1);
+    --input-bg:rgba(255,255,255,0.08);--btn-bg:rgba(255,255,255,0.08);
+    --text:#c8e8f0;--text-sec:#5ab8d0;--text-muted:#4a8898;--text-head:#7ad0e8;
+    --toggle-bg:rgba(255,255,255,0.08);--toggle-active:rgba(255,255,255,0.18);
+    --pop-bg:rgba(10,25,40,0.97);--pop-border:rgba(60,140,180,0.4);
+    --result-item:rgba(255,255,255,0.07);--divider:rgba(255,255,255,0.1);
+    --range-bg:rgba(255,255,255,0.12);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font);-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var(--text)}
+.app{max-width:480px;margin:0 auto;padding:max(env(safe-area-inset-top,12px),12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
+
+/* ── Header ── */
+.header{padding:16px 0 14px;text-align:center;position:relative}
+.header-icon{width:48px;height:48px;margin:0 auto 8px;background:var(--card);border:1px solid var(--card-border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.header h1{font-size:clamp(18px,5.5vw,24px);font-weight:800;color:var(--text-head);letter-spacing:-0.3px}
+.header p{font-size:clamp(11px,3vw,13px);color:var(--text-sec);margin-top:2px;font-weight:600}
+.suite-nav{position:absolute;top:16px;right:0;display:flex;gap:4px}
+.nav-btn{height:28px;border-radius:20px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 8px;text-decoration:none;white-space:nowrap}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
+.sec-lbl{font-size:11px;font-weight:800;color:var(--text-sec);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.btn{padding:10px clamp(10px,3vw,16px);font-size:clamp(13px,3.5vw,15px);font-weight:700;border:1px solid var(--card-border);border-radius:10px;background:var(--btn-bg);color:var(--text-head);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn:active{opacity:0.75}
+.btn-p{background:linear-gradient(135deg,#2a9fd6,#1a7ab0);color:#fff;border-color:rgba(255,255,255,0.4)}
+.btn-sm{padding:6px 12px;font-size:12px;font-weight:700;border:1px solid var(--card-border);border-radius:8px;background:var(--btn-bg);color:var(--text-head);cursor:pointer;flex-shrink:0}
+.btn-sm:active{opacity:0.75}
+
+/* ── Region tabs ── */
+.region-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.region-tabs::-webkit-scrollbar{display:none}
+.rtab{flex-shrink:0;padding:8px 14px;font-size:clamp(12px,3vw,13px);font-weight:700;cursor:pointer;border:1px solid var(--card-border);border-radius:20px;background:var(--toggle-bg);color:var(--text-sec);white-space:nowrap}
+.rtab.active{background:var(--toggle-active);color:var(--text-head)}
+
+/* ── Stat bar ── */
+.stat-bar{display:flex;gap:6px;margin-bottom:10px}
+.stat-pill{flex:1;text-align:center;padding:8px 4px;border-radius:10px;border:1px solid var(--card-border)}
+.stat-pill.green{background:rgba(30,160,80,0.12);border-color:rgba(30,160,80,0.3)}
+.stat-pill.amber{background:rgba(200,140,20,0.12);border-color:rgba(200,140,20,0.3)}
+.stat-pill.red{background:rgba(200,60,40,0.1);border-color:rgba(200,60,40,0.25)}
+.stat-num{font-size:clamp(18px,5vw,22px);font-weight:800;color:var(--text-head);line-height:1.1}
+.stat-pill.green .stat-num{color:#1a7a40}
+.stat-pill.amber .stat-num{color:#8a6010}
+.stat-pill.red .stat-num{color:#8a2010}
+@media(prefers-color-scheme:dark){
+  .stat-pill.green .stat-num{color:#40c070}
+  .stat-pill.amber .stat-num{color:#e0a030}
+  .stat-pill.red .stat-num{color:#e05030}
+}
+.stat-lbl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em}
+
+/* ── Narrative ── */
+.narrative{font-size:clamp(12px,3vw,13px);color:var(--text);line-height:1.7;font-weight:600}
+.narrative p{margin-bottom:8px}
+.narrative p:last-child{margin-bottom:0}
+.narr-toggle{font-size:12px;font-weight:700;color:var(--text-sec);background:none;border:none;cursor:pointer;padding:4px 0;text-decoration:underline}
+
+/* ── Filter row ── */
+.filter-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.filter-row input{flex:1;min-width:120px;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+.filter-row input::placeholder{color:var(--text-muted)}
+.filt-btn{padding:7px 10px;font-size:11px;font-weight:800;border:1px solid var(--card-border);border-radius:20px;background:var(--toggle-bg);color:var(--text-sec);cursor:pointer;white-space:nowrap}
+.filt-btn.active{background:var(--toggle-active);color:var(--text-head)}
+
+/* ── Location rows ── */
+.loc-list{display:flex;flex-direction:column;gap:4px}
+.loc-row{background:var(--result-item);border:1px solid var(--card-border);border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.15s}
+.loc-row:active{opacity:0.8}
+.loc-row.status-f{opacity:0.6}
+.loc-row.status-f .loc-score{background:rgba(200,60,40,0.15);color:#8a2010}
+@media(prefers-color-scheme:dark){.loc-row.status-f .loc-score{color:#e05030}}
+.loc-score{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.loc-info{flex:1;min-width:0}
+.loc-name{font-size:clamp(13px,3.5vw,14px);font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loc-meta{font-size:11px;font-weight:600;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loc-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;flex-shrink:0}
+.badge-q{background:rgba(30,160,80,0.15);color:#1a7a40;border:1px solid rgba(30,160,80,0.3)}
+.badge-m{background:rgba(200,140,20,0.15);color:#8a6010;border:1px solid rgba(200,140,20,0.3)}
+.badge-f{background:rgba(200,60,40,0.1);color:#8a2010;border:1px solid rgba(200,60,40,0.2)}
+@media(prefers-color-scheme:dark){
+  .badge-q{color:#40c070}.badge-m{color:#e0a030}.badge-f{color:#e05030}
+}
+.fails-toggle{width:100%;padding:10px;font-size:12px;font-weight:800;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:10px;cursor:pointer;text-align:center;margin-top:4px}
+.load-more{width:100%;padding:10px;font-size:12px;font-weight:800;color:var(--text-sec);background:var(--toggle-bg);border:1px solid var(--card-border);border-radius:10px;cursor:pointer;text-align:center;margin-top:6px}
+
+/* ── Preferences card ── */
+.pref-toggle-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.pref-body{margin-top:12px;display:none}
+.pref-body.open{display:block}
+.pref-section{margin-bottom:14px}
+.pref-lbl{font-size:12px;font-weight:800;color:var(--text-head);margin-bottom:2px}
+.pref-desc{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;line-height:1.5}
+.pref-val{font-size:12px;font-weight:800;color:var(--text-sec);float:right}
+.pref-range{width:100%;height:6px;border-radius:3px;appearance:none;background:var(--range-bg);outline:none;cursor:pointer;margin-bottom:8px}
+.pref-range::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--range-fill);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.pref-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--range-fill);border:2px solid #fff}
+.snow-opts{display:flex;gap:6px}
+.snow-opt{flex:1;padding:7px 4px;font-size:11px;font-weight:800;text-align:center;border:1px solid var(--card-border);border-radius:8px;background:var(--toggle-bg);color:var(--text-sec);cursor:pointer}
+.snow-opt.active{background:var(--toggle-active);color:var(--text-head)}
+.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.toggle-sw{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0}
+.toggle-sw .slider{position:absolute;inset:0;background:var(--range-bg);border-radius:20px;transition:0.2s;cursor:pointer}
+.toggle-sw input:checked+.slider{background:var(--range-fill)}
+.toggle-sw .slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.2s}
+.toggle-sw input:checked+.slider:before{transform:translateX(16px)}
+.toggle-lbl{font-size:12px;font-weight:700;color:var(--text);flex:1}
+.pref-reset{font-size:11px;font-weight:700;color:var(--text-muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:4px 0}
+
+/* ── Popup ── */
+.pop-ov{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,60,80,0.45);padding:16px;align-items:flex-end;justify-content:center}
+.pop-ov.open{display:flex}
+.pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:20px 20px 16px 16px;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.pop-head{padding:16px 16px 10px;border-bottom:1px solid var(--divider);flex-shrink:0}
+.pop-loc{font-size:clamp(16px,5vw,20px);font-weight:800;color:var(--text-head);line-height:1.2}
+.pop-sub{font-size:12px;font-weight:600;color:var(--text-muted);margin-top:2px}
+.pop-body{padding:14px 16px;overflow-y:auto;flex:1}
+.pop-score-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.pop-score-big{width:60px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0}
+.pop-score-info{flex:1}
+.pop-score-lbl{font-size:13px;font-weight:800;color:var(--text-head)}
+.pop-score-sub{font-size:11px;font-weight:600;color:var(--text-muted);margin-top:1px}
+.crit-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.crit-item{background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px}
+.crit-name{font-size:10px;font-weight:800;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px}
+.crit-val{font-size:13px;font-weight:800;color:var(--text-head)}
+.crit-sc{font-size:11px;font-weight:700;color:var(--text-sec)}
+.crit-bar{height:3px;border-radius:2px;background:var(--divider);margin-top:4px;overflow:hidden}
+.crit-bar-fill{height:100%;border-radius:2px;background:var(--range-fill)}
+.pop-note{font-size:clamp(12px,3vw,13px);font-weight:600;color:var(--text);line-height:1.65;margin-bottom:14px}
+.pop-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pop-foot{padding:10px 16px 12px;border-top:1px solid var(--divider);flex-shrink:0;display:flex;gap:8px}
+.pop-close{flex:1;padding:10px;font-size:13px;font-weight:700;border:1px solid var(--card-border);border-radius:10px;background:var(--toggle-bg);color:var(--text-sec);cursor:pointer;text-align:center}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--divider);font-size:12px}
+.data-row:last-child{border-bottom:none}
+.data-k{font-weight:700;color:var(--text-muted)}
+.data-v{font-weight:800;color:var(--text-head)}
+
+/* ── Footer ── */
+.footer-row{display:flex;align-items:center;justify-content:center;padding:16px 0 8px}
+.howitworks-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
+
+/* ── How it works popup ── */
+.hiw-ov{display:none;position:fixed;inset:0;z-index:300;background:rgba(20,60,80,0.45);padding:20px;align-items:center;justify-content:center}
+.hiw-ov.open{display:flex}
+.hiw{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%;max-height:85vh;display:flex;flex-direction:column}
+.hiw-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px;flex-shrink:0}
+.hiw-body{font-size:clamp(12px,3.2vw,13px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line;overflow-y:auto;flex:1;min-height:0}
+.hiw-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="suite-nav">
+      <a class="nav-btn" href="index.html">&#127780;&#65039; Live</a>
+      <a class="nav-btn" href="comfort-climatology.html">&#128197; Climate</a>
+    </div>
+    <div class="header-icon">&#127758;</div>
+    <h1>World Liveability</h1>
+    <p>Year-round climate comfort · 3,800+ locations</p>
+  </div>
+
+  <!-- Preferences -->
+  <div class="card" id="pref-card">
+    <div class="pref-toggle-row" onclick="togglePrefs()">
+      <div class="sec-lbl" style="margin-bottom:0">&#9881;&#65039; Preferences</div>
+      <span id="pref-arrow" style="font-size:14px;color:var(--text-muted);font-weight:800;transition:transform 0.2s">&#9660;</span>
+    </div>
+    <div class="pref-body" id="pref-body">
+
+      <div class="pref-section">
+        <div class="pref-lbl">Summer temperature <span class="pref-val" id="su-val"></span></div>
+        <div class="pref-desc">The hottest month's average daily maximum. Drag to set your ideal. Locations outside your preferred range score lower. Hard fail threshold moves with your preference.</div>
+        <input class="pref-range" type="range" id="su-ideal" min="18" max="32" step="0.5" value="22" oninput="onPrefChange()"/>
+      </div>
+
+      <div class="pref-section">
+        <div class="pref-lbl">Winter temperature <span class="pref-val" id="wi-val"></span></div>
+        <div class="pref-desc">The coldest month's mean temperature. Slide right if you prefer warmer winters, left if you love cold-season contrast or snow sports.</div>
+        <input class="pref-range" type="range" id="wi-ideal" min="-5" max="16" step="0.5" value="10" oninput="onPrefChange()"/>
+      </div>
+
+      <div class="pref-section">
+        <div class="pref-lbl">Annual rainfall <span class="pref-val" id="ra-val"></span></div>
+        <div class="pref-desc">Your preferred annual rainfall total. The default ideal is 1400–1800mm (lush green climates). Slide left if you prefer drier conditions.</div>
+        <input class="pref-range" type="range" id="ra-ideal" min="300" max="2500" step="50" value="1600" oninput="onPrefChange('ra-ideal')"/>
+        <div class="pref-lbl" style="margin-top:4px">Minimum acceptable rainfall <span class="pref-val" id="ra-min-val"></span></div>
+        <div class="pref-desc">Below this threshold, a location hard-fails on rainfall. Default is 900mm — lower this if you're comfortable with drier climates.</div>
+        <input class="pref-range" type="range" id="ra-min" min="0" max="900" step="50" value="900" oninput="onPrefChange('ra-min')"/>
+      </div>
+
+      <div class="pref-section">
+        <div class="pref-lbl">Sunshine hours <span class="pref-val" id="sun-val"></span></div>
+        <div class="pref-desc">Minimum annual sunshine hours you find acceptable. Lightly weighted — won't dominate the score, but gloomy locations score a little lower if you set a higher threshold.</div>
+        <input class="pref-range" type="range" id="sun-min" min="800" max="2800" step="100" value="1200" oninput="onPrefChange()"/>
+      </div>
+
+      <div class="pref-section">
+        <div class="pref-lbl">Snowfall preference</div>
+        <div class="pref-desc">The default scoring rewards little or no snow. Change this if you love a proper winter or want ski-country living.</div>
+        <div class="snow-opts">
+          <div class="snow-opt active" id="snow-none" onclick="setSnow('none')">No snow</div>
+          <div class="snow-opt" id="snow-some" onclick="setSnow('some')">Some snow</div>
+          <div class="snow-opt" id="snow-love" onclick="setSnow('love')">Love snow</div>
+        </div>
+      </div>
+
+      <div class="pref-section">
+        <div class="pref-lbl">Hard fail rules</div>
+        <div class="pref-desc">These rules eliminate locations that fail a threshold outright (score zero for that criterion). Toggle off to see how they'd rank without the rule.</div>
+        <div class="toggle-row">
+          <label class="toggle-sw"><input type="checkbox" id="hf-humid" checked onchange="onPrefChange()"/><span class="slider"></span></label>
+          <div class="toggle-lbl">Humidity hard fail <span style="font-size:10px;color:var(--text-muted)">(peak dew point &gt;21°C = zero)</span></div>
+        </div>
+        <div class="pref-desc" style="margin-left:44px;margin-top:-2px">Eliminates tropical lowlands where the air feels oppressively muggy. Turn off if you're comfortable in humid heat — SE Asia, coastal Brazil, Caribbean.</div>
+        <div class="toggle-row">
+          <label class="toggle-sw"><input type="checkbox" id="hf-tropical" checked onchange="onPrefChange()"/><span class="slider"></span></label>
+          <div class="toggle-lbl">Tropical winter fail <span style="font-size:10px;color:var(--text-muted)">(no cold season = zero)</span></div>
+        </div>
+        <div class="pref-desc" style="margin-left:44px;margin-top:-2px">Eliminates locations where the coldest month's average maximum stays ≥20°C — no real winter at all. Turn off if you prefer year-round warmth with no cold season.</div>
+        <div class="toggle-row">
+          <label class="toggle-sw"><input type="checkbox" id="hf-cold" checked onchange="onPrefChange()"/><span class="slider"></span></label>
+          <div class="toggle-lbl">Severe cold fail <span style="font-size:10px;color:var(--text-muted)">(coldest month mean ≤−2°C = zero)</span></div>
+        </div>
+        <div class="pref-desc" style="margin-left:44px;margin-top:-2px">Eliminates locations with genuinely harsh winters. Turn off if you love cold climates or winter sports destinations.</div>
+      </div>
+
+      <button class="pref-reset" onclick="resetPrefs()">Reset to defaults</button>
+    </div>
+  </div>
+
+  <!-- Region tabs -->
+  <div class="region-tabs" id="region-tabs"></div>
+
+  <!-- Region content -->
+  <div id="region-content"></div>
+
+  <div class="footer-row">
+    <button class="howitworks-btn" onclick="showHIW()">How it works &#9432;</button>
+  </div>
+
+</div>
+
+<!-- Location popup -->
+<div class="pop-ov" id="pop-ov" onclick="closePop()">
+  <div class="pop" onclick="event.stopPropagation()">
+    <div class="pop-head">
+      <div class="pop-loc" id="pop-loc"></div>
+      <div class="pop-sub" id="pop-sub"></div>
+    </div>
+    <div class="pop-body" id="pop-body"></div>
+    <div class="pop-foot">
+      <button class="pop-close" onclick="closePop()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- How it works popup -->
+<div class="hiw-ov" id="hiw-ov" onclick="closeHIW()">
+  <div class="hiw" onclick="event.stopPropagation()">
+    <div class="hiw-ttl">How it works</div>
+    <div class="hiw-body">This survey evaluates year-round human liveability — not just pleasant summers or mild winters, but the complete annual experience of living somewhere. It deliberately rewards balance.
+
+SCORING CRITERIA (max 65 points)
+1. Summer comfort — hottest month avg max (10pts)
+2. Winter comfort — coldest month mean temp (10pts)
+3. Rainfall — annual total (10pts)
+4. Humidity — peak monthly dew point (10pts)
+5. Sunshine — annual hours (10pts)
+6. Snowfall — annual total (10pts)
+7. Wind — daily average speed (5pts)
+
+QUALIFIERS score in all criteria with no hard fails. Marginals score 1/10 on one criterion. Fails score zero on at least one.
+
+YOUR PREFERENCES
+The preference sliders let you shift the scoring thresholds to match your personal climate taste. Summer and winter ideal temperatures, rainfall preference, sunshine threshold, snowfall preference, and hard-fail rules are all adjustable. Locations are re-scored in real time.
+
+Note: Only Australia and New Zealand currently have full raw climate data for preference re-scoring. More regions coming soon.
+
+DATA
+All scores based on long-term climate averages from official meteorological agencies — BOM (Australia), NIWA (New Zealand), WMO normals, NOAA, and regional met services.</div>
+    <span class="hiw-close" onclick="closeHIW()">Tap to close</span>
+  </div>
+</div>
+
+<script src="liveability-data.js"></script>
+<script>
+// ── Scoring formula ────────────────────────────────────────────────────────
+var DEFAULT_PREFS={suIdeal:22,wiIdeal:10,raIdeal:1600,raMin:900,sunMin:1200,snow:'none',hfHumid:true,hfTropical:true,hfCold:true};
+var prefs=JSON.parse(JSON.stringify(DEFAULT_PREFS));
+
+function scoreLocation(loc,p){
+  // If no raw data, use stored scores adjusted by pref delta
+  if(loc.st===null||loc.st===undefined){return{tot:loc.tot,sc:loc.sc.slice(),raw:false};}
+
+  var su=scoreSummer(loc.st,p);
+  var wi=scoreWinter(loc.wt,p,loc.st);
+  var ra=scoreRainfall(loc.ra,p);
+  var hu=scoreHumidity(loc.dp,p);
+  var sun=scoreSunshine(loc.sun,p);
+  var sn=scoreSnow(loc.sn,p);
+  var wd=scoreWind(loc.wd);
+  var tot=su+wi+ra+hu+sun+sn+wd;
+  return{tot:tot,sc:[su,wi,ra,hu,sun,sn,wd],raw:true};
+}
+
+function scoreSummer(t,p){
+  if(t===null||t===undefined)return 0;
+  var ideal=p.suIdeal;
+  // Hard fail: more than 7° below ideal or above 29+offset
+  var failLow=Math.max(14,ideal-8);
+  var failHigh=Math.min(36,ideal+9);
+  if(t<failLow||t>failHigh)return 0;
+  // Marginal bands
+  if(t<ideal-6||t>(ideal+7))return 1;
+  // Scoring around ideal
+  var dist=Math.abs(t-ideal);
+  if(dist<=2)return 10;
+  if(dist<=3)return 9;
+  if(dist<=4)return 8;
+  if(dist<=5)return 7;
+  if(dist<=6)return 6;
+  return 5;
+}
+
+function scoreWinter(t,p,suTemp){
+  if(t===null||t===undefined)return 0;
+  var ideal=p.wiIdeal;
+  // Tropical hard fail: coldest month avg max≥20 when mean≥0 (approximate: mean+6≥20 → mean≥14)
+  if(p.hfTropical&&suTemp!==null&&t>=14)return 0;
+  // Cold hard fail
+  if(p.hfCold&&t<=-2)return 0;
+  // Score around ideal
+  var dist=Math.abs(t-ideal);
+  if(dist<=2)return 10;
+  if(dist<=4)return 9;
+  if(dist<=6)return 8;
+  if(dist<=8)return 7;
+  if(dist<=10)return 6;
+  if(dist<=12)return 5;
+  if(t===-1)return 1;
+  return 3;
+}
+
+function scoreRainfall(mm,p){
+  if(mm===null||mm===undefined)return 0;
+  var ideal=p.raIdeal;
+  var minFail=p.raMin;
+  if(mm<minFail)return 0;
+  // Marginal at raMin→raMin+100
+  if(mm<minFail+100)return 1;
+  var dist=Math.abs(mm-ideal);
+  if(dist<=200)return 10;
+  if(dist<=400)return 9;
+  if(dist<=600)return 8;
+  if(dist<=900)return 7;
+  if(mm>ideal+1200)return 6;
+  return 5;
+}
+
+function scoreHumidity(dp,p){
+  if(dp===null||dp===undefined)return 5;
+  if(p.hfHumid&&dp>21)return 0;
+  if(dp<13)return 10;
+  if(dp<15)return 9;
+  if(dp<16)return 8;
+  if(dp<17)return 7;
+  if(dp<18)return 6;
+  if(dp<19)return 5;
+  if(dp<20)return 4;
+  if(dp<21)return 3;
+  return 0;
+}
+
+function scoreSunshine(hrs,p){
+  if(hrs===null||hrs===undefined)return 5;
+  // Gentle penalty below user threshold
+  if(hrs<p.sunMin){var pen=Math.round((p.sunMin-hrs)/200);return Math.max(3,10-pen);}
+  if(hrs>=2200&&hrs<=2800)return 10;
+  if(hrs>=2000)return 9;
+  if(hrs>=1800)return 8;
+  if(hrs>=1600)return 7;
+  if(hrs>=1400)return 6;
+  if(hrs>=1200)return 5;
+  if(hrs>=1000)return 4;
+  return 3;
+}
+
+function scoreSnow(cm,p){
+  if(cm===null||cm===undefined)return 8;
+  if(p.snow==='none'){
+    if(cm<=15)return 10;
+    if(cm<=40)return 9;
+    if(cm<=80)return 8;
+    if(cm<=150)return 7;
+    if(cm<=250)return 6;
+    return 5;
+  }
+  if(p.snow==='some'){
+    if(cm>=10&&cm<=80)return 10;
+    if(cm<10||cm<=150)return 8;
+    return 6;
+  }
+  // love snow — inverted
+  if(cm>=100&&cm<=400)return 10;
+  if(cm>=50)return 9;
+  if(cm>=15)return 7;
+  return 4;
+}
+
+function scoreWind(kmh){
+  if(kmh===null||kmh===undefined)return 3;
+  if(kmh<=15)return 5;
+  if(kmh<=20)return 4;
+  if(kmh<=28)return 3;
+  if(kmh<=36)return 2;
+  return 1;
+}
+
+function statusFromScore(sc,loc){
+  // If raw data, derive status from scores
+  if(sc.some(function(s){return s===0;}))return 'f';
+  if(sc.some(function(s){return s===1;}))return 'm';
+  return 'q';
+}
+
+// ── Score colour ────────────────────────────────────────────────────────────
+function scoreCol(tot){
+  if(tot>=55)return{bg:'rgba(30,160,80,0.2)',text:'#1a7a40'};
+  if(tot>=45)return{bg:'rgba(100,180,50,0.2)',text:'#3a6010'};
+  if(tot>=35)return{bg:'rgba(200,160,20,0.2)',text:'#8a6010'};
+  if(tot>=20)return{bg:'rgba(200,100,30,0.18)',text:'#8a3010'};
+  return{bg:'rgba(200,60,40,0.15)',text:'#8a2010'};
+}
+function darkCheck(){return window.matchMedia('(prefers-color-scheme:dark)').matches;}
+function scoreColDark(tot){
+  if(tot>=55)return{bg:'rgba(30,160,80,0.25)',text:'#40c070'};
+  if(tot>=45)return{bg:'rgba(100,180,50,0.2)',text:'#90d040'};
+  if(tot>=35)return{bg:'rgba(200,160,20,0.2)',text:'#e0a030'};
+  if(tot>=20)return{bg:'rgba(200,100,30,0.2)',text:'#e07040'};
+  return{bg:'rgba(200,60,40,0.18)',text:'#e05030'};
+}
+function getCol(tot){return darkCheck()?scoreColDark(tot):scoreCol(tot);}
+
+// ── State ───────────────────────────────────────────────────────────────────
+var activeRegion=0;
+var showFails=false;
+var filterText='';
+var filterStatus='all';
+var currentPage=0;
+var PAGE_SIZE=40;
+var snowPref='none';
+var prefsOpen=false;
+
+// Region narrative text
+var NARRATIVES={
+  'australia':[
+    'Australia is a continent of extreme climate contrasts. The interior is arid to semi-arid, the tropical north experiences intense monsoonal summers, and the temperate south and east offer the most moderate year-round conditions. Climate suitability is highly localised — elevation, ocean exposure, and orographic rainfall determine outcomes more than latitude alone.',
+    'Tasmania receives the most consistent year-round rainfall in Australia, driven by persistent westerly airflow off the Southern Ocean. Annual totals range from around 600mm on the sheltered east coast to over 3000mm on the mountainous west coast. Summer temperatures are mild across the island — January averages typically 18–24°C depending on elevation and aspect — and winter cold is moderate rather than severe. Humidity is low by Australian standards. The island\'s main climate limitation is cloud cover and wind on the exposed west, and insufficient rainfall on the rain-shadowed east.',
+    'Victoria\'s elevated ranges — the Dandenong Ranges, Otway Ranges, Strzelecki Ranges, and the Central Highlands — receive orographic rainfall of 1200–2000mm annually and experience significantly cooler summers than the surrounding lowlands. The Yarra Ranges and Alpine foothills extend this zone eastward. The Melbourne basin and western plains are considerably drier (500–700mm) and hotter in summer. Coastal Gippsland sits between these extremes.',
+    'New South Wales has the greatest climate diversity of any Australian state. The Blue Mountains (900–1100m) combine moderate summer temperatures with 1300–1500mm of rainfall. The Southern Highlands plateau (600–900m) achieves similar conditions. The South Coast receives reliable rainfall from onshore south-easterly flow and is moderated by the Tasman Sea — summers are warm rather than hot, and winters mild. Inland and northern NSW becomes progressively hotter and drier. The far northwest is desert.',
+    'Queensland\'s climate is dominated by heat and humidity at lower elevations. The coastal strip north of about Bundaberg experiences tropical summers with high dew points and intense rainfall. The exception is the elevated hinterland — the Atherton Tablelands (700–1000m), the Clarke Range, Lamington Plateau, and other highland areas achieve significantly cooler and more comfortable conditions. Southeast Queensland\'s ranges (Springbrook, Mount Tamborine, Main Range) sit at the subtropical-temperate boundary.',
+    'South Australia is largely arid. The qualifying zone is confined to the upper Adelaide Hills, where elevation (400–700m) reduces summer heat and orographic rainfall lifts annual totals to 900–1200mm. Below the escarpment, Adelaide\'s plains average around 550mm and experience hot, dry summers. The Fleurieu Peninsula and Kangaroo Island receive slightly more rainfall and are moderated by the sea but remain marginal. The remainder of the state — the Eyre Peninsula, Flinders Ranges, and outback — is dry and hot.',
+    'Western Australia\'s south-west corner is the state\'s most temperate zone, receiving reliable winter rainfall from frontal systems and experiencing mild summers moderated by the Southern Ocean and Leeuwin Current. The karri and jarrah forest country around Pemberton, Manjimup, and the Stirling Range receives 1000–1600mm annually. The Albany coast and Walpole hinterland sit at the cooler, wetter end of this zone. North of approximately Geraldton the climate transitions to semi-arid and tropical — hot, dry, and unsuitable for year-round comfort.',
+    'The Northern Territory is tropical to arid throughout. Darwin experiences a pronounced wet season (November–April) with extreme heat, very high humidity, and monsoonal rainfall, followed by a dry season that is warm and rainless. The Top End\'s annual rainfall is high (1500–1700mm in Darwin) but heavily concentrated and accompanied by high dew points year-round. The Red Centre — Alice Springs and surrounds — is desert: extremely hot summers, cold winter nights, and only 250–300mm of rainfall annually.',
+    'The Australian Capital Territory occupies an elevated inland basin at around 580m ASL. Canberra experiences four distinct seasons — warm to hot summers (January avg max ~28°C), cold winters with regular frosts (July mean ~1°C), and moderate rainfall of around 620mm annually. The surrounding ranges and Tidbinbilla valley are higher, cooler, and wetter. The ACT\'s main climate limitations are summer heat and marginal annual rainfall.',
+    'External territories and subantarctic islands span a wide range. Norfolk Island (subtropical, ~1400mm rainfall, mild year-round) sits close to temperate qualification. Lord Howe Island is similar. The subantarctic islands — Macquarie, Heard, McDonald — experience cold, wet, and extremely windy conditions with summer averages well below comfortable thresholds.',
+  ],
+  'new-zealand':[
+    'New Zealand\'s climate is shaped by its narrow north-south orientation, mountainous spine, and position in the mid-latitude westerly wind belt. The result is strong west-east contrasts (wet windward slopes, dry rain-shadowed plains) and moderate north-south temperature gradients. Year-round conditions are generally mild by global standards, though wind is a persistent feature across much of the country.',
+    'Northland and the Auckland region experience a warm-temperate to subtropical climate. Winters are mild (July means 8–11°C), summers warm (January averages 23–26°C). Annual rainfall ranges from 1000mm in drier eastern areas to 1600mm on wetter ranges. Humidity is moderate — dew points peak around 17–18°C in summer. Sunshine hours are good in the north. The main limitation for year-round comfort is summer warmth and humidity rather than cold.',
+    'The Waikato, Bay of Plenty, and Coromandel share similar characteristics: warm summers, mild winters, and generally adequate rainfall (1100–1500mm in most areas, higher on ranges). The Bay of Plenty east coast — Tauranga, Whakatane, Opotiki — is among the sunniest and warmest parts of New Zealand. The Coromandel Peninsula receives higher rainfall on its forested ranges. The Waikato basin is drier in parts, around 1100–1200mm.',
+    'The Tasman and Nelson region at the top of the South Island is consistently one of New Zealand\'s most favourable climate zones. Nelson city receives around 2700 sunshine hours annually — the highest in the country — with rainfall of 900–1000mm and mild temperatures. Motueka and the Tasman coast add slightly more rainfall and the same exceptional sunshine. The ranges behind Nelson and Takaka receive considerably higher rainfall from northwest airflow.',
+    'Wellington and the Kapiti Coast experience mild temperatures year-round (January avg max ~20–22°C, July mean ~7–8°C) and adequate rainfall (1050–1250mm). The defining characteristic of Wellington is wind — persistent north and southerly airflow through the Cook Strait makes it one of the windiest cities in the world. The Hutt Valley and Wairarapa are more sheltered. Kapiti Coast is the least exposed of the greater Wellington zone.',
+    'The West Coast of the South Island is one of the wettest inhabited regions on Earth. Westerly airflow strikes the Southern Alps and deposits extraordinary rainfall — Hokitika receives around 3000mm annually, Franz Josef over 4000mm, and parts of the Fiordland catchment 8000mm or more. Summers are mild (January avg max 19–21°C), winters cool but not harsh at low elevations. Sunshine is limited by persistent cloud from orographic lift. The main climate characteristic is exceptional rainfall volume.',
+    'Canterbury occupies the largest rain shadow in New Zealand. The Southern Alps block westerly moisture, leaving the Canterbury Plains with 600–700mm of annual rainfall — well below what most temperate climates receive. Christchurch averages around 640mm. Summers are warm to hot (January avg max 22–24°C), winters cold with occasional frosts (July mean 4–5°C). The Banks Peninsula receives slightly more rainfall from onshore easterly flow. Central Canterbury and the Mackenzie Basin become progressively drier and more continental.',
+    'Otago\'s climate ranges from the temperate coast (Dunedin, ~800mm rainfall, cool summers) to the extreme aridity of Central Otago (Cromwell ~370mm, Alexandra ~350mm — among New Zealand\'s driest locations). Central Otago also has New Zealand\'s greatest temperature extremes — very hot summers and cold winters. The Clutha Valley and Lake Wanaka area sit between these extremes. Queenstown receives around 800mm and has a continental character with four marked seasons.',
+    'Southland and Fiordland represent New Zealand\'s southernmost and wettest extremes. Invercargill has a cool, damp, and often overcast climate (1050mm rainfall, summer avg max ~18°C). Stewart Island/Oban is slightly milder than its latitude suggests due to ocean influence (~1600mm, January avg max ~17°C). Fiordland — Milford Sound, Doubtful Sound — receives exceptional rainfall (Milford Sound ~7000mm annually) and has mild but persistently wet and cloudy conditions.',
+    'New Zealand\'s outlying and subantarctic islands range from the subtropical Kermadec Islands (warm year-round, high humidity) to the subantarctic Campbell, Auckland, Antipodes, and Bounty Islands, where summer temperatures rarely exceed 12°C and wind and precipitation are near-constant. The Chatham Islands sit between these extremes — cool, windy, and moderately wet at around 800mm annually.',
+  ],
+  'pacific':[
+    'The Pacific Islands span the globe's largest ocean, from Hawaii in the north to New Zealand's subantarctic outliers in the south, and from Indonesia's eastern fringe to Easter Island. The defining climate reality is simple: the Pacific is tropical. Heat and humidity dominate throughout Melanesia, Micronesia, and Polynesia at sea level, and the only locations that achieve temperate conditions are high-altitude volcanic and mountain summits — most of them inaccessible or uninhabited.',
+    'Hawaii is the standout exception. The Hawaiian archipelago spans subtropical to temperate latitudes, and its volcanic peaks rise to 4,200m, producing extraordinary climate variety within a small geographic area. Volcano Village on the Big Island at ~1200m, within Hawaiʻi Volcanoes National Park, is the Pacific's highest-scoring qualifier — cool, well-watered, and genuinely temperate. Kauai's Koke'e plateau and Maui's Kula uplands come close but are eliminated by year-round warmth in their coldest month. Honolulu, the state capital at sea level, is the weakest performer in the archipelago.',
+    'New Caledonia produces the Pacific's two most accessible highland qualifiers — Mount Humboldt and Mount Panié — both above 1600m on Grande Terre. These are cloud forest plateaus rather than inhabited communities, but their climate profiles are genuinely temperate. The French territorial capital Nouméa at sea level is a triple fail. The same elevation dynamic applies across Melanesia: Vanuatu's Mount Tabwemasana and the Solomon Islands' Mount Popomanaseu qualify at their summits, while every coastal capital fails decisively.',
+    'Papua New Guinea's highlands present an interesting case. The Highland cities — Mount Hagen (~1700m), Goroka (~1600m) — have appealing climates on most measures, but the year-round warmth of the tropical highland system keeps their coldest month above the qualification threshold. The more remote Bougainville highlands qualify at ~2000m but are essentially inaccessible. PNG is the only Pacific nation where major inhabited cities approach qualification without achieving it.',
+    'Polynesia and Micronesia present little variation from the triple-fail pattern. Heat, humidity, and often adequate rainfall combine to eliminate every coastal and lowland location. Easter Island (Rapa Nui), at 27°S and with a surprisingly temperate Cfb classification, comes closest of any inhabited Polynesian island — both coastal Hanga Roa and the inland highlands fall just short on year-round warmth. Pitcairn Island's extraordinary isolation and small population make it a curiosity rather than a practical location regardless of its climate profile.',
+    'The Pacific's overall pattern is stark: 38 of 44 assessed locations fail outright, and 5 of the 6 qualifiers are remote, inaccessible, or essentially uninhabited highland zones. Volcano Village in Hawaii is the only Pacific qualifier that functions as a genuine community — small, remote, and situated on an active volcano, but uniquely temperate for the region.',
+  ],
+};
+
+var SUBTITLES={
+  'australia':'304 locations · All states & territories · Hottest month: January',
+  'new-zealand':'62 locations · North & South Island · Coldest month: July',
+  'pacific':'43 locations · Hawaii · Melanesia · Micronesia · Polynesia',
+};
+
+// ── Build UI ─────────────────────────────────────────────────────────────────
+function init(){
+  loadPrefsFromStorage();
+  applyPrefsToUI();
+  buildTabs();
+  renderRegion();
+}
+
+function buildTabs(){
+  var tabs=document.getElementById('region-tabs');
+  var html='';
+  for(var i=0;i<LIVEABILITY_DATA.length;i++){
+    var r=LIVEABILITY_DATA[i];
+    html+="<div class='rtab"+(i===activeRegion?' active':'')+"' onclick='switchRegion("+i+")'>"
+      +r.emoji+" "+r.label+"</div>";
+  }
+  tabs.innerHTML=html;
+}
+
+function switchRegion(i){
+  activeRegion=i;
+  currentPage=0;
+  showFails=false;
+  filterText='';
+  filterStatus='all';
+  var tabs=document.querySelectorAll('.rtab');
+  tabs.forEach(function(t,idx){t.classList.toggle('active',idx===i);});
+  renderRegion();
+}
+
+function renderRegion(){
+  var r=LIVEABILITY_DATA[activeRegion];
+  var locs=getScoredLocs(r);
+  var narratives=NARRATIVES[r.id]||[];
+  var subtitle=SUBTITLES[r.id]||r.subtitle||'';
+
+  // Count with current prefs
+  var q=0,m=0,f=0;
+  locs.forEach(function(l){
+    var s=l._status;
+    if(s==='q')q++;else if(s==='m')m++;else f++;
+  });
+
+  var html='';
+
+  // Stat bar
+  html+="<div class='stat-bar'>"
+    +"<div class='stat-pill green'><div class='stat-num'>"+q+"</div><div class='stat-lbl'>Qualifiers</div></div>"
+    +"<div class='stat-pill amber'><div class='stat-num'>"+m+"</div><div class='stat-lbl'>Marginals</div></div>"
+    +"<div class='stat-pill red'><div class='stat-num'>"+f+"</div><div class='stat-lbl'>Fails</div></div>"
+    +"</div>";
+
+  // Narrative
+  if(narratives.length){
+    html+="<div class='card'><div class='sec-lbl'>"+r.emoji+" "+r.label+"</div>";
+    html+="<div class='narrative' id='narr-body'>";
+    // Show first para always, rest collapsible
+    html+="<p>"+narratives[0]+"</p>";
+    if(narratives.length>1){
+      html+="<div id='narr-extra' style='display:none'>";
+      for(var i=1;i<narratives.length;i++)html+="<p>"+narratives[i]+"</p>";
+      html+="</div>";
+      html+="<button class='narr-toggle' onclick='toggleNarr()' id='narr-btn'>Read more ▾</button>";
+    }
+    html+="</div></div>";
+  }
+
+  // Filter row
+  html+="<div class='filter-row'>"
+    +"<input type='text' placeholder='Search locations...' id='search-inp' value='"+filterText+"' oninput='onSearch(this.value)'/>"
+    +"<button class='filt-btn"+(filterStatus==='all'?' active':'')+"' onclick='setFilter(\"all\")'>All</button>"
+    +"<button class='filt-btn"+(filterStatus==='q'?' active':'')+"' onclick='setFilter(\"q\")'>✓</button>"
+    +"<button class='filt-btn"+(filterStatus==='m'?' active':'')+"' onclick='setFilter(\"m\")'>~</button>"
+    +"</div>";
+
+  // Location list
+  html+="<div class='loc-list' id='loc-list'></div>";
+  html+="<div id='fails-section'></div>";
+  html+="<div id='load-more-wrap'></div>";
+
+  document.getElementById('region-content').innerHTML=html;
+  renderLocList(locs);
+}
+
+function getScoredLocs(r){
+  return r.locs.map(function(loc){
+    var result=scoreLocation(loc,prefs);
+    var status=loc.st!==null&&loc.st!==undefined?statusFromScore(result.sc,loc):loc.s;
+    return Object.assign({},loc,{_tot:result.tot,_sc:result.sc,_raw:result.raw,_status:status});
+  }).sort(function(a,b){return b._tot-a._tot;});
+}
+
+function renderLocList(locs){
+  if(!locs)locs=getScoredLocs(LIVEABILITY_DATA[activeRegion]);
+
+  var txt=filterText.toLowerCase();
+  var filtered=locs.filter(function(l){
+    if(txt&&l.n.toLowerCase().indexOf(txt)===-1&&l.ter.toLowerCase().indexOf(txt)===-1)return false;
+    if(filterStatus==='q'&&l._status!=='q')return false;
+    if(filterStatus==='m'&&l._status!=='m')return false;
+    return true;
+  });
+
+  var passes=filtered.filter(function(l){return l._status!=='f';});
+  var fails=filtered.filter(function(l){return l._status==='f';});
+
+  var listEl=document.getElementById('loc-list');
+  var failsEl=document.getElementById('fails-section');
+  var moreEl=document.getElementById('load-more-wrap');
+  if(!listEl)return;
+
+  var showCount=Math.min((currentPage+1)*PAGE_SIZE,passes.length);
+  var html='';
+  for(var i=0;i<showCount;i++)html+=locRowHtml(passes[i]);
+  listEl.innerHTML=html;
+
+  // Load more
+  if(passes.length>showCount){
+    moreEl.innerHTML="<button class='load-more' onclick='loadMore()'>Show more ("+( passes.length-showCount)+" remaining)</button>";
+  }else{moreEl.innerHTML='';}
+
+  // Fails section
+  if(fails.length&&filterStatus!=='q'&&filterStatus!=='m'){
+    var fhtml="<button class='fails-toggle' onclick='toggleFails()' id='fails-btn'>"
+      +(showFails?'Hide':'Show')+" "+fails.length+" fails &#9660;</button>";
+    if(showFails){
+      fhtml+="<div class='loc-list' style='margin-top:4px'>";
+      for(var j=0;j<fails.length;j++)fhtml+=locRowHtml(fails[j]);
+      fhtml+="</div>";
+    }
+    failsEl.innerHTML=fhtml;
+  }else{failsEl.innerHTML='';}
+}
+
+function locRowHtml(loc){
+  var col=getCol(loc._tot);
+  var badge=loc._status==='q'?"<span class='loc-badge badge-q'>✓</span>"
+    :loc._status==='m'?"<span class='loc-badge badge-m'>~</span>"
+    :"<span class='loc-badge badge-f'>✗</span>";
+  var scoreStr=loc._tot;
+  return "<div class='loc-row status-"+loc._status+"' onclick='openLoc(\""+encodeURIComponent(loc.n)+"\")'>"
+    +"<div class='loc-score' style='background:"+col.bg+";color:"+col.text+"'>"+scoreStr+"</div>"
+    +"<div class='loc-info'>"
+    +"<div class='loc-name'>"+loc.n+"</div>"
+    +"<div class='loc-meta'>"+loc.ter+(loc.asl?' · '+loc.asl+'m':'')+(loc.kop?' · '+loc.kop:'')+"</div>"
+    +"</div>"
+    +badge
+    +"</div>";
+}
+
+function loadMore(){
+  currentPage++;
+  renderLocList();
+}
+
+function toggleFails(){
+  showFails=!showFails;
+  renderLocList();
+}
+
+function toggleNarr(){
+  var el=document.getElementById('narr-extra');
+  var btn=document.getElementById('narr-btn');
+  if(!el)return;
+  var open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  btn.textContent=open?'Read more ▾':'Read less ▴';
+}
+
+function onSearch(val){
+  filterText=val;
+  currentPage=0;
+  renderLocList();
+}
+
+function setFilter(f){
+  filterStatus=f;
+  currentPage=0;
+  var btns=document.querySelectorAll('.filt-btn');
+  btns.forEach(function(b){b.classList.remove('active');});
+  event.target.classList.add('active');
+  renderLocList();
+}
+
+// ── Location popup ──────────────────────────────────────────────────────────
+var CRIT_NAMES=['Summer','Winter','Rainfall','Humidity','Sunshine','Snowfall','Wind'];
+var CRIT_MAX=[10,10,10,10,10,10,5];
+var CRIT_UNITS=['°C avg max','°C mean','mm/yr','°C peak DP','hrs/yr','cm/yr','km/h'];
+
+function openLoc(encoded){
+  var name=decodeURIComponent(encoded);
+  var r=LIVEABILITY_DATA[activeRegion];
+  var loc=null;
+  for(var i=0;i<r.locs.length;i++){if(r.locs[i].n===name){loc=r.locs[i];break;}}
+  if(!loc)return;
+
+  var result=scoreLocation(loc,prefs);
+  var tot=result.tot;
+  var sc=result.sc;
+  var col=getCol(tot);
+  var status=loc.st!==null&&loc.st!==undefined?statusFromScore(sc,loc):loc.s;
+  var statusLabel=status==='q'?'Qualifier':status==='m'?'Marginal qualifier':'Fail';
+
+  document.getElementById('pop-loc').textContent=loc.n;
+  document.getElementById('pop-sub').textContent=loc.ter+(loc.asl?' · '+loc.asl+'m':'')+(loc.kop?' · Köppen: '+loc.kop:'');
+
+  var html='';
+
+  // Score block
+  html+="<div class='pop-score-row'>"
+    +"<div class='pop-score-big' style='background:"+col.bg+";color:"+col.text+"'>"+tot+"</div>"
+    +"<div class='pop-score-info'>"
+    +"<div class='pop-score-lbl'>"+tot+"/65 &nbsp;·&nbsp; "+statusLabel+"</div>"
+    +"<div class='pop-score-sub'>"+(result.raw?'Personalised score':'Stored score — add raw data for preference re-scoring')+"</div>"
+    +"</div></div>";
+
+  // Criteria grid
+  html+="<div class='crit-grid'>";
+  for(var i=0;i<7;i++){
+    var pct=Math.round(sc[i]/CRIT_MAX[i]*100);
+    var rawVal='';
+    if(i===0&&loc.st!==null)rawVal=loc.st+'°C';
+    else if(i===1&&loc.wt!==null)rawVal=loc.wt+'°C';
+    else if(i===2&&loc.ra!==null)rawVal=loc.ra+'mm';
+    else if(i===3&&loc.dp!==null)rawVal='DP '+loc.dp+'°C';
+    else if(i===4&&loc.sun!==null)rawVal=loc.sun+'h';
+    else if(i===5&&loc.sn!==null)rawVal=loc.sn+'cm';
+    else if(i===6&&loc.wd!==null)rawVal=loc.wd+'km/h';
+    html+="<div class='crit-item'>"
+      +"<div class='crit-name'>"+CRIT_NAMES[i]+"</div>"
+      +(rawVal?"<div class='crit-val'>"+rawVal+" <span class='crit-sc'>"+sc[i]+"/"+CRIT_MAX[i]+"</span></div>":"<div class='crit-val'><span class='crit-sc'>"+sc[i]+"/"+CRIT_MAX[i]+"</span></div>")
+      +"<div class='crit-bar'><div class='crit-bar-fill' style='width:"+pct+"%;background:"+(sc[i]===0?'#e05030':sc[i]===1?'#e0a030':'var(--range-fill)')+"'></div></div>"
+      +"</div>";
+  }
+  html+="</div>";
+
+  // Note
+  if(loc.note)html+="<div class='pop-note'>"+loc.note+"</div>";
+
+  // Actions
+  html+="<div class='pop-actions'>";
+  if(loc.lat&&loc.lon){
+    html+="<button class='btn btn-p btn-sm' onclick='goLive("+loc.lat+","+loc.lon+",\""+encodeURIComponent(loc.n)+"\")'>&#127780;&#65039; Live conditions</button>";
+    html+="<button class='btn btn-sm' onclick='goClimatology("+loc.lat+","+loc.lon+",\""+encodeURIComponent(loc.n)+"\")'>&#128197; Monthly climate</button>";
+  }
+  html+="</div>";
+
+  document.getElementById('pop-body').innerHTML=html;
+  document.getElementById('pop-ov').classList.add('open');
+}
+
+function closePop(){document.getElementById('pop-ov').classList.remove('open');}
+
+function goLive(lat,lon,enc){
+  closePop();
+  window.open('index.html?lat='+lat+'&lon='+lon+'&label='+enc,'_blank');
+}
+function goClimatology(lat,lon,enc){
+  closePop();
+  window.open('comfort-climatology.html?lat='+lat+'&lon='+lon+'&label='+enc,'_blank');
+}
+
+// ── Preferences ─────────────────────────────────────────────────────────────
+function togglePrefs(){
+  prefsOpen=!prefsOpen;
+  document.getElementById('pref-body').classList.toggle('open',prefsOpen);
+  document.getElementById('pref-arrow').style.transform=prefsOpen?'rotate(180deg)':'';
+}
+
+function onPrefChange(changedId){
+  console.log('onPrefChange called, changedId:', changedId, 'su-ideal:', document.getElementById('su-ideal').value);
+  // Enforce: raMin cannot exceed raIdeal
+  var raIdeal=parseFloat(document.getElementById('ra-ideal').value);
+  var raMin=parseFloat(document.getElementById('ra-min').value);
+  if(changedId==='ra-ideal'){
+    // If ideal was dragged below current minimum, pull minimum down with it
+    if(raIdeal<raMin){
+      document.getElementById('ra-min').value=raIdeal;
+    }
+    // Also update the ra-min max attribute so thumb can't go above ideal
+    document.getElementById('ra-min').max=raIdeal;
+  } else if(changedId==='ra-min'){
+    // Min can never exceed ideal
+    if(raMin>raIdeal){
+      document.getElementById('ra-min').value=raIdeal;
+    }
+  }
+  readPrefsFromUI();
+  savePrefsToStorage();
+  updatePrefLabels();
+  currentPage=0;
+  renderRegion();
+}
+
+function readPrefsFromUI(){
+  prefs.suIdeal=parseFloat(document.getElementById('su-ideal').value);
+  prefs.wiIdeal=parseFloat(document.getElementById('wi-ideal').value);
+  prefs.raIdeal=parseFloat(document.getElementById('ra-ideal').value);
+  prefs.raMin=parseFloat(document.getElementById('ra-min').value);
+  prefs.sunMin=parseFloat(document.getElementById('sun-min').value);
+  prefs.snow=snowPref;
+  prefs.hfHumid=document.getElementById('hf-humid').checked;
+  prefs.hfTropical=document.getElementById('hf-tropical').checked;
+  prefs.hfCold=document.getElementById('hf-cold').checked;
+}
+
+function applyPrefsToUI(){
+  document.getElementById('su-ideal').value=prefs.suIdeal;
+  document.getElementById('wi-ideal').value=prefs.wiIdeal;
+  document.getElementById('ra-ideal').value=prefs.raIdeal;
+  document.getElementById('ra-min').max=prefs.raIdeal;
+  document.getElementById('ra-min').value=Math.min(prefs.raMin,prefs.raIdeal);
+  document.getElementById('sun-min').value=prefs.sunMin;
+  document.getElementById('hf-humid').checked=prefs.hfHumid;
+  document.getElementById('hf-tropical').checked=prefs.hfTropical;
+  document.getElementById('hf-cold').checked=prefs.hfCold;
+  snowPref=prefs.snow;
+  setSnow(snowPref,true);
+  updatePrefLabels();
+}
+
+function updatePrefLabels(){
+  document.getElementById('su-val').textContent=prefs.suIdeal+'°C ideal';
+  document.getElementById('wi-val').textContent=prefs.wiIdeal+'°C ideal';
+  document.getElementById('ra-val').textContent=prefs.raIdeal+'mm ideal';
+  document.getElementById('ra-min-val').textContent=prefs.raMin+'mm';
+  document.getElementById('sun-min').title=prefs.sunMin+'h/yr';
+  document.getElementById('sun-val').textContent=prefs.sunMin+'h min';
+}
+
+function setSnow(val,noChange){
+  snowPref=val;prefs.snow=val;
+  ['none','some','love'].forEach(function(v){
+    var el=document.getElementById('snow-'+v);
+    if(el)el.classList.toggle('active',v===val);
+  });
+  if(!noChange){savePrefsToStorage();currentPage=0;renderRegion();}
+}
+
+function resetPrefs(){
+  prefs=JSON.parse(JSON.stringify(DEFAULT_PREFS));
+  applyPrefsToUI();
+  savePrefsToStorage();
+  currentPage=0;
+  renderRegion();
+}
+
+function savePrefsToStorage(){
+  try{localStorage.setItem('liveability_prefs',JSON.stringify(prefs));}catch(e){}
+}
+
+function loadPrefsFromStorage(){
+  try{
+    var s=localStorage.getItem('liveability_prefs');
+    if(s){var p=JSON.parse(s);Object.assign(prefs,p);}
+  }catch(e){}
+}
+
+// ── How it works ─────────────────────────────────────────────────────────────
+function showHIW(){document.getElementById('hiw-ov').classList.add('open');}
+function closeHIW(){document.getElementById('hiw-ov').classList.remove('open');}
+
+init();
+</script>
+</body>
+</html>
