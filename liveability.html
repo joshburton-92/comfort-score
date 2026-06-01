@@ -174,13 +174,16 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .footer-row{display:flex;align-items:center;justify-content:center;padding:16px 0 8px}
 .howitworks-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 
-/* ── How it works popup ── */
-.hiw-ov{display:none;position:fixed;inset:0;z-index:300;background:rgba(20,60,80,0.45);padding:20px;align-items:center;justify-content:center}
-.hiw-ov.open{display:flex}
-.hiw{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%;max-height:85vh;display:flex;flex-direction:column}
-.hiw-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px;flex-shrink:0}
-.hiw-body{font-size:clamp(12px,3.2vw,13px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line;overflow-y:auto;flex:1;min-height:0}
-.hiw-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700;flex-shrink:0}
+/* ── Generic centred modal (How it works, Köppen guide) ── */
+.gen-ov{display:none;position:fixed;inset:0;z-index:300;background:rgba(20,60,80,0.45);padding:20px;align-items:center;justify-content:center}
+.gen-ov.open{display:flex}
+.gen-pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:340px;width:100%;max-height:85vh;display:flex;flex-direction:column}
+.gen-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px;flex-shrink:0}
+.gen-body{font-size:clamp(12px,3.2vw,13px);color:var(--text);line-height:1.65;font-weight:600;overflow-y:auto;flex:1;min-height:0;padding-right:2px}
+.gen-section-head{font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px}
+.gen-body p{margin-bottom:8px}
+.gen-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700;flex-shrink:0}
+.kop-pill{display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin-right:4px;margin-bottom:2px;letter-spacing:0.02em}
 </style>
 </head>
 <body>
@@ -273,6 +276,7 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 
   <div class="footer-row">
     <button class="howitworks-btn" onclick="showHIW()">How it works &#9432;</button>
+    <button class="howitworks-btn" onclick="showKoppen()" style="margin-left:10px">Köppen guide 🌍</button>
   </div>
 
 </div>
@@ -291,31 +295,12 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
   </div>
 </div>
 
-<!-- How it works popup -->
-<div class="hiw-ov" id="hiw-ov" onclick="closeHIW()">
-  <div class="hiw" onclick="event.stopPropagation()">
-    <div class="hiw-ttl">How it works</div>
-    <div class="hiw-body">This survey evaluates year-round human liveability — not just pleasant summers or mild winters, but the complete annual experience of living somewhere. It deliberately rewards balance.
-
-SCORING CRITERIA (max 65 points)
-1. Summer comfort — hottest month avg max (10pts)
-2. Winter comfort — coldest month mean temp (10pts)
-3. Rainfall — annual total (10pts)
-4. Humidity — peak monthly dew point (10pts)
-5. Sunshine — annual hours (10pts)
-6. Snowfall — annual total (10pts)
-7. Wind — daily average speed (5pts)
-
-QUALIFIERS score in all criteria with no hard fails. Marginals score 1/10 on one criterion. Fails score zero on at least one.
-
-YOUR PREFERENCES
-The preference sliders let you shift the scoring thresholds to match your personal climate taste. Summer and winter ideal temperatures, rainfall preference, sunshine threshold, snowfall preference, and hard-fail rules are all adjustable. Locations are re-scored in real time.
-
-Note: Only Australia and New Zealand currently have full raw climate data for preference re-scoring. More regions coming soon.
-
-DATA
-All scores based on long-term climate averages from official meteorological agencies — BOM (Australia), NIWA (New Zealand), WMO normals, NOAA, and regional met services.</div>
-    <span class="hiw-close" onclick="closeHIW()">Tap to close</span>
+<!-- How it works / Köppen shared modal -->
+<div class="gen-ov" id="gen-ov" onclick="closeGen()">
+  <div class="gen-pop" onclick="event.stopPropagation()">
+    <div class="gen-ttl" id="gen-ttl"></div>
+    <div class="gen-body" id="gen-body"></div>
+    <span class="gen-close" onclick="closeGen()">Tap to close</span>
   </div>
 </div>
 
@@ -888,9 +873,84 @@ function loadPrefsFromStorage(){
   }catch(e){}
 }
 
+// ── Generic modal helpers ─────────────────────────────────────────────────────
+function showGen(title,html){
+  document.getElementById('gen-ttl').textContent=title;
+  document.getElementById('gen-body').innerHTML=html;
+  document.getElementById('gen-ov').classList.add('open');
+}
+function closeGen(){document.getElementById('gen-ov').classList.remove('open');}
+
 // ── How it works ─────────────────────────────────────────────────────────────
-function showHIW(){document.getElementById('hiw-ov').classList.add('open');}
-function closeHIW(){document.getElementById('hiw-ov').classList.remove('open');}
+function showHIW(){
+  var b='';
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:0 0 3px'>What this survey measures</div>";
+  b+="<div style='margin-bottom:10px'>Year-round human liveability — not just pleasant summers or mild winters, but the complete annual experience of living somewhere. It deliberately rewards balance.</div>";
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>Scoring criteria (max 65 pts)</div>";
+  b+="<div style='margin-bottom:10px'>1. Summer comfort — hottest month avg max (10 pts)<br>2. Winter comfort — coldest month mean temp (10 pts)<br>3. Rainfall — annual total (10 pts)<br>4. Humidity — peak monthly dew point (10 pts)<br>5. Sunshine — annual hours (10 pts)<br>6. Snowfall — annual total (10 pts)<br>7. Wind — daily average speed (5 pts)</div>";
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>Result tiers</div>";
+  b+="<div style='margin-bottom:10px'>Qualifiers score in all criteria with no hard fails. Marginals score 1/10 on one criterion. Fails score zero on at least one.</div>";
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>Your preferences</div>";
+  b+="<div style='margin-bottom:10px'>The preference sliders shift scoring thresholds to match your climate taste — ideal temperatures, rainfall, sunshine, snowfall, and hard-fail rules. Locations re-score in real time.</div>";
+  b+="<div style='font-size:11px;color:var(--text-muted);margin-bottom:10px'>Only Australia and New Zealand currently have full raw climate data for preference re-scoring. More regions coming soon.</div>";
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>Data</div>";
+  b+="<div>Long-term climate averages from official meteorological agencies — BOM (Australia), NIWA (New Zealand), WMO normals, NOAA, and regional met services.</div>";
+  showGen('How it works',b);
+}
+
+// ── Köppen guide ─────────────────────────────────────────────────────────────
+function showKoppen(){
+  var b='';
+  b+="<div style='font-size:11px;color:var(--text-muted);margin-bottom:8px'>The K\u00f6ppen climate classification groups climates by temperature and rainfall patterns. Each code has 2\u20133 letters.</div>";
+
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>A \u2014 Tropical</div>";
+  b+="<div style='margin-bottom:4px'>Every month above 18\u00b0C. No winter.</div>";
+  b+="<div style='margin-bottom:10px'>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#4a90d9;color:#fff'>Af</span> Rainforest \u2014 rain every month<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#2e6db4;color:#fff'>Am</span> Monsoon \u2014 short dry season, very wet wet season<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#6690c8;color:#fff'>Aw</span> Savanna \u2014 pronounced dry season in winter";
+  b+="</div>";
+
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>B \u2014 Arid &amp; Semi-arid</div>";
+  b+="<div style='margin-bottom:4px'>Evaporation exceeds precipitation. No surplus moisture.</div>";
+  b+="<div style='margin-bottom:10px'>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#c8960c;color:#fff'>BWh</span> Hot desert \u2014 scorching year-round, very dry<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#e0b030;color:#3a2800'>BWk</span> Cold desert \u2014 cold winters, extreme dryness<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#d4a820;color:#fff'>BSh</span> Hot steppe \u2014 semi-arid, hot summers<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#c8b860;color:#3a2800'>BSk</span> Cold steppe \u2014 semi-arid, cold winters";
+  b+="</div>";
+
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>C \u2014 Temperate</div>";
+  b+="<div style='margin-bottom:4px'>Coldest month \u22120\u00b0C to 18\u00b0C. At least one month above 10\u00b0C.</div>";
+  b+="<div style='margin-bottom:4px'><em>Second letter:</em> s\u202f=\u202fdry summer \u00b7 w\u202f=\u202fdry winter \u00b7 f\u202f=\u202fno dry season<br><em>Third letter:</em> a\u202f=\u202fhot summer (&gt;22\u00b0C) \u00b7 b\u202f=\u202fwarm summer \u00b7 c\u202f=\u202fcool short summer</div>";
+  b+="<div style='margin-bottom:10px'>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#1a7a3a;color:#fff'>Cfa</span> Humid subtropical \u2014 hot summers, mild winters, rain all year<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#2d9e50;color:#fff'>Cfb</span> Oceanic \u2014 warm summers, mild winters, rain all year<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#1a6030;color:#fff'>Cfc</span> Subpolar oceanic \u2014 cool short summers, mild winters<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#6abf69;color:#1a3a1a'>Csa</span> Hot Mediterranean \u2014 dry hot summer, wet mild winter<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#9ad89a;color:#1a3a1a'>Csb</span> Warm Mediterranean \u2014 dry warm summer, wet mild winter<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#4a9060;color:#fff'>Cwa</span> Monsoon subtropical \u2014 dry winter, hot wet summer<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#2d7045;color:#fff'>Cwb</span> Subtropical highland \u2014 dry winter, warm wet summer";
+  b+="</div>";
+
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>D \u2014 Continental</div>";
+  b+="<div style='margin-bottom:4px'>Coldest month below \u22120\u00b0C. True cold winters. Same letter rules as C, plus d\u202f=\u202fbitterly cold (&lt;\u221238\u00b0C).</div>";
+  b+="<div style='margin-bottom:10px'>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#b060c0;color:#fff'>Dfa</span> Hot-summer continental \u2014 cold winters, hot summers<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#9040a8;color:#fff'>Dfb</span> Warm-summer continental \u2014 cold winters, warm summers<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#702090;color:#fff'>Dfc</span> Subarctic \u2014 very cold long winters, short cool summers<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#c890d8;color:#2a0a3a'>Dwa/Dwb</span> Monsoon continental \u2014 dry cold winters, wet summers";
+  b+="</div>";
+
+  b+="<div style='font-size:13px;font-weight:800;color:var(--text-head);margin:10px 0 3px'>E \u2014 Polar &amp; Alpine</div>";
+  b+="<div style='margin-bottom:4px'>No month above 10\u00b0C. Permanent cold.</div>";
+  b+="<div style='margin-bottom:10px'>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#a0c8e8;color:#1a2a3a'>ET</span> Tundra \u2014 at least one month above 0\u00b0C, none above 10\u00b0C<br>";
+  b+="<span style='display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;font-weight:800;margin:0 4px 4px 0;background:#d0ecf8;color:#1a2a3a'>EF</span> Ice cap \u2014 every month below 0\u00b0C";
+  b+="</div>";
+
+  showGen('K\u00f6ppen Classification \uD83C\uDF0D',b);
+}
 
 init();
 </script>
