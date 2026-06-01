@@ -1046,13 +1046,51 @@ function renderChips(temp,effDP,rh,wind,fc){
       ssChip="<span class='chip'>🌇 "+new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(ssUtc)).toLowerCase().replace(" ","")+"</span>";
     }
   }
+  window._sunMoonData={srTime:srChip,ssTime:ssChip,moon:moon,tidesHtml:"<span style='color:var(--text-muted)'>Loading tides\u2026</span>"};
   document.getElementById("live-chips").innerHTML=
     "<span class='chip'>"+toDisp(temp).toFixed(1)+unitSym()+"</span>"
    +"<span class='chip'>"+rh+"% RH</span>"
    +"<span class='chip'>DP "+toDisp(effDP).toFixed(1)+unitSym()+"</span>"
    +"<span class='chip'>Wind "+Math.round(wind)+" km/h</span>"
-   +srChip+ssChip
-   +"<span class='chip' title='"+moon.name+"'>"+moon.emoji+" "+moon.name+"</span>";
+   +"<span class='chip' style='cursor:pointer' onclick='showSunMoonPop()'>\uD83C\uDF05\uD83C\uDF19\uD83C\uDF0A</span>";
+  fetchTides();
+}
+function showSunMoonPop(){
+  var d=window._sunMoonData||{};
+  var rows=[];
+  if(d.srTime)rows.push("<b>\uD83C\uDF05 Sunrise</b>&ensp;"+d.srTime.replace(/<[^>]+>/g,"").replace("\uD83C\uDF05 ",""));
+  if(d.ssTime)rows.push("<b>\uD83C\uDF07 Sunset</b>&ensp;"+d.ssTime.replace(/<[^>]+>/g,"").replace("\uD83C\uDF07 ",""));
+  if(d.moon)rows.push("<b>"+d.moon.emoji+" Moon</b>&ensp;"+d.moon.name);
+  var body=rows.join("<br>");
+  if(d.tidesHtml)body+="<br><br><b>\uD83C\uDF0A Tides</b><br>"+d.tidesHtml;
+  document.getElementById("pop-ttl").textContent="Sun, Moon & Tides";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
+function fetchTides(){
+  if(!window._currentLat||!window._currentLon)return;
+  var url="https://marine-api.open-meteo.com/v1/marine?latitude="+window._currentLat+"&longitude="+window._currentLon+"&hourly=sea_level_height_msl&timezone=auto&forecast_days=2";
+  fetch(url).then(function(r){return r.ok?r.json():null;}).then(function(data){
+    if(!data||!data.hourly)return;
+    var times=data.hourly.time,heights=data.hourly.sea_level_height_msl;
+    if(!times||!heights)return;
+    var tz=data.timezone||"auto";
+    var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    var tides=[];
+    for(var i=1;i<times.length-1;i++){
+      if(times[i].slice(0,10)!==todayStr)continue;
+      var prev=heights[i-1],cur=heights[i],next=heights[i+1];
+      if(prev==null||cur==null||next==null)continue;
+      var isHigh=cur>prev&&cur>next,isLow=cur<prev&&cur<next;
+      if(!isHigh&&!isLow)continue;
+      var tLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(times[i])).toLowerCase().replace(" ","");
+      tides.push({type:isHigh?"High":"Low",time:tLabel,h:Math.round(cur*100)/100});
+    }
+    var html=tides.length
+      ?tides.map(function(t){return(t.type==="High"?"\uD83D\uDD3C":"\uD83D\uDD3D")+" <b>"+t.type+"</b>&ensp;"+t.time+"&ensp;<span style='color:var(--text-muted)'>"+t.h+"m</span>";}).join("<br>")
+      :"<span style='color:var(--text-muted)'>No tide data for this location</span>";
+    if(window._sunMoonData)window._sunMoonData.tidesHtml=html;
+  }).catch(function(){if(window._sunMoonData)window._sunMoonData.tidesHtml="<span style='color:var(--text-muted)'>Tide data unavailable</span>";});
 }
 // ── Time helpers ───────────────────────────────────────────────────────────
 function parseLocalTimeStr(s){var p=s.split("T"),d=p[0].split("-"),t=(p[1]||"00:00").split(":");return{yr:+d[0],mo:+d[1]-1,dy:+d[2],hr:+t[0],mn:+t[1]};}
