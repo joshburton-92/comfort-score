@@ -88,15 +88,33 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;color:var(--text-head)}
-.score-outer{min-height:320px}
-.score-area{text-align:center;padding:4px 0 8px}
-canvas{display:block;margin:0 auto;height:115px;width:200px}
-.score-num{font-size:clamp(60px,18vw,80px);font-weight:800;line-height:1;height:86px;display:flex;align-items:center;justify-content:center;letter-spacing:-2px}
-.score-emoji{font-size:clamp(26px,7vw,32px);display:block;height:36px;line-height:36px}
-.score-lbl{font-size:clamp(20px,5.5vw,24px);font-weight:800;letter-spacing:-0.3px;height:34px;display:flex;align-items:center;justify-content:center}
-.annotations{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px;min-height:60px;align-content:flex-start}
+.score-outer{min-height:0}
+.score-area{display:flex;align-items:center;gap:10px;padding:4px 0 8px}
+.score-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:48%}
+canvas{display:block;height:80px;width:140px}
+.score-identity{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:4px}
+.score-num{font-size:clamp(28px,8vw,36px);font-weight:800;line-height:1;letter-spacing:-1.5px}
+.score-lbl-row{display:flex;align-items:center;gap:5px}
+.score-emoji{font-size:clamp(13px,3.5vw,15px);line-height:1}
+.score-lbl{font-size:clamp(13px,3.8vw,16px);font-weight:800;letter-spacing:-0.2px}
+.annotations{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:1;justify-content:center}
 .share-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:6px;margin-bottom:6px}
 .share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
+.action-btns{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.action-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex:1;max-width:96px;aspect-ratio:1;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:16px;cursor:pointer;font-size:11px;font-weight:800;color:var(--text-sec);padding:8px 4px;text-align:center;line-height:1.2}
+.action-btn:active{opacity:0.7}
+.action-btn-icon{font-size:26px;line-height:1}
+.clim-card{display:none}
+.clim-chart-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;align-items:flex-end;height:120px}
+.clim-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;cursor:pointer}
+.clim-bar-num{font-size:9px;font-weight:800;color:var(--text-head);line-height:1}
+.clim-bar{width:100%;border-radius:3px 3px 0 0;min-height:3px}
+.clim-month-row{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:4px;margin-bottom:12px}
+.clim-month-lbl{text-align:center;font-size:9px;font-weight:800;color:var(--text-muted);text-transform:uppercase}
+.clim-table{width:100%;border-collapse:collapse;font-size:clamp(11px,2.8vw,12px)}
+.clim-table th{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.06em;text-transform:uppercase;padding:5px 6px 7px;text-align:left;border-bottom:1px solid var(--divider)}
+.clim-table td{padding:6px 6px;border-bottom:1px solid var(--divider);font-weight:600;color:var(--text);vertical-align:middle}
+.clim-table tr:last-child td{border-bottom:none}
 .ann-wear{background:rgba(100,160,100,0.15);border:1px solid rgba(100,160,100,0.35);color:#3a7a3a;cursor:pointer}
 .score-info-btn{font-size:13px;font-weight:800;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 0 0 8px;line-height:1;vertical-align:middle;opacity:0.6}
 .score-info-btn:active{opacity:1}
@@ -151,6 +169,7 @@ canvas{display:block;margin:0 auto;height:115px;width:200px}
   .ann-uv{background:rgba(220,160,0,0.25);color:#e8a800}
   .ann-aqi{background:rgba(120,80,180,0.25);color:#b080f0}
   .ann-fire{background:rgba(210,80,20,0.25);color:#ff7040}
+  .action-btn{background:var(--card-inner);border-color:var(--card-inner-border)}
 }
 .forecast-wrap-inner{position:relative}
 .fc-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:32px;height:44px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text-sec);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none}
@@ -321,19 +340,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
       <div id="utility-row" style="display:none">
-        <div style="width:100%;height:1px;background:var(--divider);margin:8px 0 16px;display:block"></div>
-        <div style="background:var(--toggle-bg);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px">
-          <div class="share-row">
-            <button class="share-btn" id="washing-btn" onclick="checkWashing()">Will washing dry? &#129531;</button>
-            <button class="share-btn" id="clothing-btn" onclick="checkWhatToWear()">What to wear? &#129531;</button>
-            <button class="share-btn" id="world-btn" onclick="openWorldCheck()">Where in the world? &#127758;</button>
-            <button class="share-btn" onclick="openClimatology()">Monthly climate &#128197;</button>
-<button class="share-btn" onclick="openLiveability()">World liveability &#127758;</button>
-          </div>
-          <div class="share-row">
-            <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
-            <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
-          </div>
+        <div style="width:100%;height:1px;background:var(--divider);margin:10px 0 12px"></div>
+        <div class="action-btns">
+          <button class="action-btn" id="washing-btn" onclick="checkWashing()"><span class="action-btn-icon">&#129531;</span>Will washing dry?</button>
+          <button class="action-btn" id="clothing-btn" onclick="checkWhatToWear()"><span class="action-btn-icon">&#128085;</span>What to wear?</button>
+          <button class="action-btn" id="world-btn" onclick="openWorldCheck()"><span class="action-btn-icon">&#127758;</span>Where in the world?</button>
         </div>
       </div>
       <div id="forecast-wrap" style="display:none">
@@ -431,13 +442,34 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
   </div>
 
+  <div class="card clim-card" id="clim-card">
+    <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Climatology</span>
+    </div>
+    <div class="s-panel" id="clim-panel">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
+      <div class="clim-chart-grid" id="clim-chart-grid"></div>
+      <div class="clim-month-row" id="clim-month-row"></div>
+      <table class="clim-table" id="clim-table">
+        <thead><tr>
+          <th>Month</th><th>High</th><th>Low</th><th>DP&deg;</th><th>Rain</th><th>Snow</th>
+        </tr></thead>
+        <tbody id="clim-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="footer-row">
     <button class="howitworks-btn" onclick="showHowItWorks()">How it works &#9432;</button>
-    <button class="clear-btn"   onclick="clearAndReload()">Clear cache &amp; reload</button>
+    <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
+    <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
+    <button class="clear-btn" onclick="clearAndReload()">Clear cache &amp; reload</button>
   </div>
 </div>
 </div>
 
+<script src="climatology-cache.js"></script>
 <div class="pop-ov" id="pop-ov" onclick="closePop()">
   <div class="pop" onclick="event.stopPropagation()">
     <div class="pop-ttl" id="pop-ttl"></div>
@@ -1276,10 +1308,10 @@ if(temp>=0){
 }
 function drawGauge(id,score){
   var c=document.getElementById(id);if(!c)return;
-  var dpr=Math.min(window.devicePixelRatio||1,2),W=200,H=115;
+  var dpr=Math.min(window.devicePixelRatio||1,2),W=140,H=80;
   c.width=W*dpr;c.height=H*dpr;c.style.width=W+"px";c.style.height=H+"px";
   var ctx=c.getContext("2d");ctx.scale(dpr,dpr);
-  var cx=100,cy=105,r=82;
+  var cx=70,cy=74,r=58;
   for(var i=0;i<SBANDS.length;i++){var fs=i===0?0:SBANDS[i-1].max;ctx.beginPath();ctx.arc(cx,cy,r,Math.PI+(fs/100)*Math.PI,Math.PI+(SBANDS[i].max/100)*Math.PI);ctx.arc(cx,cy,r-16,Math.PI+(SBANDS[i].max/100)*Math.PI,Math.PI+(fs/100)*Math.PI,true);ctx.fillStyle=SBANDS[i].col;ctx.fill();}
   var nc=SBANDS[bandForScore(score)].col.replace("0.92","1");
   var a=Math.PI+(Math.min(100,Math.max(0,score))/100)*Math.PI;
@@ -1348,10 +1380,14 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   }
   for(var i=0;i<verdictAnns.length;i++)annHtml+=annSpan(verdictAnns[i]);
   document.getElementById(areaId).innerHTML=
-    "<div class='score-area'><canvas id='"+gaugeId+"'></canvas>"
-    +"<div class='score-num' style='color:"+si.col+"'>"+score+"<button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
-    +"<span class='score-emoji'>"+si.emoji+"</span>"
-    +"<div class='score-lbl' style='color:"+si.col+"'>"+si.label+"</div>"
+    "<div class='score-area'>"
+    +"<div class='score-left'>"
+    +"<canvas id='"+gaugeId+"'></canvas>"
+    +"<div class='score-identity'>"
+    +"<span class='score-num' style='color:"+si.col+"'>"+score+"</span>"
+    +"<div class='score-lbl-row'><span class='score-lbl' style='color:"+si.col+"'>"+si.label+"</span><span class='score-emoji'>"+si.emoji+"</span><button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
+    +"</div>"
+    +"</div>"
     +"<div class='annotations'>"+annHtml+"</div>"
     +"</div>";
   setTimeout(function(){drawGauge(gaugeId,score);},50);
@@ -1667,6 +1703,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
     document.getElementById("utility-row").style.display="block";
+    showClimCard(lat,lon);
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone);
     renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
@@ -1699,6 +1736,7 @@ function fetchWU(stationId,apiKey,label,cb){
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=lbl;
     document.getElementById("utility-row").style.display="block";
+    showClimCard(obs.lat||0,obs.lon||0);
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
     renderChips(temp,dew,rh,wind);
@@ -2680,6 +2718,96 @@ function show7DaySlot(di){
   document.getElementById("pop-ov").classList.add("open");
 }
 function fcScroll(dir){var strip=document.getElementById("forecast-strip");if(!strip)return;strip.scrollBy({left:dir*220,behavior:"smooth"});}
+
+// ── Climatology card ───────────────────────────────────────────────────────
+function haversineKm(lat1,lon1,lat2,lon2){
+  var R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function findClimEntry(lat,lon){
+  if(typeof CLIM_CACHE==="undefined")return null;
+  for(var i=0;i<CLIM_CACHE.length;i++){
+    if(haversineKm(lat,lon,CLIM_CACHE[i].lat,CLIM_CACHE[i].lon)<=20)return CLIM_CACHE[i];
+  }
+  return null;
+}
+function toggleClim(){
+  var tog=document.getElementById("clim-tog"),panel=document.getElementById("clim-panel");
+  tog.classList.toggle("open");panel.classList.toggle("open");
+}
+var CLIM_SBANDS=[{max:35,col:"rgba(190,50,50,1)"},{max:55,col:"rgba(210,120,20,1)"},{max:75,col:"rgba(190,185,20,1)"},{max:90,col:"rgba(100,180,50,1)"},{max:100,col:"rgba(25,140,65,1)"}];
+function climScoreCol(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<CLIM_SBANDS.length;i++)if(v<=CLIM_SBANDS[i].max)return CLIM_SBANDS[i].col;return CLIM_SBANDS[CLIM_SBANDS.length-1].col;}
+function showClimCard(lat,lon){
+  var card=document.getElementById("clim-card");
+  card.style.display="block";
+  var entry=findClimEntry(lat,lon);
+  var lbl=document.getElementById("clim-loc-label");
+  if(!entry){lbl.innerHTML="<span style='color:var(--text-muted)'>No climate data available for this location yet.</span>";document.getElementById("clim-chart-grid").innerHTML="";document.getElementById("clim-month-row").innerHTML="";document.getElementById("clim-tbody").innerHTML="";return;}
+  var kopHtml=entry.koppen?"<span style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec)'>"+entry.koppen+"</span>":"";
+  var kop2Html=entry.koppen2?"<div style='font-size:11px;font-weight:600;color:var(--text-muted);margin-top:3px'>"+entry.koppen2+"</div>":"";
+  lbl.innerHTML="<div>"+entry.name+(entry.ter?", "+entry.ter:"")+" · "+entry.elev+"m"+kopHtml+"</div>"+kop2Html;
+  window._climMonthly=entry.monthly;
+  var chartHtml="",monthHtml="";
+  for(var i=0;i<entry.monthly.length;i++){
+    var m=entry.monthly[i];
+    var sc=calc(m.T,m.dp,0).score,col=climScoreCol(sc);
+    var h=Math.round((sc/100)*110);
+    chartHtml+="<div class='clim-bar-col' onclick='showClimMonthPop("+i+")'><span class='clim-bar-num'>"+sc+"</span><div class='clim-bar' style='height:"+h+"px;background:"+col+";opacity:0.85'></div></div>";
+    monthHtml+="<div class='clim-month-lbl' style='cursor:pointer' onclick='showClimMonthPop("+i+")'>"+m.month+"</div>";
+  }
+  document.getElementById("clim-chart-grid").innerHTML=chartHtml;
+  document.getElementById("clim-month-row").innerHTML=monthHtml;
+  function fN(v,d){return(v!==null&&v!==undefined&&!isNaN(v))?Number(v).toFixed(d):"—";}
+  var tbodyHtml="";
+  for(var i=0;i<entry.monthly.length;i++){
+    var m=entry.monthly[i];
+    var col=climScoreCol(calc(m.T,m.dp,0).score);
+    tbodyHtml+="<tr style='border-left:3px solid "+col+"'>"
+      +"<td style='font-weight:800;color:"+col+"'>"+m.month+"</td>"
+      +"<td>"+fN(m.T,1)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+fN(m.tmin,1)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+fN(m.dp,1)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+fN(m.rain,0)+"</td>"
+      +"<td style='color:var(--text-muted)'>"+(m.snow>0.05?fN(m.snow,1):"—")+"</td>"
+      +"</tr>";
+  }
+  document.getElementById("clim-tbody").innerHTML=tbodyHtml;
+  var summaryParts=[];
+  if(entry.ra!=null)summaryParts.push("🌧️ "+Math.round(entry.ra)+"mm/yr");
+  if(entry.sun!=null)summaryParts.push("☀️ "+Math.round(entry.sun)+"hrs/yr");
+  if(entry.wind!=null)summaryParts.push("💨 "+Math.round(entry.wind)+"km/h avg");
+  var existing=document.getElementById("clim-summary");
+  if(existing)existing.remove();
+  if(summaryParts.length){
+    var sumDiv=document.createElement("div");
+    sumDiv.id="clim-summary";
+    sumDiv.style.cssText="font-size:12px;font-weight:700;color:var(--text-muted);display:flex;gap:12px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);flex-wrap:wrap";
+    sumDiv.innerHTML=summaryParts.join("");
+    document.getElementById("clim-table").after(sumDiv);
+  }
+}
+function showClimMonthPop(i){
+  if(!window._climMonthly)return;
+  var m=window._climMonthly[i];
+  var fN=function(v,d){return(v!==null&&v!==undefined&&!isNaN(v))?Number(v).toFixed(d):"—";};
+  function sc(v,dp){if(v===null||v===undefined||isNaN(v))return null;return calc(v,dp,0).score;}
+  function chip(s){if(s===null)return "<span style='color:var(--text-muted)'>—</span>";var c=climScoreCol(s);return "<span style='display:inline-block;padding:1px 7px;border-radius:12px;font-size:11px;font-weight:800;background:"+c.replace(",1)",",.15)")+"22;color:"+c+"'>"+s+"</span>";}
+  var body="<table style='width:100%;border-collapse:collapse'>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Warmest day avg</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.tmaxMax,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tmaxMax,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text);font-size:12px;padding:5px 0'>Average high</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.T,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.T,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text);font-size:12px;padding:5px 0'>Average low</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.tmin,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tmin,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Coldest night avg</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.tminMin,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tminMin,m.dp))+"</td></tr>"
+    +"<tr><td colspan='3' style='padding:3px 0'><div style='height:1px;background:var(--divider)'></div></td></tr>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Avg dew point</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+fN(m.dp,1)+"°</td></tr>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Rainfall</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+fN(m.rain,0)+" mm</td></tr>"
+    +(m.snow>0.05?"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Snowfall</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+fN(m.snow,1)+" cm</td></tr>":"")
+    +"</table>"
+    +"<div style='font-size:10px;color:var(--text-muted);margin-top:10px;line-height:1.5'>Comfort scores at avg dew point, calm wind. Warmest/coldest are the avg of each year\u2019s single extreme day.</div>";
+  document.getElementById("pop-ttl").textContent=m.month;
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
 
 // ── Init ───────────────────────────────────────────────────────────────────
 buildSettings();
