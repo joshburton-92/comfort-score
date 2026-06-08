@@ -89,15 +89,20 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;color:var(--text-head)}
 .score-outer{min-height:0}
-.score-area{display:flex;align-items:center;gap:10px;padding:4px 0 8px}
-.score-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:48%}
-canvas{display:block;height:80px;width:140px}
-.score-identity{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:4px}
-.score-num{font-size:clamp(28px,8vw,36px);font-weight:800;line-height:1;letter-spacing:-1.5px}
+.score-area{display:flex;flex-direction:column;padding:4px 0 8px;gap:10px}
+canvas{display:none}
+.vol-bar{display:flex;flex-direction:row;gap:3px;width:100%;height:28px}
+.vol-seg{flex:1;border-radius:4px;position:relative;overflow:hidden}
+.vol-seg.lit::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.35) 0%,rgba(255,255,255,0) 60%);border-radius:4px}
+.vol-seg.dim{background:rgba(180,200,210,0.18);border:1px solid rgba(255,255,255,0.22)}
+@media(prefers-color-scheme:dark){.vol-seg.dim{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.1)}}
+.score-bottom{display:flex;align-items:center;gap:10px}
+.score-identity{display:flex;flex-direction:column;align-items:flex-start;gap:1px;flex-shrink:0}
+.score-num{font-size:clamp(42px,12vw,56px);font-weight:300;line-height:1;letter-spacing:-3px}
 .score-lbl-row{display:flex;align-items:center;gap:5px}
-.score-emoji{font-size:clamp(13px,3.5vw,15px);line-height:1}
-.score-lbl{font-size:clamp(13px,3.8vw,16px);font-weight:800;letter-spacing:-0.2px}
-.annotations{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:1;justify-content:center}
+.score-emoji{font-size:clamp(12px,3vw,14px);line-height:1}
+.score-lbl{font-size:clamp(12px,3.2vw,14px);font-weight:700;letter-spacing:0px;color:var(--text-muted)}
+.annotations{display:flex;flex-wrap:wrap;align-items:center;gap:5px;flex:1;justify-content:flex-end}
 .share-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:6px;margin-bottom:6px}
 .share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
 .action-btns{display:flex;gap:8px;justify-content:center;margin-top:10px}
@@ -364,6 +369,24 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
   </div>
 
+  <div class="card clim-card" id="clim-card">
+    <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Climatology</span>
+    </div>
+    <div class="s-panel" id="clim-panel">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
+      <div class="clim-chart-grid" id="clim-chart-grid"></div>
+      <div class="clim-month-row" id="clim-month-row"></div>
+      <table class="clim-table" id="clim-table">
+        <thead><tr>
+          <th>Month</th><th>High</th><th>Low</th><th>DP&deg;</th><th>Rain</th><th>Snow</th>
+        </tr></thead>
+        <tbody id="clim-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="page" id="page-manual">
     <div class="card">
       <div class="sec-lbl">Conditions</div>
@@ -439,24 +462,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <div class="wu-row"><input type="text" id="wu-station-id" placeholder="Station ID (e.g. IVIC123)" onkeydown="if(event.key==='Enter')fetchWU()"/><button class="btn btn-p" onclick="fetchWU()">Fetch</button></div>
         <div id="wu-status" class="status" style="display:none"></div>
       </div>
-    </div>
-  </div>
-
-  <div class="card clim-card" id="clim-card">
-    <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Climatology</span>
-    </div>
-    <div class="s-panel" id="clim-panel">
-      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
-      <div class="clim-chart-grid" id="clim-chart-grid"></div>
-      <div class="clim-month-row" id="clim-month-row"></div>
-      <table class="clim-table" id="clim-table">
-        <thead><tr>
-          <th>Month</th><th>High</th><th>Low</th><th>DP&deg;</th><th>Rain</th><th>Snow</th>
-        </tr></thead>
-        <tbody id="clim-tbody"></tbody>
-      </table>
     </div>
   </div>
 
@@ -1307,17 +1312,25 @@ if(temp>=0){
   return out;
 }
 function drawGauge(id,score){
-  var c=document.getElementById(id);if(!c)return;
-  var dpr=Math.min(window.devicePixelRatio||1,2),W=140,H=80;
-  c.width=W*dpr;c.height=H*dpr;c.style.width=W+"px";c.style.height=H+"px";
-  var ctx=c.getContext("2d");ctx.scale(dpr,dpr);
-  var cx=70,cy=74,r=58;
-  for(var i=0;i<SBANDS.length;i++){var fs=i===0?0:SBANDS[i-1].max;ctx.beginPath();ctx.arc(cx,cy,r,Math.PI+(fs/100)*Math.PI,Math.PI+(SBANDS[i].max/100)*Math.PI);ctx.arc(cx,cy,r-16,Math.PI+(SBANDS[i].max/100)*Math.PI,Math.PI+(fs/100)*Math.PI,true);ctx.fillStyle=SBANDS[i].col;ctx.fill();}
-  var nc=SBANDS[bandForScore(score)].col.replace("0.92","1");
-  var a=Math.PI+(Math.min(100,Math.max(0,score))/100)*Math.PI;
-  ctx.beginPath();ctx.moveTo(cx-Math.cos(a)*10,cy-Math.sin(a)*10);ctx.lineTo(cx+Math.cos(a)*72,cy+Math.sin(a)*72);ctx.strokeStyle=nc;ctx.lineWidth=2.5;ctx.lineCap="round";ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fillStyle=nc;ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+  var el=document.getElementById(id);if(!el)return;
+  var SEGS=20;
+  var lit=Math.round((Math.min(100,Math.max(0,score))/100)*SEGS);
+  var col=SBANDS[bandForScore(score)].col.replace("0.92","1");
+  var rgb=col.match(/[\d.]+/g);
+  var rv=rgb[0],gv=rgb[1],bv=rgb[2];
+  var html="";
+  for(var i=0;i<SEGS;i++){
+    if(i<lit){
+      var segScore=Math.round(((i+1)/SEGS)*100);
+      var segCol=SBANDS[bandForScore(segScore)].col.replace("0.92","1");
+      var segRgb=segCol.match(/[\d.]+/g);
+      var shadow="0 0 5px rgba("+segRgb[0]+","+segRgb[1]+","+segRgb[2]+",0.45)";
+      html+="<div class='vol-seg lit' style='background:"+segCol+";box-shadow:"+shadow+"'></div>";
+    } else {
+      html+="<div class='vol-seg dim'></div>";
+    }
+  }
+  el.innerHTML=html;
 }
 function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=gs();
@@ -1381,16 +1394,16 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   for(var i=0;i<verdictAnns.length;i++)annHtml+=annSpan(verdictAnns[i]);
   document.getElementById(areaId).innerHTML=
     "<div class='score-area'>"
-    +"<div class='score-left'>"
-    +"<canvas id='"+gaugeId+"'></canvas>"
+    +"<div class='vol-bar' id='"+gaugeId+"'></div>"
+    +"<div class='score-bottom'>"
     +"<div class='score-identity'>"
-    +"<span class='score-num' style='color:"+si.col+"'>"+score+"</span>"
+    +"<span class='score-num' style='color:"+si.col+";text-shadow:0 2px 8px "+si.col+"55,0 1px 2px "+si.col+"33'>"+score+"</span>"
     +"<div class='score-lbl-row'><span class='score-lbl' style='color:"+si.col+"'>"+si.label+"</span><span class='score-emoji'>"+si.emoji+"</span><button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
     +"</div>"
-    +"</div>"
     +"<div class='annotations'>"+annHtml+"</div>"
+    +"</div>"
     +"</div>";
-  setTimeout(function(){drawGauge(gaugeId,score);},50);
+  drawGauge(gaugeId,score);
 }
 
 // ── Forecast + history ─────────────────────────────────────────────────────
