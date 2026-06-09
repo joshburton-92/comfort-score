@@ -2765,7 +2765,15 @@ function showClimCard(lat,lon){
   card.style.display="block";
   var entry=findClimEntry(lat,lon);
   var lbl=document.getElementById("clim-loc-label");
-  if(!entry){lbl.innerHTML="<span style='color:var(--text-muted)'>No climate data available for this location yet.</span>";document.getElementById("clim-chart-grid").innerHTML="";document.getElementById("clim-month-row").innerHTML="";document.getElementById("clim-tbody").innerHTML="";return;}
+  if(!entry){
+    lbl.innerHTML="<span style='color:var(--text-muted)'>No climate data available for this location yet.</span>";
+    document.getElementById("clim-chart-grid").innerHTML="";
+    document.getElementById("clim-month-row").innerHTML="";
+    document.getElementById("clim-tbody").innerHTML="";
+    var es=document.getElementById("clim-summary");if(es)es.remove();
+    var en=document.getElementById("clim-notes-wrap");if(en)en.remove();
+    return;
+  }
   var kopHtml=entry.koppen?"<span onclick='showKoppenPop("+JSON.stringify(entry.koppen)+")' style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec);cursor:pointer'>"+entry.koppen+" ↗</span>":"";
   var kop2Html=entry.koppen2?"<div style='font-size:11px;font-weight:600;color:var(--text-muted);margin-top:3px'>"+entry.koppen2+"</div>":"";
   lbl.innerHTML="<div>"+entry.name+(entry.ter?", "+entry.ter:"")+" · "+entry.elev+"m"+kopHtml+"</div>"+kop2Html;
@@ -2841,15 +2849,15 @@ var KOPPEN_DATA={
   "Csa":{name:"Hot-Summer Mediterranean",calc:"Warmest month above 22°C, driest summer month less than 1/3 of wettest winter month rainfall.",features:"Hot dry summers, mild wet winters, low humidity in summer, reliable winter rainfall, fire-adapted shrubland (maquis/chaparral).",examples:[["Adelaide, SA",-34.93,138.60],["Athens",37.98,23.73],["Los Angeles",34.05,-118.24]]},
   "Csb":{name:"Warm-Summer Mediterranean",calc:"Fewer than 4 months above 22°C, driest summer month less than 1/3 of wettest winter month.",features:"Warm dry summers, mild wet winters, lower summer heat than Csa, more moderate humidity, open woodland and heath.",examples:[["Paracombe, SA",-34.72,138.82],["San Francisco",37.77,-122.42],["Cape Town",-33.93,18.42]]},
   "Csc":{name:"Cool-Summer Mediterranean",calc:"Fewer than 4 months above 10°C, dry summer, at least one month above 0°C.",features:"Short cool summers, long mild wet winters, montane or coastal settings, often foggy, limited growing season.",examples:[["Juneau, AK",58.30,-134.42],["Ålesund, Norway",62.47,6.15],["Kodiak, AK",57.79,-152.41]]},
-  "Cfa":{name:"Humid Subtropical",calc:"Warmest month above 22°C, no dry season, all months above −3°C.",features:"Hot humid summers, mild winters, rainfall year-round, subtropical forest, high summer discomfort from heat and humidity.",examples:[["Brisbane, QLD",-27.47,153.02],["Shanghai",31.23,121.47],["New Orleans",29.95,-90.07]]},
-  "Cfb":{name:"Oceanic / Marine West Coast",calc:"Fewer than 4 months above 22°C, no dry season, coldest month above −3°C.",features:"Mild cool temperatures year-round, persistent cloud and rainfall, low seasonal extremes, green lush landscape.",examples:[["Canberra, ACT",-35.28,149.13],["London",51.51,-0.13],["Melbourne, VIC",-37.81,144.96]]},
-  "Cfc":{name:"Subpolar Oceanic",calc:"1–3 months above 10°C, no dry season, coldest month above −3°C.",features:"Short cool summers, long mild winters, persistent wind and cloud, tundra-edge vegetation, rare frosts.",examples:[["Reykjavik",64.14,-21.90],["Faroe Islands",61.89,-6.91],["Inverness",57.48,-4.22]]},
+  "Cfa":{name:"Humid Subtropical",calc:"Warmest month above 22°C, no dry season, all months above 0°C.",features:"Hot humid summers, mild winters, rainfall year-round, subtropical forest, high summer discomfort from heat and humidity.",examples:[["Brisbane, QLD",-27.47,153.02],["Shanghai",31.23,121.47],["New Orleans",29.95,-90.07]]},
+  "Cfb":{name:"Oceanic / Marine West Coast",calc:"Fewer than 4 months above 22°C, no dry season, coldest month above 0°C.",features:"Mild cool temperatures year-round, persistent cloud and rainfall, low seasonal extremes, green lush landscape.",examples:[["Canberra, ACT",-35.28,149.13],["London",51.51,-0.13],["Melbourne, VIC",-37.81,144.96]]},
+  "Cfc":{name:"Subpolar Oceanic",calc:"1–3 months above 10°C, no dry season, coldest month above 0°C.",features:"Short cool summers, long mild winters, persistent wind and cloud, tundra-edge vegetation, rare frosts.",examples:[["Reykjavik",64.14,-21.90],["Faroe Islands",61.89,-6.91],["Inverness",57.48,-4.22]]},
   "Cwa":{name:"Monsoon-Influenced Humid Subtropical",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest winter month.",features:"Hot wet summers, dry mild winters, strong monsoon signal, subtropical vegetation with marked seasonal rhythm.",examples:[["Hong Kong",22.32,114.17],["Chongqing",29.56,106.55],["Kunming",25.05,102.71]]},
   "Cwb":{name:"Subtropical Highland",calc:"Fewer than 4 months above 22°C, dry winter, wettest month at least 10× driest.",features:"Mild year-round temperatures moderated by altitude, wet summer, dry winter, highland savanna and cloud forest.",examples:[["Addis Ababa",9.03,38.74],["Mexico City",19.43,-99.13],["Harare",-17.83,31.05]]},
   // D — Continental
-  "Dfa":{name:"Hot-Summer Humid Continental",calc:"Warmest month above 22°C, no dry season, coldest month below −3°C.",features:"Hot humid summers, cold winters, year-round rainfall, deciduous forest, large seasonal temperature range.",examples:[["Chicago",41.88,-87.63],["Budapest",47.50,19.04],["Omaha, NE",41.26,-95.94]]},
-  "Dfb":{name:"Warm-Summer Humid Continental",calc:"Fewer than 4 months above 22°C, no dry season, coldest month below −3°C.",features:"Warm summers, cold snowy winters, year-round precipitation, mixed forest, moderate seasonal extremes.",examples:[["Helsinki",60.17,24.94],["Warsaw",52.23,21.01],["Toronto",43.65,-79.38]]},
-  "Dfc":{name:"Subarctic (Boreal)",calc:"1–3 months above 10°C, no dry season, coldest month below −3°C.",features:"Very short cool summers, extremely cold long winters, sparse boreal (taiga) forest, permafrost possible.",examples:[["Fairbanks, AK",64.84,-147.72],["Yellowknife, NT",62.45,-114.37],["Norilsk",69.35,88.19]]},
+  "Dfa":{name:"Hot-Summer Humid Continental",calc:"Warmest month above 22°C, no dry season, coldest month below 0°C.",features:"Hot humid summers, cold winters, year-round rainfall, deciduous forest, large seasonal temperature range.",examples:[["Chicago",41.88,-87.63],["Budapest",47.50,19.04],["Omaha, NE",41.26,-95.94]]},
+  "Dfb":{name:"Warm-Summer Humid Continental",calc:"Fewer than 4 months above 22°C, no dry season, coldest month below 0°C.",features:"Warm summers, cold snowy winters, year-round precipitation, mixed forest, moderate seasonal extremes.",examples:[["Helsinki",60.17,24.94],["Warsaw",52.23,21.01],["Toronto",43.65,-79.38]]},
+  "Dfc":{name:"Subarctic (Boreal)",calc:"1–3 months above 10°C, no dry season, coldest month below 0°C.",features:"Very short cool summers, extremely cold long winters, sparse boreal (taiga) forest, permafrost possible.",examples:[["Fairbanks, AK",64.84,-147.72],["Yellowknife, NT",62.45,-114.37],["Norilsk",69.35,88.19]]},
   "Dwa":{name:"Monsoon Hot-Summer Continental",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest.",features:"Hot wet summers, very cold dry winters, strong Asian monsoon influence, deciduous and mixed forest.",examples:[["Beijing",39.91,116.39],["Seoul",37.57,126.98],["Shenyang",41.80,123.43]]},
   "Dwb":{name:"Monsoon Warm-Summer Continental",calc:"Fewer than 4 months above 22°C, dry winter, wettest summer month at least 10× driest.",features:"Warm wet summers, cold dry winters, boreal and mixed forest, northeastern Asia.",examples:[["Harbin",45.75,126.65],["Vladivostok",43.11,131.87],["Ulan-Ude",51.83,107.60]]},
   // E — Polar
@@ -2874,8 +2882,7 @@ function showKoppenPop(code){
     }
     exHtml+="</div></div>";
   }
-  var body="<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px'>"+code+"</div>"
-    +"<div style='font-size:15px;font-weight:800;color:var(--text-head);margin-bottom:10px'>"+k.name+"</div>"
+  var body="<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px'>"+code+"</div>"
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px'>How it's classified</div>"
     +"<div style='font-size:13px;color:var(--text);line-height:1.55;margin-bottom:10px'>"+k.calc+"</div>"
     +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px'>Characteristics</div>"
