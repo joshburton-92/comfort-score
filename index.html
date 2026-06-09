@@ -297,6 +297,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="onboard-close" onclick="dismissOnboard()">Got it</button>
   </div>
 
+  <div class="onboard-card" id="clim-feature-card" style="display:none">
+    <div class="onboard-title">✨ New — Climatology</div>
+    <div class="onboard-body">Monthly climate data is now built into Comfort Score. After loading a location, scroll down to the <strong>Climatology</strong> card to see the full year — monthly comfort scores, temperature ranges, rainfall, and more. Tap any month for a detailed breakdown.</div>
+    <button class="onboard-close" onclick="dismissClimFeature()">Got it</button>
+  </div>
+
   <div class="header">
     <button class="star-btn" onclick="openStars()" title="Saved locations">&#9733;</button>
     <div class="header-icon">&#127780;&#65039;</div>
@@ -1022,6 +1028,8 @@ function showFireDangerPop(ffdi,todayMax,df){
 // ── Onboarding ─────────────────────────────────────────────────────────────
 function initOnboard(){if(!localStorage.getItem("comfort_onboarded"))document.getElementById("onboard-card").style.display="block";}
 function dismissOnboard(){document.getElementById("onboard-card").style.display="none";localStorage.setItem("comfort_onboarded","1");}
+function initClimFeature(){if(!localStorage.getItem("comfort_clim_feature"))document.getElementById("clim-feature-card").style.display="block";}
+function dismissClimFeature(){document.getElementById("clim-feature-card").style.display="none";localStorage.setItem("comfort_clim_feature","1");}
 
 // ── Unit system ────────────────────────────────────────────────────────────
 var useFahrenheit=false;
@@ -2853,6 +2861,7 @@ buildSettings();
 syncSlidersFromAdv();
 initUnit();
 initOnboard();
+initClimFeature();
 applySliderLock();
 initTempPrefs();
 initAnnounce();
