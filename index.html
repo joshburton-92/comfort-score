@@ -2786,19 +2786,45 @@ function showClimCard(lat,lon){
       +"</tr>";
   }
   document.getElementById("clim-tbody").innerHTML=tbodyHtml;
+  // Compute summary from monthly data
+  var totalRain=0,totalSnow=0,hasSnow=false;
+  for(var i=0;i<entry.monthly.length;i++){
+    totalRain+=(entry.monthly[i].rain||0);
+    totalSnow+=(entry.monthly[i].snow||0);
+    if(entry.monthly[i].snow>0.05)hasSnow=true;
+  }
   var summaryParts=[];
-  if(entry.ra!=null)summaryParts.push("🌧️ "+Math.round(entry.ra)+"mm/yr");
+  summaryParts.push("🌧️ "+Math.round(totalRain)+"mm/yr");
+  if(hasSnow)summaryParts.push("❄️ "+totalSnow.toFixed(1)+"cm/yr");
   if(entry.sun!=null)summaryParts.push("☀️ "+Math.round(entry.sun)+"hrs/yr");
   if(entry.wind!=null)summaryParts.push("💨 "+Math.round(entry.wind)+"km/h avg");
   var existing=document.getElementById("clim-summary");
   if(existing)existing.remove();
-  if(summaryParts.length){
-    var sumDiv=document.createElement("div");
-    sumDiv.id="clim-summary";
-    sumDiv.style.cssText="font-size:12px;font-weight:700;color:var(--text-muted);display:flex;gap:12px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);flex-wrap:wrap";
-    sumDiv.innerHTML=summaryParts.join("");
-    document.getElementById("clim-table").after(sumDiv);
+  var existingNotes=document.getElementById("clim-notes-wrap");
+  if(existingNotes)existingNotes.remove();
+  var sumDiv=document.createElement("div");
+  sumDiv.id="clim-summary";
+  sumDiv.style.cssText="font-size:12px;font-weight:700;color:var(--text-muted);display:flex;gap:12px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);flex-wrap:wrap";
+  sumDiv.innerHTML=summaryParts.join("");
+  document.getElementById("clim-table").after(sumDiv);
+  if(entry.notes){
+    var notesWrap=document.createElement("div");
+    notesWrap.id="clim-notes-wrap";
+    notesWrap.style.cssText="margin-top:8px";
+    notesWrap.innerHTML="<button id='clim-notes-btn' onclick='toggleClimNotes()' style='background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-sec);display:flex;align-items:center;gap:4px;padding:4px 0'>"
+      +"<svg id='clim-notes-arrow' width='10' height='10' viewBox='0 0 10 10' fill='none' style='transition:transform 0.2s'><path d='M2 3l3 3 3-3' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+      +"Learn more</button>"
+      +"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'>"+entry.notes+"</div>";
+    sumDiv.after(notesWrap);
   }
+}
+function toggleClimNotes(){
+  var body=document.getElementById("clim-notes-body");
+  var arrow=document.getElementById("clim-notes-arrow");
+  if(!body)return;
+  var open=body.style.display==="none";
+  body.style.display=open?"block":"none";
+  arrow.style.transform=open?"rotate(0deg)":"rotate(-90deg)";
 }
 function showClimMonthPop(i){
   if(!window._climMonthly)return;
