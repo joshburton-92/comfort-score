@@ -3175,8 +3175,7 @@ function calcLiveability(entry){
     return 100;
   }
   // Humidity: use existing dp preference from main comfort sliders
-  var dpPref=p.dpMax;
-  var s1=scoreCeil(st,p.heatMax,ts,p.hfHeat);          // summer heat       weight 15
+  var s1=scoreCeil(st,p.heatMax,ts,p.hfHeat);        // summer heat       weight 15
   var s2=scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat); // extreme heat      weight 10
   var s3=scoreFloor(wt,p.coldMin+5,ts,false);           // winter cold (avg) weight 15
   var s4=scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold); // extreme cold      weight 10
@@ -3385,8 +3384,8 @@ var KOPPEN_DATA={
   "Cfa":{name:"Humid Subtropical",calc:"Warmest month above 22°C, no dry season, all months above 0°C.",features:"Hot humid summers, mild winters, rainfall year-round, subtropical forest, high summer discomfort from heat and humidity.",examples:[["Brisbane, QLD",-27.47,153.02],["Shanghai",31.23,121.47],["New Orleans",29.95,-90.07]]},
   "Cfb":{name:"Oceanic / Marine West Coast",calc:"Warmest month below 22°C, no dry season, coldest month above 0°C.",features:"Mild cool temperatures year-round, persistent cloud and rainfall, low seasonal extremes, green lush landscape.",examples:[["Canberra, ACT",-35.28,149.13],["London",51.51,-0.13],["Melbourne, VIC",-37.81,144.96]]},
   "Cfc":{name:"Subpolar Oceanic",calc:"Fewer than 4 months above 10°C mean, no dry season, coldest month above 0°C.",features:"Short cool summers, long mild winters, persistent wind and cloud, tundra-edge vegetation, rare frosts.",examples:[["Reykjavik",64.14,-21.90],["Faroe Islands",61.89,-6.91],["Inverness",57.48,-4.22]]},
-  "Cwa":{name:"Monsoon-Influenced Humid Subtropical",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest winter month.",features:"Hot wet summers, dry mild winters, strong monsoon signal, subtropical vegetation with marked seasonal rhythm.",examples:[["Hong Kong",22.32,114.17],["Chongqing",29.56,106.55],["Kunming",25.05,102.71]]},
-  "Cwb":{name:"Subtropical Highland",calc:"Warmest month below 22°C, dry winter, wettest month at least 10× driest.",features:"Mild year-round temperatures moderated by altitude, wet summer, dry winter, highland savanna and cloud forest.",examples:[["Addis Ababa",9.03,38.74],["Mexico City",19.43,-99.13],["Harare",-17.83,31.05]]},
+  "Cwa":{name:"Monsoon-Influenced Humid Subtropical",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest winter month.",features:"Hot wet summers, dry mild winters, strong monsoon signal, subtropical vegetation with marked seasonal rhythm.",examples:[["Hong Kong",22.32,114.17],["New Delhi",28.61,77.21],["Mackay, QLD",-21.15,149.19]]},
+  "Cwb":{name:"Subtropical Highland",calc:"Warmest month below 22°C, dry winter, wettest month at least 10× driest.",features:"Mild year-round temperatures moderated by altitude, wet summer, dry winter, highland savanna and cloud forest.",examples:[["Addis Ababa",9.03,38.74],["Mexico City",19.43,-99.13],["Kunming",25.05,102.71]]},
   // D — Continental
   "Dfa":{name:"Hot-Summer Humid Continental",calc:"Warmest month above 22°C, no dry season, coldest month below 0°C.",features:"Hot humid summers, cold winters, year-round rainfall, deciduous forest, large seasonal temperature range.",examples:[["Chicago",41.88,-87.63],["Budapest",47.50,19.04],["Omaha, NE",41.26,-95.94]]},
   "Dfb":{name:"Warm-Summer Humid Continental",calc:"Warmest month below 22°C, no dry season, coldest month below 0°C.",features:"Warm summers, cold snowy winters, year-round precipitation, mixed forest, moderate seasonal extremes.",examples:[["Helsinki",60.17,24.94],["Warsaw",52.23,21.01],["Toronto",43.65,-79.38]]},
