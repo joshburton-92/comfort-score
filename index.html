@@ -561,17 +561,17 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             </div>
           </div>
           <div class="liv-sens-row">
-            <div class="slider-lbl-row"><span class="slider-name">Temperature sensitivity</span><span class="slider-val" id="liv-tsens-val">Moderate</span></div>
+            <div class="slider-lbl-row"><span class="slider-name">Temperature sensitivity</span><div class="ibtn" onclick="showPop('Temperature sensitivity','Controls how steeply the liveability score drops when a location\'s temperatures fall outside your preferences.\n\nMild: the score decreases gradually — places slightly beyond your range are not heavily penalised.\n\nSevere: the score drops steeply — even a small breach of your heat or cold tolerance significantly reduces the score.\n\nApplies to all four temperature dimensions: average summer heat, extreme heat, average winter cold, and extreme cold nights.')">i</div><span class="slider-val" id="liv-tsens-val">Moderate</span></div>
             <input type="range" id="sl-liv-tsens" min="0" max="100" value="50" oninput="onLivSens('tsens')"/>
             <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
           </div>
           <div class="liv-sens-row">
-            <div class="slider-lbl-row"><span class="slider-name">Humidity sensitivity</span><span class="slider-val" id="liv-hsens-val">Moderate</span></div>
+            <div class="slider-lbl-row"><span class="slider-name">Humidity sensitivity</span><div class="ibtn" onclick="showPop('Humidity sensitivity','Controls how steeply the liveability score drops when peak dew point exceeds your humidity preference.\n\nMild: high humidity climates are penalised gradually — a tropical wet season is a moderate concern.\n\nSevere: any meaningful breach of your dew point preference sharply reduces the score.\n\nPeak dew point is used rather than annual average — it reflects the worst the humidity gets, not what it\'s like year-round.')">i</div><span class="slider-val" id="liv-hsens-val">Moderate</span></div>
             <input type="range" id="sl-liv-hsens" min="0" max="100" value="50" oninput="onLivSens('hsens')"/>
             <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
           </div>
           <div class="liv-sens-row">
-            <div class="slider-lbl-row"><span class="slider-name">Lifestyle sensitivity</span><span class="slider-val" id="liv-lsens-val">Moderate</span></div>
+            <div class="slider-lbl-row"><span class="slider-name">Lifestyle sensitivity</span><div class="ibtn" onclick="showPop('Lifestyle sensitivity','Controls how steeply the liveability score drops when rainfall, sunshine, wind, or snowfall fall outside your preferences.\n\nMild: deviations from your preferred conditions are tolerated — a drier or cloudier place than ideal is only lightly penalised.\n\nSevere: places that meaningfully miss your rainfall, sunshine, wind, or snow preferences are scored down sharply.\n\nThis slider applies to all four lifestyle dimensions together.')">i</div><span class="slider-val" id="liv-lsens-val">Moderate</span></div>
             <input type="range" id="sl-liv-lsens" min="0" max="100" value="50" oninput="onLivSens('lsens')"/>
             <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
           </div>
