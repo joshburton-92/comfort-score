@@ -3134,6 +3134,14 @@ function calcLiveability(entry){
   var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
   var sun=entry.sun||0;
   var wind=entry.wind||0;
+  // Hard fail check — any triggered hard fail zeros the whole score
+  if(p.hfHeat&&st>p.heatMax)return 0;
+  if(p.hfHeat&&hotmaxMax>p.heatMax+3)return 0;
+  if(p.hfCold&&coldtminMin<p.coldMin)return 0;
+  if(p.hfDp&&peakDp>p.dpMax)return 0;
+  if(p.hfRain&&totalRain<p.rainMin)return 0;
+  if(p.hfSun&&sun<p.sunMin)return 0;
+  if(p.hfSnow&&totalSnow>p.snowMax)return 0;
   // Sensitivity → slope factor: mild=0.5, severe=3.0
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
@@ -3203,6 +3211,16 @@ function livScoreAnnotations(entry){
   var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
   var sun=entry.sun||0;
   var wind=entry.wind||0;
+  // Hard fail annotations — report all triggered fails
+  var fails=[];
+  if(p.hfHeat&&st>p.heatMax)fails.push("summers too hot");
+  if(p.hfHeat&&hotmaxMax>p.heatMax+3)fails.push("extreme heat too high");
+  if(p.hfCold&&coldtminMin<p.coldMin)fails.push("extreme cold too low");
+  if(p.hfDp&&peakDp>p.dpMax)fails.push("humidity too high");
+  if(p.hfRain&&totalRain<p.rainMin)fails.push("too dry");
+  if(p.hfSun&&sun<p.sunMin)fails.push("not enough sunshine");
+  if(p.hfSnow&&totalSnow>p.snowMax)fails.push("too much snow");
+  if(fails.length)return"Hard fail: "+fails.join(", ");
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
   function scoreCeil(val,ceil,sens,hardFail){
