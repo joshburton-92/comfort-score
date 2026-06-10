@@ -419,6 +419,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           <div class="liv-score-identity">
             <div class="liv-score-num" id="liv-score-num">—</div>
             <div class="liv-score-lbl" id="liv-score-lbl"></div>
+            <div id="liv-score-ann" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-top:4px;line-height:1.5"></div>
           </div>
         </div>
       </div>
@@ -3161,6 +3162,134 @@ function livScoreLabel(s){
   if(s>=30)return"Poor";
   return"Very poor";
 }
+function livScoreAnnotations(entry){
+  if(!entry||!entry.monthly||entry.monthly.length<12)return"";
+  var p=getLivPrefs();
+  var st=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
+  var wt=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
+  var peakDp=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
+  var hotmaxMax=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
+  var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
+  var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
+  var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
+  var sun=entry.sun||0;
+  var wind=entry.wind||0;
+  var dpPref=parseFloat((document.getElementById("s-hdp_ceil")||{value:21}).value)||21;
+  function slope(sens){return 0.5+sens*2.5;}
+  var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
+  function scoreCeil(val,ceil,sens,hardFail){
+    if(hardFail&&val>ceil)return 0;
+    if(val<=ceil)return 100;
+    var excess=(val-ceil)/Math.max(1,ceil*0.1+1);
+    return Math.max(0,100-excess*sens*40);
+  }
+  function scoreFloor(val,floor,sens,hardFail){
+    if(val===999||val===-99)return 100;
+    if(hardFail&&val<floor)return 0;
+    if(val>=floor)return 100;
+    var deficit=(floor-val)/Math.max(1,Math.abs(floor)*0.1+1);
+    return Math.max(0,100-deficit*sens*40);
+  }
+  function scoreRain(val,minPref,maxPref,sens,hardFail){
+    if(hardFail&&val<minPref)return 0;
+    if(minPref===0)return 100;
+    if(val<minPref){
+      var deficit=(minPref-val)/Math.max(1,minPref*0.2);
+      return Math.max(0,100-deficit*sens*40);
+    }
+    if(val>maxPref){
+      var excess=(val-maxPref)/Math.max(1,maxPref*0.2);
+      return Math.max(0,100-excess*ls*20);
+    }
+    return 100;
+  }
+  var dims=[
+    {
+      score:scoreCeil(st,p.heatMax,ts,p.hfHeat),
+      pos:"summers well within range",
+      mild_neg:"summers a touch warm",
+      neg:"summers too warm",
+      bad:"summers far too hot"
+    },
+    {
+      score:scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat),
+      pos:"extreme heat rarely an issue",
+      mild_neg:"occasional heatwaves a concern",
+      neg:"heatwaves exceed tolerance",
+      bad:"extreme heat a serious problem"
+    },
+    {
+      score:scoreFloor(wt,p.coldMin+5,ts,false),
+      pos:"winters comfortably mild",
+      mild_neg:"winters a little cold",
+      neg:"winters too cold",
+      bad:"winters far too cold"
+    },
+    {
+      score:scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold),
+      pos:"cold nights well tolerated",
+      mild_neg:"cold nights at the limit",
+      neg:"cold nights too extreme",
+      bad:"extreme cold nights a dealbreaker"
+    },
+    {
+      score:scoreCeil(peakDp,dpPref,hs,false),
+      pos:"humidity very comfortable",
+      mild_neg:"humidity a little high",
+      neg:"too humid in peak season",
+      bad:"oppressively humid"
+    },
+    {
+      score:scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain),
+      pos:"rainfall well suited",
+      mild_neg:"slightly dry",
+      neg:"too dry",
+      bad:"very arid"
+    },
+    {
+      score:scoreFloor(sun,p.sunMin,ls,p.hfSun),
+      pos:"good sunshine",
+      mild_neg:"a little overcast",
+      neg:"not enough sunshine",
+      bad:"very little sunshine"
+    },
+    {
+      score:scoreCeil(wind,20+((1-p.lsens)*20),ls,false),
+      pos:"low wind",
+      mild_neg:"can be breezy",
+      neg:"too windy",
+      bad:"very windy"
+    },
+    {
+      score:scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow),
+      pos:"snow-free",
+      mild_neg:"light snowfall",
+      neg:"more snow than preferred",
+      bad:"heavy snowfall"
+    }
+  ];
+  // Build candidate phrases with priority (lower score = higher priority for negatives)
+  var candidates=[];
+  for(var i=0;i<dims.length;i++){
+    var d=dims[i];
+    var s=d.score;
+    var phrase=null,priority=0;
+    if(s<30){phrase=d.bad;priority=100-s;}
+    else if(s<50){phrase=d.neg;priority=100-s;}
+    else if(s<75){phrase=d.mild_neg;priority=100-s;}
+    else if(s>=85){phrase=d.pos;priority=s-85;}// positives lower priority than negatives
+    if(phrase)candidates.push({phrase:phrase,priority:priority,positive:s>=85});
+  }
+  // Sort by priority descending, negatives before positives at equal priority
+  candidates.sort(function(a,b){
+    if(b.priority!==a.priority)return b.priority-a.priority;
+    return a.positive?1:-1;
+  });
+  // Cap at 4
+  var picked=candidates.slice(0,4).map(function(c){return c.phrase;});
+  if(picked.length===0)return"well-matched climate";
+  return picked.join(" · ");
+}
 function renderLivScore(){
   var card=document.getElementById("liv-card");
   if(!card||card.style.display==="none")return;
@@ -3181,6 +3310,8 @@ function renderLivScore(){
   }
   if(lblEl)lblEl.textContent=livScoreLabel(score);
   if(barEl)drawGauge("liv-vol-bar",score);
+  var annEl=document.getElementById("liv-score-ann");
+  if(annEl)annEl.textContent=livScoreAnnotations(entry);
 }
 function showLivCard(entry){
   var card=document.getElementById("liv-card");
