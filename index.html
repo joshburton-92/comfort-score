@@ -2880,10 +2880,12 @@ function haversineKm(lat1,lon1,lat2,lon2){
 }
 function findClimEntry(lat,lon){
   if(typeof CLIM_CACHE==="undefined")return null;
+  var best=null,bestDist=20;
   for(var i=0;i<CLIM_CACHE.length;i++){
-    if(haversineKm(lat,lon,CLIM_CACHE[i].lat,CLIM_CACHE[i].lon)<=20)return CLIM_CACHE[i];
+    var d=haversineKm(lat,lon,CLIM_CACHE[i].lat,CLIM_CACHE[i].lon);
+    if(d<=bestDist){bestDist=d;best=CLIM_CACHE[i];}
   }
-  return null;
+  return best;
 }
 function toggleClim(){
   var tog=document.getElementById("clim-tog"),panel=document.getElementById("clim-panel");
