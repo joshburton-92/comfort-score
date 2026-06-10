@@ -110,6 +110,21 @@ canvas{display:none}
 .action-btn:active{opacity:0.7}
 .action-btn-icon{font-size:26px;line-height:1}
 .clim-card{display:none}
+.liv-card{display:none;margin-top:10px}
+.liv-band-row{margin-bottom:14px}
+.liv-band-lbl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.liv-band-name{font-size:12px;font-weight:800;color:var(--text-head)}
+.liv-band-val{font-size:12px;font-weight:800;color:var(--text-sec)}
+.liv-band-sub{font-size:10px;font-weight:600;color:var(--text-muted);margin-top:2px;margin-bottom:5px}
+.liv-sens-row{margin-bottom:14px}
+.liv-hardfail-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.liv-hardfail-row label{font-size:11px;font-weight:700;color:var(--text-muted)}
+.liv-score-area{padding:10px 0 4px}
+.liv-score-loc{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-align:center}
+.liv-score-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.liv-score-identity{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.liv-score-num{font-size:48px;font-weight:300;line-height:1}
+.liv-score-lbl{font-size:13px;font-weight:800;color:var(--text-muted)}
 .clim-chart-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;align-items:flex-end;height:120px}
 .clim-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;cursor:pointer}
 .clim-bar-num{font-size:9px;font-weight:800;color:var(--text-head);line-height:1}
@@ -284,8 +299,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .world-loading{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;padding:20px 0}
 .washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
-.howitworks-btn{font-size:11px;color:rgba(42,127,180,0.6);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
-.clear-btn{font-size:11px;color:rgba(42,127,180,0.5);cursor:pointer;font-weight:700;background:none;border:none;padding:0;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -375,6 +388,24 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
   </div>
 
+  <div class="card liv-card" id="liv-card">
+    <div class="adv-tog" id="liv-tog" onclick="toggleLiv()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Liveability</span>
+    </div>
+    <div class="s-panel" id="liv-panel">
+      <div class="liv-score-area" id="liv-score-area">
+        <div class="liv-score-loc" id="liv-score-loc"></div>
+        <div class="vol-bar" id="liv-vol-bar"></div>
+        <div class="liv-score-bottom">
+          <div class="liv-score-identity">
+            <div class="liv-score-num" id="liv-score-num">—</div>
+            <div class="liv-score-lbl" id="liv-score-lbl"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="card clim-card" id="clim-card">
     <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -450,6 +481,100 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
         <div class="slider-ends"><span class="slider-end">Hate wind</span><span class="slider-end">Love wind</span></div>
       </div>
+      <div style="margin-top:14px;border-top:1px solid var(--divider)">
+        <div class="adv-tog" id="liv-pref-tog" onclick="toggleLivPref()" style="padding:10px 0 6px">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size:13px;font-weight:800;color:var(--text-head)">Liveability preferences</span>
+          <div class="ibtn" onclick="event.stopPropagation();showPop('Liveability preferences','These preferences apply to the Liveability Score beneath the climatology card.\n\nBand sliders let you choose your preferred range for each dimension. The score is highest within your chosen band and drops away on either side, with the sensitivity sliders controlling how steeply.\n\nHard fail toggles let you set absolute limits — any location exceeding them scores zero for that dimension regardless of sensitivity.')">i</div>
+        </div>
+        <div id="liv-pref-panel" style="display:none">
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Extreme heat tolerance</span>
+              <div class="ibtn" onclick="showPop('Extreme heat tolerance','Based on the average of each year\'s single hottest day (tmaxMax) for the warmest month.\n\nThis captures whether a place regularly produces days beyond your personal limit — not just average highs.\n\nThe score is highest at your chosen ceiling and drops as values exceed it, controlled by temperature sensitivity.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-heat-val">Up to 35°C</span>
+            <input type="range" id="sl-liv-heat" min="0" max="4" step="1" value="2" oninput="onLivBand('heat')"/>
+            <div class="slider-ends"><span class="slider-end">25°C</span><span class="slider-end">45°C</span></div>
+            <div class="liv-band-sub" id="liv-heat-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-heat"/>
+              <label for="hf-liv-heat">Hard fail above this</label>
+            </div>
+          </div>
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Extreme cold tolerance</span>
+              <div class="ibtn" onclick="showPop('Extreme cold tolerance','Based on the single coldest night average (tminMin) across all 12 months.\n\nThis captures the genuine cold floor of a location — the kind of night that tests limits.\n\nThe score is highest at your chosen floor and drops as values go below it, controlled by temperature sensitivity.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-cold-val">Down to −5°C</span>
+            <input type="range" id="sl-liv-cold" min="0" max="4" step="1" value="2" oninput="onLivBand('cold')"/>
+            <div class="slider-ends"><span class="slider-end">−20°C</span><span class="slider-end">5°C</span></div>
+            <div class="liv-band-sub" id="liv-cold-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-cold"/>
+              <label for="hf-liv-cold">Hard fail below this</label>
+            </div>
+          </div>
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Rainfall preference</span>
+              <div class="ibtn" onclick="showPop('Rainfall preference','Sets the minimum annual rainfall you prefer. Locations receiving at least this amount score highest for rainfall.\n\nScores drop below your chosen minimum, controlled by lifestyle sensitivity.\n\nLocations wetter than your band also attract a mild penalty — someone preferring Moderate rainfall may not want a rainforest.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-rain-val">Moderate</span>
+            <input type="range" id="sl-liv-rain" min="0" max="4" step="1" value="2" oninput="onLivBand('rain')"/>
+            <div class="slider-ends"><span class="slider-end">Any</span><span class="slider-end">Very wet</span></div>
+            <div class="liv-band-sub" id="liv-rain-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-rain"/>
+              <label for="hf-liv-rain">Hard fail below this</label>
+            </div>
+          </div>
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Sunshine preference</span>
+              <div class="ibtn" onclick="showPop('Sunshine preference','Sets the minimum annual sunshine hours you prefer. Locations meeting or exceeding this score highest.\n\nScores drop below your chosen minimum, controlled by lifestyle sensitivity. There is no penalty for exceeding your preference — more sunshine is never penalised.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-sun-val">Moderate</span>
+            <input type="range" id="sl-liv-sun" min="0" max="4" step="1" value="2" oninput="onLivBand('sun')"/>
+            <div class="slider-ends"><span class="slider-end">Any</span><span class="slider-end">Very sunny</span></div>
+            <div class="liv-band-sub" id="liv-sun-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-sun"/>
+              <label for="hf-liv-sun">Hard fail below this</label>
+            </div>
+          </div>
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Snow tolerance</span>
+              <div class="ibtn" onclick="showPop('Snow tolerance','Sets the maximum annual snowfall you can tolerate. Locations at or below this score highest.\n\nScores drop above your chosen ceiling, controlled by lifestyle sensitivity.\n\nMost locations globally score perfectly on this dimension — it only meaningfully penalises places with real winter snowfall.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-snow-val">None</span>
+            <input type="range" id="sl-liv-snow" min="0" max="3" step="1" value="0" oninput="onLivBand('snow')"/>
+            <div class="slider-ends"><span class="slider-end">None</span><span class="slider-end">Any</span></div>
+            <div class="liv-band-sub" id="liv-snow-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-snow"/>
+              <label for="hf-liv-snow">Hard fail above this</label>
+            </div>
+          </div>
+          <div class="liv-sens-row">
+            <div class="slider-lbl-row"><span class="slider-name">Temperature sensitivity</span><span class="slider-val" id="liv-tsens-val">Moderate</span></div>
+            <input type="range" id="sl-liv-tsens" min="0" max="100" value="50" oninput="onLivSens('tsens')"/>
+            <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+          </div>
+          <div class="liv-sens-row">
+            <div class="slider-lbl-row"><span class="slider-name">Humidity sensitivity</span><span class="slider-val" id="liv-hsens-val">Moderate</span></div>
+            <input type="range" id="sl-liv-hsens" min="0" max="100" value="50" oninput="onLivSens('hsens')"/>
+            <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+          </div>
+          <div class="liv-sens-row">
+            <div class="slider-lbl-row"><span class="slider-name">Lifestyle sensitivity</span><span class="slider-val" id="liv-lsens-val">Moderate</span></div>
+            <input type="range" id="sl-liv-lsens" min="0" max="100" value="50" oninput="onLivSens('lsens')"/>
+            <div class="slider-ends"><span class="slider-end">Mild</span><span class="slider-end">Severe</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -472,10 +597,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </div>
 
   <div class="footer-row">
-    <button class="howitworks-btn" onclick="showHowItWorks()">How it works &#9432;</button>
+    <button class="share-btn" onclick="showHowItWorks()">How it works &#9432;</button>
     <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
     <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
-    <button class="clear-btn" onclick="clearAndReload()">Clear cache &amp; reload</button>
   </div>
 </div>
 </div>
@@ -1186,6 +1310,10 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>Layers are calculated from your comfort floor and ceiling, adjusted for wind chill. The outer layer accounts for rain and wind independently — a rain jacket replaces rather than adds to the insulating layer recommendation.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
     +"<div style='margin-bottom:12px'>A drying index is calculated from vapour pressure deficit, wind, and temperature. This estimates how quickly moisture evaporates from fabric. Forecast slots are scanned to find usable drying windows, accounting for sunset, incoming rain, and overnight freezes.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Where in the world?</div>"
+    +"<div style='margin-bottom:12px'>Compares current conditions against 200 locations worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings — so the ranking reflects your personal comfort profile, not a universal standard.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate data</div>"
+    +"<div style='margin-bottom:12px'>The climatology card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Data sourced from national meteorological services and WMO records.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
     +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
@@ -1946,6 +2074,7 @@ var deferredPrompt=null;
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferredPrompt=e;document.getElementById("install-banner").classList.add("show");});
 function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;document.getElementById("install-banner").classList.remove("show");});}}
 window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
+function initLivPrefs(){loadLivPrefs();}
 function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){Promise.all(regs.map(function(r){return r.unregister();})).then(function(){caches.keys().then(function(keys){Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});});});});}else{window.location.reload(true);}}
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
 
@@ -2834,7 +2963,231 @@ function showClimCard(lat,lon){
       +"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'>"+entry.notes+"</div>";
     sumDiv.after(notesWrap);
   }
+  showLivCard(entry);
 }
+// ── Liveability preference data ────────────────────────────────────────────
+var LIV_HEAT_BANDS=[
+  {label:"Up to 30°C",max:30,sub:"e.g. Ireland, New Zealand, Pacific Northwest"},
+  {label:"Up to 33°C",max:33,sub:"e.g. Sydney, Cape Town, Portugal"},
+  {label:"Up to 35°C",max:35,sub:"e.g. Adelaide, Athens, California"},
+  {label:"Up to 38°C",max:38,sub:"e.g. Seville, Dallas, inland Australia"},
+  {label:"Up to 42°C+",max:42,sub:"e.g. Phoenix, Kuwait, central Australia"}
+];
+var LIV_COLD_BANDS=[
+  {label:"Down to 5°C",min:5,sub:"e.g. tropical Australia, Canary Islands, Miami"},
+  {label:"Down to 0°C",min:0,sub:"e.g. Sydney, Los Angeles, coastal Mediterranean"},
+  {label:"Down to −5°C",min:-5,sub:"e.g. London, Paris, Seattle"},
+  {label:"Down to −10°C",min:-10,sub:"e.g. Toronto, Warsaw, Seoul"},
+  {label:"Any cold",min:-99,sub:"e.g. Reykjavik, Winnipeg, Norilsk"}
+];
+var LIV_RAIN_BANDS=[
+  {label:"Any",min:0,sub:"0mm+ · e.g. Phoenix, Riyadh, Alice Springs"},
+  {label:"Dry",min:300,sub:"300mm+ · e.g. Perth, Madrid, Cape Town"},
+  {label:"Moderate",min:600,sub:"600mm+ · e.g. Sydney, Bordeaux, Buenos Aires"},
+  {label:"Wet",min:900,sub:"900mm+ · e.g. Auckland, Vancouver, Galway"},
+  {label:"Very wet",min:1400,sub:"1400mm+ · e.g. Bergen, Cairns, Osaka"}
+];
+var LIV_SUN_BANDS=[
+  {label:"Any",min:0,sub:"0hrs+ · e.g. Reykjavik, Bergen, Juneau"},
+  {label:"Low",min:1400,sub:"1400hrs+ · e.g. London, Dublin, Seattle"},
+  {label:"Moderate",min:1800,sub:"1800hrs+ · e.g. Sydney, Paris, Portland"},
+  {label:"Sunny",min:2200,sub:"2200hrs+ · e.g. Perth, Los Angeles, Rome"},
+  {label:"Very sunny",min:2800,sub:"2800hrs+ · e.g. Phoenix, Dubai, Alice Springs"}
+];
+var LIV_SNOW_BANDS=[
+  {label:"None",max:0,sub:"0cm · e.g. most of Australia, southern Spain, Canary Islands"},
+  {label:"Trace",max:5,sub:"≤5cm/yr · e.g. London, Paris, Bordeaux"},
+  {label:"Light",max:30,sub:"≤30cm/yr · e.g. Dublin, Seoul, Vancouver"},
+  {label:"Any amount",max:9999,sub:"e.g. Hokkaido, Quebec, Tromsø"}
+];
+
+function toggleLivPref(){
+  var panel=document.getElementById("liv-pref-panel");
+  var tog=document.getElementById("liv-pref-tog");
+  var open=panel.style.display==="none";
+  panel.style.display=open?"block":"none";
+  tog.querySelector("svg path").setAttribute("d",open?"M2 3l4 4 4-3":"M4 2l4 4-4 4");
+}
+function toggleLiv(){
+  var tog=document.getElementById("liv-tog"),panel=document.getElementById("liv-panel");
+  if(!tog||!panel)return;
+  var open=panel.style.display==="none";
+  panel.style.display=open?"block":"none";
+  tog.querySelector("svg path").setAttribute("d",open?"M2 3l4 4 4-3":"M4 2l4 4-4 4");
+}
+function onLivBand(dim){
+  var bands={heat:LIV_HEAT_BANDS,cold:LIV_COLD_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
+  var b=bands[dim];
+  var v=parseInt(document.getElementById("sl-liv-"+dim).value);
+  document.getElementById("liv-"+dim+"-val").textContent=b[v].label;
+  document.getElementById("liv-"+dim+"-sub").textContent=b[v].sub;
+  saveLivPrefs();
+  renderLivScore();
+}
+function onLivSens(id){
+  var v=parseInt(document.getElementById("sl-liv-"+id).value);
+  var labels=["Mild","Low","Moderate","High","Severe"];
+  var lbl=labels[Math.round(v/25)];
+  document.getElementById("liv-"+id+"-val").textContent=lbl;
+  saveLivPrefs();
+  renderLivScore();
+}
+function saveLivPrefs(){
+  var p={
+    heat:parseInt(document.getElementById("sl-liv-heat").value),
+    cold:parseInt(document.getElementById("sl-liv-cold").value),
+    rain:parseInt(document.getElementById("sl-liv-rain").value),
+    sun:parseInt(document.getElementById("sl-liv-sun").value),
+    snow:parseInt(document.getElementById("sl-liv-snow").value),
+    tsens:parseInt(document.getElementById("sl-liv-tsens").value),
+    hsens:parseInt(document.getElementById("sl-liv-hsens").value),
+    lsens:parseInt(document.getElementById("sl-liv-lsens").value),
+    hfHeat:document.getElementById("hf-liv-heat").checked,
+    hfCold:document.getElementById("hf-liv-cold").checked,
+    hfRain:document.getElementById("hf-liv-rain").checked,
+    hfSun:document.getElementById("hf-liv-sun").checked,
+    hfSnow:document.getElementById("hf-liv-snow").checked
+  };
+  localStorage.setItem("liv_prefs",JSON.stringify(p));
+}
+function loadLivPrefs(){
+  var p=JSON.parse(localStorage.getItem("liv_prefs")||"{}");
+  function sv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
+  function sc(id,val){var el=document.getElementById(id);if(el)el.checked=val;}
+  sv("sl-liv-heat",p.heat!==undefined?p.heat:2);
+  sv("sl-liv-cold",p.cold!==undefined?p.cold:2);
+  sv("sl-liv-rain",p.rain!==undefined?p.rain:2);
+  sv("sl-liv-sun",p.sun!==undefined?p.sun:2);
+  sv("sl-liv-snow",p.snow!==undefined?p.snow:0);
+  sv("sl-liv-tsens",p.tsens!==undefined?p.tsens:50);
+  sv("sl-liv-hsens",p.hsens!==undefined?p.hsens:50);
+  sv("sl-liv-lsens",p.lsens!==undefined?p.lsens:50);
+  sc("hf-liv-heat",p.hfHeat||false);
+  sc("hf-liv-cold",p.hfCold||false);
+  sc("hf-liv-rain",p.hfRain||false);
+  sc("hf-liv-sun",p.hfSun||false);
+  sc("hf-liv-snow",p.hfSnow||false);
+  ["heat","cold","rain","sun","snow"].forEach(function(d){onLivBand(d);});
+  ["tsens","hsens","lsens"].forEach(function(s){onLivSens(s);});
+}
+function getLivPrefs(){
+  return{
+    heatMax:LIV_HEAT_BANDS[parseInt(document.getElementById("sl-liv-heat").value)].max,
+    coldMin:LIV_COLD_BANDS[parseInt(document.getElementById("sl-liv-cold").value)].min,
+    rainMin:LIV_RAIN_BANDS[parseInt(document.getElementById("sl-liv-rain").value)].min,
+    rainMax:LIV_RAIN_BANDS[parseInt(document.getElementById("sl-liv-rain").value)].min*2.5,
+    sunMin:LIV_SUN_BANDS[parseInt(document.getElementById("sl-liv-sun").value)].min,
+    snowMax:LIV_SNOW_BANDS[parseInt(document.getElementById("sl-liv-snow").value)].max,
+    tsens:parseInt(document.getElementById("sl-liv-tsens").value)/100,
+    hsens:parseInt(document.getElementById("sl-liv-hsens").value)/100,
+    lsens:parseInt(document.getElementById("sl-liv-lsens").value)/100,
+    hfHeat:document.getElementById("hf-liv-heat").checked,
+    hfCold:document.getElementById("hf-liv-cold").checked,
+    hfRain:document.getElementById("hf-liv-rain").checked,
+    hfSun:document.getElementById("hf-liv-sun").checked,
+    hfSnow:document.getElementById("hf-liv-snow").checked
+  };
+}
+function calcLiveability(entry){
+  if(!entry||!entry.monthly||entry.monthly.length<12)return null;
+  var p=getLivPrefs();
+  // Extract key values from monthly data
+  var st=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
+  var wt=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
+  var peakDp=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
+  var hotmaxMax=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
+  var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
+  var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
+  var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
+  var sun=entry.sun||0;
+  var wind=entry.wind||0;
+  // Sensitivity → slope factor: mild=0.5, severe=3.0
+  function slope(sens){return 0.5+sens*2.5;}
+  var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
+  // Score a value against a ceiling (lower is worse above ceiling)
+  function scoreCeil(val,ceil,sens,hardFail){
+    if(hardFail&&val>ceil)return 0;
+    if(val<=ceil)return 100;
+    var excess=(val-ceil)/Math.max(1,ceil*0.1+1);
+    return Math.max(0,100-excess*sens*40);
+  }
+  // Score a value against a floor (lower is worse below floor)
+  function scoreFloor(val,floor,sens,hardFail){
+    if(val===999||val===-99)return 100;
+    if(hardFail&&val<floor)return 0;
+    if(val>=floor)return 100;
+    var deficit=(floor-val)/Math.max(1,Math.abs(floor)*0.1+1);
+    return Math.max(0,100-deficit*sens*40);
+  }
+  // Score rainfall — penalise below min, soft penalise above band max
+  function scoreRain(val,minPref,maxPref,sens,hardFail){
+    if(hardFail&&val<minPref)return 0;
+    if(minPref===0)return 100;
+    if(val<minPref){
+      var deficit=(minPref-val)/Math.max(1,minPref*0.2);
+      return Math.max(0,100-deficit*sens*40);
+    }
+    if(val>maxPref){
+      var excess=(val-maxPref)/Math.max(1,maxPref*0.2);
+      return Math.max(0,100-excess*ls*20);
+    }
+    return 100;
+  }
+  // Humidity: use existing dp preference from main comfort sliders
+  var dpPref=parseFloat((document.getElementById("s-hdp_ceil")||{value:21}).value)||21;
+  var s1=scoreCeil(st,p.heatMax,ts,p.hfHeat);          // summer heat       weight 15
+  var s2=scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat); // extreme heat      weight 10
+  var s3=scoreFloor(wt,p.coldMin+5,ts,false);           // winter cold (avg) weight 15
+  var s4=scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold); // extreme cold      weight 10
+  var s5=scoreCeil(peakDp,dpPref,hs,false);             // peak humidity     weight 20
+  var s6=scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain); // rainfall   weight 10
+  var s7=scoreFloor(sun,p.sunMin,ls,p.hfSun);           // sunshine          weight 10
+  var s8=scoreCeil(wind,20+((1-p.lsens)*20),ls,false);  // wind              weight 7
+  var s9=scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow);    // snowfall          weight 3
+  var score=Math.round(
+    s1*0.15+s2*0.10+s3*0.15+s4*0.10+
+    s5*0.20+s6*0.10+s7*0.10+s8*0.07+s9*0.03
+  );
+  return Math.max(0,Math.min(100,score));
+}
+function livScoreLabel(s){
+  if(s>=90)return"Outstanding";
+  if(s>=75)return"Excellent";
+  if(s>=60)return"Good";
+  if(s>=45)return"Moderate";
+  if(s>=30)return"Poor";
+  return"Very poor";
+}
+function renderLivScore(){
+  var card=document.getElementById("liv-card");
+  if(!card||card.style.display==="none")return;
+  var entry=window._livEntry;
+  if(!entry)return;
+  var score=calcLiveability(entry);
+  if(score===null)return;
+  var locEl=document.getElementById("liv-score-loc");
+  var numEl=document.getElementById("liv-score-num");
+  var lblEl=document.getElementById("liv-score-lbl");
+  var barEl=document.getElementById("liv-vol-bar");
+  if(locEl)locEl.textContent=entry.name+(entry.ter?", "+entry.ter:"");
+  if(numEl){
+    var col=climScoreCol(score);
+    numEl.style.color=col;
+    numEl.style.textShadow="0 0 18px "+col+"80";
+    numEl.textContent=score;
+  }
+  if(lblEl)lblEl.textContent=livScoreLabel(score);
+  if(barEl)drawGauge("liv-vol-bar",score);
+}
+function showLivCard(entry){
+  var card=document.getElementById("liv-card");
+  if(!card)return;
+  if(!entry){card.style.display="none";return;}
+  window._livEntry=entry;
+  card.style.display="block";
+  renderLivScore();
+}
+
 var KOPPEN_DATA={
   // A — Tropical
   "Af":{name:"Tropical Rainforest",calc:"All months above 18°C mean, driest month ≥ 60mm rainfall.",features:"No dry season, high humidity year-round, dense rainforest vegetation, minimal temperature variation between seasons.",examples:[["Singapore",1.35,103.82],["Manaus, Brazil",-3.10,-60.02],["Kuala Lumpur",3.14,101.69]]},
@@ -2935,6 +3288,7 @@ syncSlidersFromAdv();
 initUnit();
 initOnboard();
 initClimFeature();
+initLivPrefs();
 applySliderLock();
 initTempPrefs();
 initAnnounce();
