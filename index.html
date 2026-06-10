@@ -388,6 +388,24 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
   </div>
 
+  <div class="card clim-card" id="clim-card">
+    <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Climatology</span>
+    </div>
+    <div class="s-panel" id="clim-panel">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
+      <div class="clim-chart-grid" id="clim-chart-grid"></div>
+      <div class="clim-month-row" id="clim-month-row"></div>
+      <table class="clim-table" id="clim-table">
+        <thead><tr>
+          <th>Month</th><th>High</th><th>Low</th><th>DP&deg;</th><th>Rain</th><th>Snow</th>
+        </tr></thead>
+        <tbody id="clim-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="card liv-card" id="liv-card">
     <div class="adv-tog" id="liv-tog" onclick="toggleLiv()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -404,23 +422,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           </div>
         </div>
       </div>
-    </div>
-  </div>
-  <div class="card clim-card" id="clim-card">
-    <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Climatology</span>
-    </div>
-    <div class="s-panel" id="clim-panel">
-      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
-      <div class="clim-chart-grid" id="clim-chart-grid"></div>
-      <div class="clim-month-row" id="clim-month-row"></div>
-      <table class="clim-table" id="clim-table">
-        <thead><tr>
-          <th>Month</th><th>High</th><th>Low</th><th>DP&deg;</th><th>Rain</th><th>Snow</th>
-        </tr></thead>
-        <tbody id="clim-tbody"></tbody>
-      </table>
     </div>
   </div>
 
@@ -494,11 +495,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
               <div class="ibtn" onclick="showPop('Extreme heat tolerance','Based on the average of each year\'s single hottest day (tmaxMax) for the warmest month.\n\nThis captures whether a place regularly produces days beyond your personal limit — not just average highs.\n\nThe score is highest at your chosen ceiling and drops as values exceed it, controlled by temperature sensitivity.')">i</div>
             </div>
             <span class="liv-band-val" id="liv-heat-val">Up to 35°C</span>
-            <input type="range" id="sl-liv-heat" min="0" max="4" step="1" value="2" oninput="onLivBand('heat')"/>
-            <div class="slider-ends"><span class="slider-end">25°C</span><span class="slider-end">45°C</span></div>
+            <input type="range" id="sl-liv-heat" min="0" max="6" step="1" value="3" oninput="onLivBand('heat')"/>
+            <div class="slider-ends"><span class="slider-end">Up to 20°C</span><span class="slider-end">Up to 42°C+</span></div>
             <div class="liv-band-sub" id="liv-heat-sub"></div>
             <div class="liv-hardfail-row">
-              <input type="checkbox" id="hf-liv-heat"/>
+              <input type="checkbox" id="hf-liv-heat" onchange="saveLivPrefs();renderLivScore();"/>
               <label for="hf-liv-heat">Hard fail above this</label>
             </div>
           </div>
@@ -509,10 +510,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             </div>
             <span class="liv-band-val" id="liv-cold-val">Down to −5°C</span>
             <input type="range" id="sl-liv-cold" min="0" max="4" step="1" value="2" oninput="onLivBand('cold')"/>
-            <div class="slider-ends"><span class="slider-end">−20°C</span><span class="slider-end">5°C</span></div>
+            <div class="slider-ends"><span class="slider-end">Down to 5°C</span><span class="slider-end">Any cold</span></div>
             <div class="liv-band-sub" id="liv-cold-sub"></div>
             <div class="liv-hardfail-row">
-              <input type="checkbox" id="hf-liv-cold"/>
+              <input type="checkbox" id="hf-liv-cold" onchange="saveLivPrefs();renderLivScore();"/>
               <label for="hf-liv-cold">Hard fail below this</label>
             </div>
           </div>
@@ -526,7 +527,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="slider-ends"><span class="slider-end">Any</span><span class="slider-end">Very wet</span></div>
             <div class="liv-band-sub" id="liv-rain-sub"></div>
             <div class="liv-hardfail-row">
-              <input type="checkbox" id="hf-liv-rain"/>
+              <input type="checkbox" id="hf-liv-rain" onchange="saveLivPrefs();renderLivScore();"/>
               <label for="hf-liv-rain">Hard fail below this</label>
             </div>
           </div>
@@ -540,7 +541,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="slider-ends"><span class="slider-end">Any</span><span class="slider-end">Very sunny</span></div>
             <div class="liv-band-sub" id="liv-sun-sub"></div>
             <div class="liv-hardfail-row">
-              <input type="checkbox" id="hf-liv-sun"/>
+              <input type="checkbox" id="hf-liv-sun" onchange="saveLivPrefs();renderLivScore();"/>
               <label for="hf-liv-sun">Hard fail below this</label>
             </div>
           </div>
@@ -554,7 +555,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="slider-ends"><span class="slider-end">None</span><span class="slider-end">Any</span></div>
             <div class="liv-band-sub" id="liv-snow-sub"></div>
             <div class="liv-hardfail-row">
-              <input type="checkbox" id="hf-liv-snow"/>
+              <input type="checkbox" id="hf-liv-snow" onchange="saveLivPrefs();renderLivScore();"/>
               <label for="hf-liv-snow">Hard fail above this</label>
             </div>
           </div>
@@ -2967,7 +2968,9 @@ function showClimCard(lat,lon){
 }
 // ── Liveability preference data ────────────────────────────────────────────
 var LIV_HEAT_BANDS=[
-  {label:"Up to 30°C",max:30,sub:"e.g. Ireland, New Zealand, Pacific Northwest"},
+  {label:"Up to 20°C",max:20,sub:"e.g. Iceland, northern Scotland, Tierra del Fuego"},
+  {label:"Up to 25°C",max:25,sub:"e.g. Ireland, New Zealand, Pacific Northwest"},
+  {label:"Up to 30°C",max:30,sub:"e.g. coastal BC, southern Chile, Azores"},
   {label:"Up to 33°C",max:33,sub:"e.g. Sydney, Cape Town, Portugal"},
   {label:"Up to 35°C",max:35,sub:"e.g. Adelaide, Athens, California"},
   {label:"Up to 38°C",max:38,sub:"e.g. Seville, Dallas, inland Australia"},
