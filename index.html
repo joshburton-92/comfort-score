@@ -3203,7 +3203,6 @@ function livScoreAnnotations(entry){
   var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
   var sun=entry.sun||0;
   var wind=entry.wind||0;
-  var dpPref=parseFloat((document.getElementById("s-hdp_ceil")||{value:21}).value)||21;
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
   function scoreCeil(val,ceil,sens,hardFail){
@@ -3262,7 +3261,7 @@ function livScoreAnnotations(entry){
       bad:"extreme cold nights a dealbreaker"
     },
     {
-      score:scoreCeil(peakDp,dpPref,hs,p.hfDp),
+      score:scoreCeil(peakDp,p.dpMax,hs,p.hfDp),
       pos:"humidity very comfortable",
       mild_neg:"humidity a little high",
       neg:"too humid in peak season",
