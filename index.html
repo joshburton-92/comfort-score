@@ -3284,13 +3284,17 @@ function livScoreAnnotations(entry){
       neg:"too humid in peak season",
       bad:"oppressively humid"
     },
-    {
-      score:scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain),
-      pos:"rainfall well suited",
-      mild_neg:"slightly dry",
-      neg:"too dry",
-      bad:"very arid"
-    },
+    (function(){
+      var rs=scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain);
+      var tooWet=totalRain>p.rainMax;
+      return{
+        score:rs,
+        pos:"rainfall well suited",
+        mild_neg:tooWet?"a little too wet":"slightly dry",
+        neg:tooWet?"too wet":"too dry",
+        bad:tooWet?"very wet":"very arid"
+      };
+    })(),
     {
       score:scoreFloor(sun,p.sunMin,ls,p.hfSun),
       pos:"good sunshine",
