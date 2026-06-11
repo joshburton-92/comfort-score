@@ -3179,7 +3179,7 @@ function calcLiveability(entry){
   var s2=scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat); // extreme heat      weight 10
   var s3=scoreFloor(wt,p.coldMin+5,ts,false);           // winter cold (avg) weight 15
   var s4=scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold); // extreme cold      weight 10
-  var s5=scoreCeil(peakDp,dpPref,hs,p.hfDp);            // peak humidity     weight 20
+  var s5=scoreCeil(peakDp,p.dpMax,hs,p.hfDp);           // peak humidity     weight 20
   var s6=scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain); // rainfall   weight 10
   var s7=scoreFloor(sun,p.sunMin,ls,p.hfSun);           // sunshine          weight 10
   var s8=scoreCeil(wind,20+((1-p.lsens)*20),ls,false);  // wind              weight 7
