@@ -3212,11 +3212,10 @@ function calcLiveability(entry){
   return Math.max(0,Math.min(100,score));
 }
 function livScoreLabel(s){
-  if(s>=90)return"Outstanding";
-  if(s>=75)return"Excellent";
-  if(s>=60)return"Good";
-  if(s>=45)return"Moderate";
-  if(s>=30)return"Poor";
+  if(s>90)return"Excellent";
+  if(s>75)return"Good";
+  if(s>55)return"Moderate";
+  if(s>35)return"Poor";
   return"Very poor";
 }
 function livScoreAnnotations(entry){
@@ -3449,7 +3448,7 @@ function livMapBuildMarkers(){
     if(entry.lat===null||entry.lat===undefined||entry.lon===null||entry.lon===undefined)continue;
     var score=calcLiveability(entry);
     if(score===null)continue;
-    if(_livMapFilter==="exc"&&score<75)continue;
+    if(_livMapFilter==="exc"&&score<=90)continue;
     var col=climScoreCol(score);
     var radius=score>=75?8:score>=60?7:6;
     (function(e,s,c){
