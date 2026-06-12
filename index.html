@@ -16,6 +16,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+#liv-map{height:260px;border-radius:12px;border:1px solid var(--card-border);margin-top:10px;z-index:1}
+.liv-map-toggle{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.liv-map-btn{font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid var(--card-border);background:var(--card-inner);color:var(--text-sec);cursor:pointer}
+.liv-map-btn.active{background:var(--range-fill);color:#fff;border-color:var(--range-fill)}
+</style>
 <style>
 :root{
   --font:'Nunito',Arial,sans-serif;
@@ -423,6 +430,13 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           </div>
         </div>
       </div>
+      <div style="height:1px;background:var(--divider);margin:10px 0"></div>
+      <div class="sec-lbl" style="margin-bottom:6px">Climate map</div>
+      <div class="liv-map-toggle">
+        <button class="liv-map-btn active" id="liv-map-btn-exc" onclick="livMapFilter('exc')">Excellent only</button>
+        <button class="liv-map-btn" id="liv-map-btn-all" onclick="livMapFilter('all')">Show all</button>
+      </div>
+      <div id="liv-map"></div>
     </div>
   </div>
 
@@ -621,6 +635,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 </div>
 
 <script src="climatology-cache.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <div class="pop-ov" id="pop-ov" onclick="closePop()">
   <div class="pop" onclick="event.stopPropagation()">
     <div class="pop-ttl" id="pop-ttl"></div>
@@ -3041,6 +3056,12 @@ function toggleLiv(){
   var open=panel.style.display==="none";
   panel.style.display=open?"block":"none";
   tog.querySelector("svg path").setAttribute("d",open?"M2 3l4 4 4-3":"M4 2l4 4-4 4");
+  if(open){
+    setTimeout(function(){
+      initLivMap();
+      if(_livMap)_livMap.invalidateSize();
+    },60);
+  }
 }
 function onLivBand(dim){
   var bands={heat:LIV_HEAT_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
@@ -3371,9 +3392,103 @@ function showLivCard(entry){
   renderLivScore();
 }
 
+// ── Liveability map ────────────────────────────────────────────────────────
+var _livMap=null;
+var _livMapMarkers=[];
+var _livMapFilter="exc";
+
+var LIV_MAP_REGIONS=[
+  {name:"Australia",bounds:[[-44,112],[-10,154]],test:function(lat,lon){return lat>=-44&&lat<=-10&&lon>=112&&lon<=154;}},
+  {name:"New Zealand",bounds:[[-47,165],[-34,178]],test:function(lat,lon){return lat>=-47&&lat<=-34&&lon>=165&&lon<=178;}},
+  {name:"South East Asia",bounds:[[-10,95],[25,141]],test:function(lat,lon){return lat>=-10&&lat<=25&&lon>=95&&lon<=141;}},
+  {name:"China & Taiwan",bounds:[[18,73],[54,135]],test:function(lat,lon){return lat>=18&&lat<=54&&lon>=73&&lon<=135;}},
+  {name:"Japan & Korea",bounds:[[24,122],[46,146]],test:function(lat,lon){return lat>=24&&lat<=46&&lon>=122&&lon<=146;}},
+  {name:"South Asia",bounds:[[5,60],[38,100]],test:function(lat,lon){return lat>=5&&lat<=38&&lon>=60&&lon<=100;}},
+  {name:"British Isles",bounds:[[49,-11],[61,2]],test:function(lat,lon){return lat>=49&&lat<=61&&lon>=-11&&lon<=2;}},
+  {name:"Scandinavia & Nordic",bounds:[[54,4],[72,32]],test:function(lat,lon){return lat>=54&&lat<=72&&lon>=4&&lon<=32;}},
+  {name:"Western Europe",bounds:[[36,-10],[55,16]],test:function(lat,lon){return lat>=36&&lat<=55&&lon>=-10&&lon<=16;}},
+  {name:"Central & Eastern Europe",bounds:[[44,12],[56,32]],test:function(lat,lon){return lat>=44&&lat<=56&&lon>=12&&lon<=32;}},
+  {name:"United States",bounds:[[24,-126],[50,-65]],test:function(lat,lon){return lat>=24&&lat<=50&&lon>=-126&&lon<=-65;}},
+  {name:"Canada & Alaska",bounds:[[42,-141],[70,-52]],test:function(lat,lon){return lat>=42&&lat<=70&&lon>=-141&&lon<=-52;}},
+  {name:"N & Andean S America",bounds:[[-5,-82],[12,-60]],test:function(lat,lon){return lat>=-5&&lat<=12&&lon>=-82&&lon<=-60;}},
+  {name:"Southern Cone & Atlantic",bounds:[[-56,-75],[-20,-34]],test:function(lat,lon){return lat>=-56&&lat<=-20&&lon>=-75&&lon<=-34;}},
+  {name:"East Africa",bounds:[[-12,28],[15,42]],test:function(lat,lon){return lat>=-12&&lat<=15&&lon>=28&&lon<=42;}},
+  {name:"Southern Africa",bounds:[[-35,16],[-15,38]],test:function(lat,lon){return lat>=-35&&lat<=-15&&lon>=16&&lon<=38;}}
+];
+
+function livMapRegionBounds(lat,lon){
+  if(lat===null||lat===undefined)return LIV_MAP_REGIONS[0].bounds;
+  for(var i=0;i<LIV_MAP_REGIONS.length;i++){
+    if(LIV_MAP_REGIONS[i].test(lat,lon))return LIV_MAP_REGIONS[i].bounds;
+  }
+  return LIV_MAP_REGIONS[0].bounds;
+}
+
+function initLivMap(){
+  if(_livMap)return;
+  if(typeof L==="undefined")return;
+  _livMap=L.map("liv-map",{zoomControl:true});
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    attribution:"\u00a9 OpenStreetMap contributors",
+    maxZoom:13
+  }).addTo(_livMap);
+  var userLat=window._currentLat||null;
+  var userLon=window._currentLon||null;
+  var bounds=livMapRegionBounds(userLat,userLon);
+  _livMap.fitBounds(bounds,{padding:[10,10]});
+  livMapBuildMarkers();
+}
+
+function livMapBuildMarkers(){
+  if(!_livMap)return;
+  if(typeof CLIM_CACHE==="undefined")return;
+  _livMapMarkers.forEach(function(m){_livMap.removeLayer(m);});
+  _livMapMarkers=[];
+  for(var i=0;i<CLIM_CACHE.length;i++){
+    var entry=CLIM_CACHE[i];
+    if(entry.lat===null||entry.lat===undefined||entry.lon===null||entry.lon===undefined)continue;
+    var score=calcLiveability(entry);
+    if(score===null)continue;
+    if(_livMapFilter==="exc"&&score<75)continue;
+    var col=climScoreCol(score);
+    var radius=score>=75?8:score>=60?7:6;
+    (function(e,s,c){
+      var marker=L.circleMarker([e.lat,e.lon],{
+        radius:radius,
+        fillColor:c,
+        color:"rgba(0,0,0,0.35)",
+        weight:1.5,
+        fillOpacity:0.9
+      });
+      var popHtml="<div style='font-size:13px;font-weight:800;color:"+c+";margin-bottom:2px'>"+s+" \u2014 "+livScoreLabel(s)+"</div>"
+        +"<div style='font-size:12px;font-weight:700;margin-bottom:6px'>"+e.name+(e.ter?", "+e.ter:"")+"</div>"
+        +"<button onclick='livMapLoad("+e.lat+","+e.lon+","+JSON.stringify(e.name+(e.ter?", "+e.ter:""))+")' "
+        +"style='font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid #2a9fd6;background:#2a9fd6;color:#fff;cursor:pointer;width:100%'>"
+        +"Load in Comfort Score</button>";
+      marker.bindPopup(popHtml,{maxWidth:200,className:"liv-map-popup"});
+      marker.addTo(_livMap);
+      _livMapMarkers.push(marker);
+    })(entry,score,col);
+  }
+}
+
+function livMapFilter(mode){
+  _livMapFilter=mode;
+  document.getElementById("liv-map-btn-exc").classList.toggle("active",mode==="exc");
+  document.getElementById("liv-map-btn-all").classList.toggle("active",mode==="all");
+  livMapBuildMarkers();
+}
+
+function livMapLoad(lat,lon,label){
+  var popups=document.querySelectorAll(".leaflet-popup");
+  for(var i=0;i<popups.length;i++)popups[i].style.display="none";
+  fetchWeather(lat,lon,label);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 var KOPPEN_DATA={
   // A — Tropical
-  "Af":{name:"Tropical Rainforest",calc:"All months above 18°C mean, driest month ≥ 60mm rainfall.",features:"No dry season, high humidity year-round, dense rainforest vegetation, minimal temperature variation between seasons.",examples:[["Singapore",1.35,103.82],["Manaus, Brazil",-3.10,-60.02],["Kuala Lumpur",3.14,101.69]]},
+  "Af":{name:"Tropical Rainforest",calc:"All months above 18°C mean, driest month ≥ 60mm rainfall.",features:"No dry season, high humidity year-round, dense rainforest vegetation, minimal temperature variation between seasons.",examples:[["Singapore",1.35,103.82],["Belém, Brazil",-1.45,-48.50],["Kisangani, DRC",0.52,25.19]]},
   "Am":{name:"Tropical Monsoon",calc:"All months above 18°C, short dry season offset by heavy monsoon rains.",features:"Intense wet season, brief dry season, high annual rainfall, lush vegetation recovering quickly between monsoons.",examples:[["Mumbai",19.08,72.88],["Yangon",16.87,96.19],["Ho Chi Minh City",10.82,106.63]]},
   "Aw":{name:"Tropical Savanna",calc:"All months above 18°C mean, driest month below 60mm.",features:"Distinct wet and dry seasons, grassland and open woodland, high temperatures year-round with dramatic seasonal rainfall contrast.",examples:[["Darwin, NT",-12.46,130.84],["Bangkok",13.75,100.52],["Nairobi",-1.29,36.82]]},
   // B — Arid
