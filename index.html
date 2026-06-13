@@ -588,6 +588,20 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
               <label for="hf-liv-snow">Hard fail above this</label>
             </div>
           </div>
+          <div style="margin-bottom:14px;padding-top:4px;border-top:1px solid var(--divider)">
+            <div class="liv-band-lbl-row" style="margin-bottom:6px">
+              <span class="liv-band-name">Seasonality requirements</span>
+              <div class="ibtn" onclick="showPop('Seasonality requirements','These toggles require a location to have genuine seasonal variation.\n\nSummer must be warm: the warmest month must average at least 18°C daily max. Eliminates subantarctic islands, high-altitude tundra, and places like Reykjavik where summer never truly arrives.\n\nWinter must be cool: the coldest month must average below 18°C daily max. Eliminates year-round tropical climates like Singapore, Darwin, and Cairns for those who want genuine seasons.\n\nLeave both off if you prefer to score all climates equally regardless of seasonal range.')">i</div>
+            </div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="req-summer-warm" onchange="saveLivPrefs();renderLivScore();"/>
+              <label for="req-summer-warm">Summer must be warm (warmest month ≥18°C avg max)</label>
+            </div>
+            <div class="liv-hardfail-row" style="margin-top:6px">
+              <input type="checkbox" id="req-winter-cool" onchange="saveLivPrefs();renderLivScore();"/>
+              <label for="req-winter-cool">Winter must be cool (coldest month &lt;18°C avg max)</label>
+            </div>
+          </div>
           <div class="liv-sens-row">
             <div class="slider-lbl-row"><span class="slider-name">Temperature sensitivity</span><div class="ibtn" onclick="showPop('Temperature sensitivity','Controls how steeply the liveability score drops when a location\'s temperatures fall outside your preferences.\n\nMild: the score decreases gradually — places slightly beyond your range are not heavily penalised.\n\nSevere: the score drops steeply — even a small breach of your heat or cold tolerance significantly reduces the score.\n\nApplies to all four temperature dimensions: average summer heat, extreme heat, average winter cold, and extreme cold nights.')">i</div><span class="slider-val" id="liv-tsens-val">Moderate</span></div>
             <input type="range" id="sl-liv-tsens" min="0" max="100" value="50" oninput="onLivSens('tsens')"/>
@@ -3096,7 +3110,9 @@ function saveLivPrefs(){
     hfDp:document.getElementById("hf-liv-dp").checked,
     hfRain:document.getElementById("hf-liv-rain").checked,
     hfSun:document.getElementById("hf-liv-sun").checked,
-    hfSnow:document.getElementById("hf-liv-snow").checked
+    hfSnow:document.getElementById("hf-liv-snow").checked,
+    reqSummerWarm:document.getElementById("req-summer-warm").checked,
+    reqWinterCool:document.getElementById("req-winter-cool").checked
   };
   localStorage.setItem("liv_prefs",JSON.stringify(p));
 }
@@ -3119,6 +3135,8 @@ function loadLivPrefs(){
   sc("hf-liv-rain",p.hfRain||false);
   sc("hf-liv-sun",p.hfSun||false);
   sc("hf-liv-snow",p.hfSnow||false);
+  sc("req-summer-warm",p.reqSummerWarm||false);
+  sc("req-winter-cool",p.reqWinterCool||false);
   ["heat","cold","dp","rain","sun","snow"].forEach(function(d){onLivBand(d);});
   ["tsens","hsens","lsens"].forEach(function(s){onLivSens(s);});
 }
@@ -3139,7 +3157,9 @@ function getLivPrefs(){
     hfCold:document.getElementById("hf-liv-cold").checked,
     hfRain:document.getElementById("hf-liv-rain").checked,
     hfSun:document.getElementById("hf-liv-sun").checked,
-    hfSnow:document.getElementById("hf-liv-snow").checked
+    hfSnow:document.getElementById("hf-liv-snow").checked,
+    reqSummerWarm:document.getElementById("req-summer-warm").checked,
+    reqWinterCool:document.getElementById("req-winter-cool").checked
   };
 }
 function calcLiveability(entry){
@@ -3163,6 +3183,8 @@ function calcLiveability(entry){
   if(p.hfRain&&totalRain<p.rainMin)return 0;
   if(p.hfSun&&sun<p.sunMin)return 0;
   if(p.hfSnow&&totalSnow>p.snowMax)return 0;
+  if(p.reqSummerWarm&&st<18)return 0;
+  if(p.reqWinterCool&&wt>=18)return 0;
   // Sensitivity → slope factor: mild=0.5, severe=3.0
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
@@ -3239,6 +3261,8 @@ function livScoreAnnotations(entry){
   if(p.hfRain&&totalRain<p.rainMin)fails.push("too dry");
   if(p.hfSun&&sun<p.sunMin)fails.push("not enough sunshine");
   if(p.hfSnow&&totalSnow>p.snowMax)fails.push("too much snow");
+  if(p.reqSummerWarm&&st<18)fails.push("no warm summer");
+  if(p.reqWinterCool&&wt>=18)fails.push("no cool winter");
   if(fails.length)return"Hard fail: "+fails.join(", ");
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
@@ -3292,7 +3316,7 @@ function livScoreAnnotations(entry){
     },
     {
       score:scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold),
-      pos:"cold nights rare or mild",
+      pos:coldtminMin>5?"cold nights rare or mild":null,
       mild_neg:"cold nights push your tolerance",
       neg:"cold snaps too intense",
       bad:"severe overnight lows"
@@ -3349,7 +3373,7 @@ function livScoreAnnotations(entry){
     else if(s<50){phrase=d.neg;priority=150-s;}
     else if(s<82){phrase=d.mild_neg;priority=82-s;}
     else if(s>=70){phrase=d.pos;priority=s-70;positive=true;}
-    if(phrase)candidates.push({phrase:phrase,priority:priority,positive:positive});
+    if(phrase&&phrase!==null)candidates.push({phrase:phrase,priority:priority,positive:positive});
   }
   // Negatives sorted by severity, positives by strength; negatives always precede positives
   candidates.sort(function(a,b){
