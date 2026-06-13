@@ -3271,37 +3271,37 @@ function livScoreAnnotations(entry){
   var dims=[
     {
       score:scoreCeil(st,p.heatMax,ts,p.hfHeat),
-      pos:"summers well within range",
-      mild_neg:"summers a touch warm",
-      neg:"summers too warm",
-      bad:"summers far too hot"
+      pos:"pleasant summers",
+      mild_neg:"summers occasionally hot",
+      neg:"summers regularly too hot",
+      bad:"summers severely hot"
     },
     {
       score:scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat),
-      pos:"extreme heat rarely an issue",
-      mild_neg:"occasional heatwaves a concern",
-      neg:"heatwaves exceed tolerance",
-      bad:"extreme heat a serious problem"
+      pos:"heatwaves uncommon",
+      mild_neg:"heatwaves at the edge of tolerance",
+      neg:"heatwaves too frequent or intense",
+      bad:"dangerously hot days expected"
     },
     {
       score:scoreFloor(wt,p.coldMin+5,ts,false),
-      pos:"winters comfortably mild",
-      mild_neg:"winters a little cold",
-      neg:"winters too cold",
-      bad:"winters far too cold"
+      pos:"mild winters",
+      mild_neg:"winters on the cool side",
+      neg:"winters uncomfortably cold",
+      bad:"winters severely cold"
     },
     {
       score:scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold),
-      pos:"cold nights well tolerated",
-      mild_neg:"cold nights at the limit",
-      neg:"cold nights too extreme",
-      bad:"extreme cold nights a dealbreaker"
+      pos:"cold nights rare or mild",
+      mild_neg:"cold nights push your tolerance",
+      neg:"cold snaps too intense",
+      bad:"severe overnight lows"
     },
     {
       score:scoreCeil(peakDp,p.dpMax,hs,p.hfDp),
-      pos:"humidity very comfortable",
-      mild_neg:"humidity a little high",
-      neg:"too humid in peak season",
+      pos:"air stays dry and comfortable",
+      mild_neg:"can get sticky in peak season",
+      neg:"humid season exceeds tolerance",
       bad:"oppressively humid"
     },
     (function(){
@@ -3309,53 +3309,57 @@ function livScoreAnnotations(entry){
       var tooWet=totalRain>p.rainMax;
       return{
         score:rs,
-        pos:"rainfall well suited",
-        mild_neg:tooWet?"a little too wet":"slightly dry",
-        neg:tooWet?"too wet":"too dry",
-        bad:tooWet?"very wet":"very arid"
+        pos:"rainfall well matched",
+        mild_neg:tooWet?"can be quite wet":"a little drier than ideal",
+        neg:tooWet?"exceeds rainfall preference":"insufficient rainfall",
+        bad:tooWet?"exceptionally high rainfall":"severe moisture deficit"
       };
     })(),
     {
       score:scoreFloor(sun,p.sunMin,ls,p.hfSun),
-      pos:"good sunshine",
-      mild_neg:"a little overcast",
-      neg:"not enough sunshine",
-      bad:"very little sunshine"
+      pos:"excellent sunshine",
+      mild_neg:"sunshine below preference",
+      neg:"overcast and grey",
+      bad:"persistently overcast"
     },
     {
       score:scoreCeil(wind,20+((1-p.lsens)*20),ls,false),
-      pos:"low wind",
-      mild_neg:"can be breezy",
-      neg:"too windy",
-      bad:"very windy"
+      pos:"calm and sheltered",
+      mild_neg:"occasionally breezy",
+      neg:"frequently windy",
+      bad:"persistently windy"
     },
     {
       score:scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow),
-      pos:"snow-free",
-      mild_neg:"light snowfall",
-      neg:"more snow than preferred",
-      bad:"heavy snowfall"
+      pos:"no meaningful snowfall",
+      mild_neg:"occasional light snow",
+      neg:"significant snowfall",
+      bad:"heavy snow season"
     }
   ];
-  // Build candidate phrases with priority (lower score = higher priority for negatives)
+  // Build candidate phrases — negatives by severity, positives by how strong
+  // Widen mild_neg zone (50–82) and lower positive threshold (70+)
+  // so most dimensions contribute something to the summary
   var candidates=[];
   for(var i=0;i<dims.length;i++){
     var d=dims[i];
     var s=d.score;
-    var phrase=null,priority=0;
-    if(s<30){phrase=d.bad;priority=100-s;}
-    else if(s<50){phrase=d.neg;priority=100-s;}
-    else if(s<75){phrase=d.mild_neg;priority=100-s;}
-    else if(s>=85){phrase=d.pos;priority=s-85;}// positives lower priority than negatives
-    if(phrase)candidates.push({phrase:phrase,priority:priority,positive:s>=85});
+    var phrase=null,priority=0,positive=false;
+    if(s<30){phrase=d.bad;priority=200-s*2;}
+    else if(s<50){phrase=d.neg;priority=150-s;}
+    else if(s<82){phrase=d.mild_neg;priority=82-s;}
+    else if(s>=70){phrase=d.pos;priority=s-70;positive=true;}
+    if(phrase)candidates.push({phrase:phrase,priority:priority,positive:positive});
   }
-  // Sort by priority descending, negatives before positives at equal priority
+  // Negatives sorted by severity, positives by strength; negatives always precede positives
   candidates.sort(function(a,b){
-    if(b.priority!==a.priority)return b.priority-a.priority;
-    return a.positive?1:-1;
+    if(a.positive!==b.positive)return a.positive?1:-1;
+    return b.priority-a.priority;
   });
-  // Cap at 4
-  var picked=candidates.slice(0,4).map(function(c){return c.phrase;});
+  // Up to 3 negatives and 2 positives, cap total at 5
+  var negs=candidates.filter(function(c){return!c.positive;}).slice(0,3);
+  var pos=candidates.filter(function(c){return c.positive;}).slice(0,2);
+  var picked=negs.concat(pos).map(function(c){return c.phrase;});
   if(picked.length===0)return"well-matched climate";
   return picked.join(" · ");
 }
