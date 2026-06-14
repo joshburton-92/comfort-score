@@ -3353,13 +3353,17 @@ function livScoreAnnotations(entry){
       neg:"frequently windy",
       bad:"persistently windy"
     },
-    {
-      score:scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow),
-      pos:"no meaningful snowfall",
-      mild_neg:"occasional light snow",
-      neg:"significant snowfall",
-      bad:"heavy snow season"
-    }
+    (function(){
+      var ss=scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow);
+      var snowMild=totalSnow<5,snowModerate=totalSnow<30;
+      return{
+        score:ss,
+        pos:"no meaningful snowfall",
+        mild_neg:"occasional light snow",
+        neg:snowMild?"a little snow despite your preference":snowModerate?"some snowfall most winters":"significant snowfall",
+        bad:snowMild?"a little snow despite your preference":snowModerate?"snowfall beyond your tolerance":"heavy snow season"
+      };
+    })()
   ];
   // Build candidate phrases — negatives by severity, positives by how strong
   // Widen mild_neg zone (50–82) and lower positive threshold (70+)
