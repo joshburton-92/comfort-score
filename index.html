@@ -66,8 +66,6 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .unit-btn.active{background:var(--toggle-active);color:var(--text-head)}
 .star-btn{position:absolute;top:16px;left:0;width:34px;height:28px;border-radius:20px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .tabs{display:flex;gap:6px;margin-bottom:12px}
-.announce-btn{width:100%;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid rgba(90,180,120,0.4);border-radius:10px;background:rgba(90,180,120,0.12);color:#1a7a3a;text-align:center;margin-bottom:6px;display:block}
-@media(prefers-color-scheme:dark){.announce-btn{background:rgba(90,180,120,0.15);color:#60d090;border-color:rgba(90,180,120,0.3)}}
 .tab{flex:1;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid var(--card-border);border-radius:10px;background:var(--toggle-bg);color:var(--text-sec);text-align:center}
 .tab.active{background:var(--toggle-active);color:var(--text-head)}
 .page{display:none}.page.active{display:block}
@@ -317,10 +315,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="onboard-close" onclick="dismissOnboard()">Got it</button>
   </div>
 
-  <div class="onboard-card" id="clim-feature-card" style="display:none">
-    <div class="onboard-title">✨ New — Climatology</div>
-    <div class="onboard-body">Monthly climate data is now built into Comfort Score. After loading a location, scroll down to the <strong>Climatology</strong> card to see the full year — monthly comfort scores, temperature ranges, rainfall, and more. Tap any month for a detailed breakdown.</div>
-    <button class="onboard-close" onclick="dismissClimFeature()">Got it</button>
+  <div class="onboard-card" id="liv-feature-card" style="display:none">
+    <div class="onboard-title">✨ New — Liveability</div>
+    <div class="onboard-body">The <strong>Liveability Score</strong> is now built into Comfort Score — load any location and scroll down to see how well it matches your ideal climate year-round. There are new preferences to play with too: tune your heat, cold, rainfall, sun and snow tolerances, plus two new toggles for requiring a genuinely warm summer or a properly cool winter.</div>
+    <button class="onboard-close" onclick="dismissLivFeature()">Got it</button>
   </div>
 
   <div class="header">
@@ -339,9 +337,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="btn btn-p" onclick="installApp()">Install</button>
   </div>
 
-  <div id="announce-wrap" style="display:none">
-    <div class="announce-btn" onclick="showAnnouncePop()">✨ New score calculation — tap to see what changed</div>
-  </div>
   <div class="tabs">
     <div class="tab active" id="tab-live"   onclick="switchTab('live')">Live weather</div>
     <div class="tab"        id="tab-manual" onclick="switchTab('manual')">Manual input</div>
@@ -1197,8 +1192,8 @@ function showFireDangerPop(ffdi,todayMax,df){
 // ── Onboarding ─────────────────────────────────────────────────────────────
 function initOnboard(){if(!localStorage.getItem("comfort_onboarded"))document.getElementById("onboard-card").style.display="block";}
 function dismissOnboard(){document.getElementById("onboard-card").style.display="none";localStorage.setItem("comfort_onboarded","1");}
-function initClimFeature(){if(!localStorage.getItem("comfort_clim_feature"))document.getElementById("clim-feature-card").style.display="block";}
-function dismissClimFeature(){document.getElementById("clim-feature-card").style.display="none";localStorage.setItem("comfort_clim_feature","1");}
+function initLivFeature(){if(!localStorage.getItem("comfort_liv_feature_v1"))document.getElementById("liv-feature-card").style.display="block";}
+function dismissLivFeature(){document.getElementById("liv-feature-card").style.display="none";localStorage.setItem("comfort_liv_feature_v1","1");}
 
 // ── Unit system ────────────────────────────────────────────────────────────
 var useFahrenheit=false;
@@ -1762,27 +1757,6 @@ function calcManual(){
 }
 function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
 function togglePref(){document.getElementById("pref-tog").classList.toggle("open");document.getElementById("pref-panel").classList.toggle("open");}
-function initAnnounce(){
-  if(localStorage.getItem("announce_humidity_temp_v1")==="dismissed")return;
-  document.getElementById("announce-wrap").style.display="block";
-}
-function showAnnouncePop(){
-  document.getElementById("pop-ttl").textContent="New score calculation ✨";
-  document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"
-    +"<div style='font-size:15px;font-weight:800;color:var(--text-head);margin-bottom:8px'>Humidity now affects your score less in cooler weather</div>"
-    +"<div style='margin-bottom:10px'>Previously, humidity penalised your comfort score equally regardless of temperature — a dew point of 14°C would drag the score down whether it was 17°C or 30°C outside.</div>"
-    +"<div style='margin-bottom:10px'>In reality, humidity only becomes uncomfortable when your body is trying to cool itself through sweating — which mainly happens above your heat threshold. On a cool day, a higher dew point is barely noticeable.</div>"
-    +"<div style='margin-bottom:14px'>The humidity penalty now scales with temperature — zero effect at your cold threshold, ramping up to full strength at your heat threshold. So at 17°C the humidity penalty is only about 15% of what it would be at 28°C+, rather than the same penalty regardless of temperature.</div>"
-    +"<div style='text-align:center'><button onclick='dismissAnnounce()' style='background:rgba(90,180,120,0.15);border:1px solid rgba(90,180,120,0.4);border-radius:20px;padding:8px 24px;font-size:13px;font-weight:800;color:#1a7a3a;cursor:pointer'>Got it — dismiss</button></div>"
-    +"</div>";
-  document.getElementById("pop-ov").classList.add("open");
-}
-function dismissAnnounce(){
-  localStorage.setItem("announce_humidity_temp_v1","dismissed");
-  document.getElementById("announce-wrap").style.display="none";
-  document.getElementById("pop-ov").classList.remove("open");
-}
-
 // ── Sliders ────────────────────────────────────────────────────────────────
 var SLIDER_MAPS={
  heat:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);setAdv("s-tmax",Math.round(lerp(50,90,t)));}},
@@ -3392,6 +3366,7 @@ function livScoreAnnotations(entry){
   return picked.join(" · ");
 }
 function renderLivScore(){
+  livMapScheduleRebuild();
   var card=document.getElementById("liv-card");
   if(!card||card.style.display==="none")return;
   var entry=window._livEntry;
@@ -3427,6 +3402,12 @@ function showLivCard(entry){
 var _livMap=null;
 var _livMapMarkers=[];
 var _livMapFilter="exc";
+var _livMapRebuildTimer=null;
+function livMapScheduleRebuild(){
+  if(!_livMap)return;
+  if(_livMapRebuildTimer)clearTimeout(_livMapRebuildTimer);
+  _livMapRebuildTimer=setTimeout(livMapBuildMarkers,180);
+}
 
 var LIV_MAP_REGIONS=[
   {name:"Australia",bounds:[[-44,112],[-10,154]],test:function(lat,lon){return lat>=-44&&lat<=-10&&lon>=112&&lon<=154;}},
@@ -3522,11 +3503,12 @@ var KOPPEN_DATA={
   "Af":{name:"Tropical Rainforest",calc:"All months above 18°C mean, driest month ≥ 60mm rainfall.",features:"No dry season, high humidity year-round, dense rainforest vegetation, minimal temperature variation between seasons.",examples:[["Singapore",1.35,103.82],["Belém, Brazil",-1.45,-48.50],["Kisangani, DRC",0.52,25.19]]},
   "Am":{name:"Tropical Monsoon",calc:"All months above 18°C, short dry season offset by heavy monsoon rains.",features:"Intense wet season, brief dry season, high annual rainfall, lush vegetation recovering quickly between monsoons.",examples:[["Mumbai",19.08,72.88],["Yangon",16.87,96.19],["Ho Chi Minh City",10.82,106.63]]},
   "Aw":{name:"Tropical Savanna",calc:"All months above 18°C mean, driest month below 60mm.",features:"Distinct wet and dry seasons, grassland and open woodland, high temperatures year-round with dramatic seasonal rainfall contrast.",examples:[["Darwin, NT",-12.46,130.84],["Bangkok",13.75,100.52],["Nairobi",-1.29,36.82]]},
+  "As":{name:"Tropical Savanna (Dry Summer)",calc:"All months average above 18°C; same rainfall pattern as Aw but the dry season falls in the warmer half of the year instead of winter — an unusual and fairly rare timing.",features:"Hot year-round with a sharp dry season timed to summer rather than winter, grassland and savanna vegetation, found mainly on tropical coasts where seasonal currents reverse the usual wet/dry pattern.",examples:[["Recife, Brazil",-8.05,-34.90],["Trincomalee, Sri Lanka",8.59,81.22],["Mombasa, Kenya",-4.04,39.67]]},
   // B — Arid
-  "BWh":{name:"Hot Desert",calc:"Annual precipitation less than half the evapotranspiration threshold; mean annual temp above 18°C.",features:"Extreme heat, very low and erratic rainfall, sparse or absent vegetation, large diurnal temperature range.",examples:[["Dubai",25.20,55.27],["Phoenix, AZ",33.45,-112.07],["Riyadh",24.69,46.72]]},
-  "BWk":{name:"Cold Desert",calc:"Annual precipitation less than half the evapotranspiration threshold; mean annual temp below 18°C.",features:"Hot summers, cold winters, very low rainfall, sparse scrub vegetation, wide seasonal temperature swings.",examples:[["Ulaanbaatar",47.89,106.91],["Reno, NV",39.53,-119.81],["Almaty",43.24,76.89]]},
-  "BSh":{name:"Hot Semi-Arid (Steppe)",calc:"Precipitation between half and full evapotranspiration threshold; mean annual temp above 18°C.",features:"Warm to hot year-round, low but slightly higher rainfall than desert, grassland and scrub, distinct wet season.",examples:[["Marrakech",31.63,-8.01],["Hyderabad, India",17.37,78.48],["Broken Hill, NSW",-31.95,141.45]]},
-  "BSk":{name:"Cold Semi-Arid (Steppe)",calc:"Precipitation between half and full evapotranspiration threshold; mean annual temp below 18°C.",features:"Hot summers, cold winters, moderate low rainfall, grassland steppe, continental seasonal extremes.",examples:[["Denver, CO",39.74,-104.98],["Madrid",40.42,-3.70],["Ankara",39.92,32.85]]},
+  "BWh":{name:"Hot Desert",calc:"Rainfall is minimal and unreliable — too little, even given the heat, to support more than scattered desert vegetation. Mean annual temperature above 18°C.",features:"Extreme heat, very low and erratic rainfall, sparse or absent vegetation, large diurnal temperature range.",examples:[["Dubai",25.20,55.27],["Phoenix, AZ",33.45,-112.07],["Riyadh",24.69,46.72]]},
+  "BWk":{name:"Cold Desert",calc:"Rainfall is minimal and unreliable, much like a hot desert, but with cooler annual temperatures (below 18°C) — hot summers paired with cold winters, and at most sparse scrub vegetation.",features:"Hot summers, cold winters, very low rainfall, sparse scrub vegetation, wide seasonal temperature swings.",examples:[["Ulaanbaatar",47.89,106.91],["Reno, NV",39.53,-119.81],["Almaty",43.24,76.89]]},
+  "BSh":{name:"Hot Semi-Arid (Steppe)",calc:"Rainfall is low but enough to support grass and scrub — more than a true desert, though still not enough for reliable agriculture without irrigation. Mean annual temperature above 18°C.",features:"Warm to hot year-round, low but slightly higher rainfall than desert, grassland and scrub, distinct wet season.",examples:[["Marrakech",31.63,-8.01],["Hyderabad, India",17.37,78.48],["Broken Hill, NSW",-31.95,141.45]]},
+  "BSk":{name:"Cold Semi-Arid (Steppe)",calc:"Annual rainfall is low but not desert-level — enough to support grass and scrub, but not enough for reliable agriculture without irrigation. Mean annual temperature below 18°C, with hot summers and cold winters.",features:"Hot summers, cold winters, moderate low rainfall, grassland steppe, continental seasonal extremes.",examples:[["Denver, CO",39.74,-104.98],["Madrid",40.42,-3.70],["Ankara",39.92,32.85]]},
   // C — Temperate
   "Csa":{name:"Hot-Summer Mediterranean",calc:"Warmest month above 22°C, driest summer month less than 1/3 of wettest winter month rainfall.",features:"Hot dry summers, mild wet winters, low humidity in summer, reliable winter rainfall, fire-adapted shrubland (maquis/chaparral).",examples:[["Adelaide, SA",-34.93,138.60],["Athens",37.98,23.73],["Los Angeles",34.05,-118.24]]},
   "Csb":{name:"Warm-Summer Mediterranean",calc:"Warmest month below 22°C, driest summer month less than 1/3 of wettest winter month.",features:"Warm dry summers, mild wet winters, lower summer heat than Csa, more moderate humidity, open woodland and heath.",examples:[["Paracombe, SA",-34.72,138.82],["San Francisco",37.77,-122.42],["Cape Town",-33.93,18.42]]},
@@ -3540,8 +3522,11 @@ var KOPPEN_DATA={
   "Dfa":{name:"Hot-Summer Humid Continental",calc:"Warmest month above 22°C, no dry season, coldest month below 0°C.",features:"Hot humid summers, cold winters, year-round rainfall, deciduous forest, large seasonal temperature range.",examples:[["Chicago",41.88,-87.63],["Budapest",47.50,19.04],["Omaha, NE",41.26,-95.94]]},
   "Dfb":{name:"Warm-Summer Humid Continental",calc:"Warmest month below 22°C, no dry season, coldest month below 0°C.",features:"Warm summers, cold snowy winters, year-round precipitation, mixed forest, moderate seasonal extremes.",examples:[["Helsinki",60.17,24.94],["Warsaw",52.23,21.01],["Toronto",43.65,-79.38]]},
   "Dfc":{name:"Subarctic (Boreal)",calc:"1–3 months above 10°C, no dry season, coldest month below 0°C.",features:"Very short cool summers, extremely cold long winters, sparse boreal (taiga) forest, permafrost possible.",examples:[["Fairbanks, AK",64.84,-147.72],["Yellowknife, NT",62.45,-114.37],["Norilsk",69.35,88.19]]},
+  "Dfd":{name:"Extreme Subarctic",calc:"No dry season, coldest month below −38°C — the most extreme cold-winter variant of the subarctic climate.",features:"Among the coldest inhabited places on Earth, with winter lows regularly below −50°C, brief mild summers, and extreme diurnal and seasonal swings. Confined to a small part of eastern Siberia.",examples:[["Oymyakon, Russia",63.46,142.79]]},
   "Dwa":{name:"Monsoon Hot-Summer Continental",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest.",features:"Hot wet summers, very cold dry winters, strong Asian monsoon influence, deciduous and mixed forest.",examples:[["Beijing",39.91,116.39],["Seoul",37.57,126.98],["Shenyang",41.80,123.43]]},
   "Dwb":{name:"Monsoon Warm-Summer Continental",calc:"Warmest month below 22°C, dry winter, wettest summer month at least 10× driest.",features:"Warm wet summers, cold dry winters, boreal and mixed forest, northeastern Asia.",examples:[["Harbin",45.75,126.65],["Vladivostok",43.11,131.87],["Ulan-Ude",51.83,107.60]]},
+  "Dsa":{name:"Mediterranean-Influenced Continental (Hot Summer)",calc:"Coldest month below 0°C, warmest month above 22°C, with a Mediterranean-style dry summer rather than a dry winter or no dry season at all.",features:"Hot dry summers paired with cold snowy winters — a Mediterranean rainfall pattern pushed inland or upslope into continental temperature territory. Rare, found only at higher elevations adjacent to hot-summer Mediterranean (Csa) regions.",examples:[["Saqqez, Iran",36.24,46.27],["Cambridge, ID",44.57,-116.68]]},
+  "Dsb":{name:"Mediterranean-Influenced Continental (Warm Summer)",calc:"Coldest month below 0°C, warmest month below 22°C, with a Mediterranean-style dry summer rather than a dry winter or no dry season at all.",features:"Warm (not hot) dry summers and cold snowy winters — the cooler, higher-altitude or higher-latitude counterpart to Dsa. Found in mountainous areas adjacent to Mediterranean climates, particularly eastern Anatolia and the interior US Pacific Northwest.",examples:[["Qotur, Iran",38.47,44.41],["Chemult, OR",43.22,-121.79]]},
   // E — Polar
   "ET":{name:"Tundra",calc:"Warmest month between 0°C and 10°C.",features:"No true summer, permafrost, mosses and low shrubs only, very short frost-free season, exposed and windswept.",examples:[["Barrow (Utqiaġvik), AK",71.29,-156.79],["Nuuk, Greenland",64.18,-51.74],["Longyearbyen",78.22,15.63]]},
   "EF":{name:"Ice Cap",calc:"All months below 0°C mean temperature.",features:"Permanent ice and snow, no vegetation, extreme cold, only found on polar ice sheets and high mountain summits.",examples:[["Vostok Station, Antarctica",-78.46,106.83],["Summit Station, Greenland",72.58,-38.46]]}
@@ -3616,11 +3601,10 @@ buildSettings();
 syncSlidersFromAdv();
 initUnit();
 initOnboard();
-initClimFeature();
+initLivFeature();
 initLivPrefs();
 applySliderLock();
 initTempPrefs();
-initAnnounce();
 (function(){
   var p=new URLSearchParams(window.location.search);
   var lat=parseFloat(p.get('lat')),lon=parseFloat(p.get('lon')),label=p.get('label')||'';
