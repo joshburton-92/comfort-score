@@ -3147,6 +3147,7 @@ function calcLiveability(entry){
   var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
   var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
   var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
+  var totalPrecip=totalRain+totalSnow; // liquid-equivalent: 10:1 snow:water depth ratio means snow cm ≈ extra liquid mm
   var sun=entry.sun||0;
   var wind=entry.wind||0;
   // Hard fail check — any triggered hard fail zeros the whole score
@@ -3154,7 +3155,7 @@ function calcLiveability(entry){
   if(p.hfHeat&&hotmaxMax>p.heatMax+3)return 0;
   if(p.hfCold&&coldtminMin<p.coldMin)return 0;
   if(p.hfDp&&peakDp>p.dpMax)return 0;
-  if(p.hfRain&&totalRain<p.rainMin)return 0;
+  if(p.hfRain&&totalPrecip<p.rainMin)return 0;
   if(p.hfSun&&sun<p.sunMin)return 0;
   if(p.hfSnow&&totalSnow>p.snowMax)return 0;
   if(p.reqSummerWarm&&st<18)return 0;
@@ -3197,7 +3198,7 @@ function calcLiveability(entry){
   var s3=scoreFloor(wt,p.coldMin+5,ts,false);           // winter cold (avg) weight 15
   var s4=scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold); // extreme cold      weight 10
   var s5=scoreCeil(peakDp,p.dpMax,hs,p.hfDp);           // peak humidity     weight 20
-  var s6=scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain); // rainfall   weight 10
+  var s6=scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain); // rainfall (rain + snow liquid-equivalent) weight 10
   var s7=scoreFloor(sun,p.sunMin,ls,p.hfSun);           // sunshine          weight 10
   var s8=scoreCeil(wind,20+((1-p.lsens)*20),ls,false);  // wind              weight 7
   var s9=scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow);    // snowfall          weight 3
@@ -3224,6 +3225,7 @@ function livScoreAnnotations(entry){
   var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
   var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
   var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
+  var totalPrecip=totalRain+totalSnow; // liquid-equivalent: 10:1 snow:water depth ratio means snow cm ≈ extra liquid mm
   var sun=entry.sun||0;
   var wind=entry.wind||0;
   // Hard fail annotations — report all triggered fails
@@ -3232,7 +3234,7 @@ function livScoreAnnotations(entry){
   if(p.hfHeat&&hotmaxMax>p.heatMax+3)fails.push("extreme heat too high");
   if(p.hfCold&&coldtminMin<p.coldMin)fails.push("extreme cold too low");
   if(p.hfDp&&peakDp>p.dpMax)fails.push("humidity too high");
-  if(p.hfRain&&totalRain<p.rainMin)fails.push("too dry");
+  if(p.hfRain&&totalPrecip<p.rainMin)fails.push("too dry");
   if(p.hfSun&&sun<p.sunMin)fails.push("not enough sunshine");
   if(p.hfSnow&&totalSnow>p.snowMax)fails.push("too much snow");
   if(p.reqSummerWarm&&st<18)fails.push("no warm summer");
@@ -3303,8 +3305,8 @@ function livScoreAnnotations(entry){
       bad:"oppressively humid"
     },
     (function(){
-      var rs=scoreRain(totalRain,p.rainMin,p.rainMax,ls,p.hfRain);
-      var tooWet=totalRain>p.rainMax;
+      var rs=scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain);
+      var tooWet=totalPrecip>p.rainMax;
       return{
         score:rs,
         pos:"rainfall well matched",
