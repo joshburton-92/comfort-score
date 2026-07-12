@@ -1070,7 +1070,7 @@ function calcDroughtFactor(dailyRain,dailyTmax,dailyRhMin){
   var weightedRain=0;
   var days=Math.min(dailyRain.length,20);
   for(var i=0;i<days;i++){
-    var rain=dailyRain[i]||0;
+    var rain=Math.max(0,(dailyRain[i]||0)-3); // ignore first 3mm (interception/surface evap); only net rainfall suppresses drought
     var age=days-i; // 1=most recent, 20=oldest
     // Evaporative demand for this day: 0=cool/humid, 1=hot/dry
     var tMax=dailyTmax?dailyTmax[i]:null;
@@ -1424,7 +1424,7 @@ tP=Math.min(s.tmax,tP);
   var iP=0;
   if(temp>s.thi&&dp>s.dp)iP=Math.min(s.int,s.int*Math.min(1,(temp-s.thi)/10)*Math.min(1,(dp-s.dp)/10)*s.iscale);
   var mid=(s.tlo+s.thi)/2,wBase=0;
-  if(wind>=s.pwlo){if(wind<=s.pwhi)wBase=-2*(1-Math.min(1,Math.max(0,Math.abs(temp-mid)/5)));else if(wind<=s.swt)wBase=(wind-s.pwhi)/(s.swt-s.pwhi)*s.wmax*0.4;else wBase=s.wmax*0.4+(wind-s.swt)/Math.max(1,120-s.swt)*s.wmax*0.6;}
+  if(wind>=s.pwlo){if(wind<=s.pwhi)wBase=temp>=s.tlo?-2*(1-Math.min(1,Math.max(0,Math.abs(temp-mid)/5))):0;else if(wind<=s.swt)wBase=(wind-s.pwhi)/(s.swt-s.pwhi)*s.wmax*0.4;else wBase=s.wmax*0.4+(wind-s.swt)/Math.max(1,120-s.swt)*s.wmax*0.6;}
   var wChill=0;
   if(temp<s.wchill_thresh){var cf2=Math.min(1,(s.wchill_thresh-temp)/Math.max(1,s.wchill_thresh-s.coldfloor));wChill=cf2*Math.min(1,wind/50)*s.wmax*s.cws;}
   var evap=(temp>s.thi&&dp<s.dp)?Math.min(3,(temp-s.thi)/5*(s.dp-dp)/5):0;
@@ -1475,7 +1475,7 @@ if(temp>=0){
     else if(firesDry)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
   }
  if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
-  else if(wind>=s.pwlo&&wind<=s.pwhi&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
+  else if(wind>=s.pwlo&&wind<=s.pwhi&&temp>=s.tlo&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
   else if(wind>=12&&wind<20){a.push({c:"ann-breeze",t:"gentle breeze \uD83C\uDF43"});}
   else{var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);}
   if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
@@ -2139,6 +2139,7 @@ function findBetterWindow(tzOff,sunsetEpoch,dryHours){
       var isTomorrow=slotDate.getDate()!==nowDate.getDate();
       var hourStr=formatHour(new Date(slotEp).toLocaleString("en-US",{timeZone:window._FC.timezone,hour:"numeric",hour12:false}).replace(/\D/g,"")*1);
       var timeLabel=(isTomorrow?"tomorrow ":"")+hourStr;
+      var res=calc(t,d,w);
       return{epoch:slotEp,timeLabel:timeLabel,score:res.score,temp:t,dew:d,wind:w};
     }
   }
