@@ -2793,7 +2793,8 @@ function showSlotWearPop(temp,wind,wxCode,dp,backDi,timeStr){
     :hasRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 rain jacket</div>":"";
   var body="<div class='washing-reason'>"
         +(tooHot
-      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Little to none</div>"
+            ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:6px'>No layers required</div>"
+      +"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>Honestly, it's too hot for any clothes at all.</div>"
       :w.apparentTemp<-40
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
       :w.apparentTemp<-25
@@ -2845,7 +2846,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
                 +"<div style='border-top:1px solid var(--divider);padding-top:10px'>"
     +"<div style='font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px'>What to wear</div>"
         +(tooHot
-      ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Little to none"+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div>"
+            ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>No layers required &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>Honestly, it's too hot for any clothes at all.</span></div>"
       :ww.apparentTemp<-40
       ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
       :ww.apparentTemp<-25
