@@ -2622,10 +2622,7 @@ function whatToWear(temp,wind,wxCode,s,dp){
   var isSnow=wxCode!==null&&((wxCode>=71&&wxCode<=77)||(wxCode>=85&&wxCode<=86));
   var isRain=!isSnow&&wxCode!==null&&wxCode>=51;
   var extra="";
-    var hotRain=isRain&&temp>=26;
-  if(hotRain){
-    // handled in display layer (dp > 25 + rain → just get wet)
-  } else if(isSnow){
+      if(isSnow){
     // Snow: waterproof insulation over everything, boots matter
     if(layers<=1)layerLabel="Warm jacket + layers 🧣";
     extra="Waterproof outer layer + warm underlayers — and waterproof boots ❄️";
