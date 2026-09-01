@@ -2703,11 +2703,12 @@ function showWearPop(temp,wind,wxCode,dp){
   var nc=w.layers===0?"#c07020":w.layers===1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
     var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(w.extra&&w.extra.indexOf("ain jacket")>-1);
-  var layerWord=w.layers===1?"layer":"layers";
+      var dispLayers=(hasRain||hasWindRain)&&w.layers>=2?Math.max(1,w.layers-1):w.layers;
+  var layerWord=dispLayers===1?"layer":"layers";
   var outerLine=hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
     :hasRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 rain jacket</div>":"";
   var body="<div class='washing-reason'>"
-    +"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+w.layers+"</div>"
+        +"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
     +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>"
     +outerLine
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
@@ -2799,11 +2800,12 @@ function showSlotWearPop(temp,wind,wxCode,dp,backDi){
   var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(w.extra&&w.extra.indexOf("ain jacket")>-1);
   var nc=w.layers===0?"#c07020":w.layers<=1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
-  var layerWord=w.layers===1?"layer":"layers";
+      var dispLayers=(hasRain||hasWindRain)&&w.layers>=2?Math.max(1,w.layers-1):w.layers;
+  var layerWord=dispLayers===1?"layer":"layers";
   var outerLine=hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
     :hasRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 rain jacket</div>":"";
   var body="<div class='washing-reason'>"
-    +"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+w.layers+"</div>"
+        +"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
     +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>"
     +outerLine
             +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
@@ -2914,8 +2916,10 @@ function show7DaySlot(di){
     var wlh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(wsl.utcMs)));
     if(wlh<9||wlh>17)continue;
     var ww=whatToWear(wsl.temp,wsl.wind,hcodes[wsl.idx]||null,gs2,wsl.dp);
-    if(ww.layers<dayMinL)dayMinL=ww.layers;
-    if(ww.layers>dayMaxL)dayMaxL=ww.layers;
+        var wwRain=!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
+    var wwDisp=wwRain&&ww.layers>=2?Math.max(1,ww.layers-1):ww.layers;
+    if(wwDisp<dayMinL)dayMinL=wwDisp;
+    if(wwDisp>dayMaxL)dayMaxL=wwDisp;
     if(ww.extra&&ww.extra.indexOf("indproof")>-1)dayNeedWind=true;
     if(ww.extra&&ww.extra.indexOf("ain jacket")>-1)dayNeedRain=true;
   }
