@@ -1166,11 +1166,9 @@ function getMaxFFDIForDay(fc,dateStr){
   }
   return maxFFDI;
 }
-function showFireDangerPop(ffdi,todayMax,df){
+function showFireDangerPop(ffdi,todayMax,df,backDi){
   var info=ffdiInfo(ffdi)||ffdiInfo(todayMax);
-  var fromTitle=document.getElementById("pop-ttl").textContent;
-  var fromBody=document.getElementById("pop-body").innerHTML;
-  var backLink=fromTitle?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='document.getElementById(\"pop-ttl\").textContent=decodeURIComponent(\""+encodeURIComponent(fromTitle)+"\");document.getElementById(\"pop-body\").innerHTML=decodeURIComponent(\""+encodeURIComponent(fromBody)+"\")'>\u2190 Back</div>":"";
+  var backLink=backDi!==undefined?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>\u2190 Back</div>":"";
   var body="<div class='washing-reason'>"
     +(ffdi!==null&&ffdiInfo(ffdi)?"<div style='font-size:15px;font-weight:800;color:"+ffdiInfo(ffdi).col+";margin-bottom:4px'>Now: "+ffdiInfo(ffdi).label+" ("+ffdi+")</div>":"")
     +(todayMax&&ffdiInfo(todayMax)?"<div style='font-size:13px;font-weight:700;color:"+ffdiInfo(todayMax).col+";margin-bottom:10px'>Today\u2019s peak: "+ffdiInfo(todayMax).label+" ("+todayMax+")</div>":"")
@@ -2674,10 +2672,12 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
       :w.apparentTemp<-25
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
       :dispLayers===0
-      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>No layers required</div>"
+            ?(hasWindRain?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Wind/rainproof jacket recommended</div>"
+      :hasRain?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Rain jacket recommended</div>"
+      :"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>No layers required</div>")
       :"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
       +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>")
-    +outerLine
+        +(dispLayers===0&&(hasRain||hasWindRain)?"":outerLine)
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
         +(tooHot||justGetWet||w.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
     +(uvSunW?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSunW+"</div>":"")
@@ -2851,8 +2851,10 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
       ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
       :ww.apparentTemp<-25
       ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
-      :dispLayers===0
-      ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>No layers required"+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div>"
+            :dispLayers===0
+      ?(hasWindRain?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Wind/rainproof jacket recommended</div>"
+      :hasRain?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Rain jacket recommended</div>"
+      :"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>No layers required"+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div>")
       :"<div style='display:flex;align-items:baseline;gap:8px'>"
       +"<div style='font-size:28px;font-weight:800;color:"+wearNc+";line-height:1'>"+dispLayers+"</div>"
       +"<div style='font-size:14px;font-weight:700;color:"+wearNc+"'>"+layerWord+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div></div>")
@@ -2913,7 +2915,7 @@ function show7DaySlot(di){
     var fireLine="";
     var dayMaxFFDI=getMaxFFDIForDay(fc,dateKey);
     var dayFI=dayMaxFFDI!==null?ffdiInfo(dayMaxFFDI):null;
-    if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(0,20))*10)/10:5)+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
+        if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(0,20))*10)/10:5)+","+di+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
       +(condLine?"<div style='font-size:13px;color:var(--text)'>"+condLine+"</div>":"")
       +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
