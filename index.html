@@ -374,13 +374,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         </div>
       </div>
       <div id="forecast-wrap" style="display:none">
-        <div class="sec-lbl" style="margin-top:10px">Next 48 hours</div>
-        <div class="forecast-wrap-inner">
-          <button class="fc-nav fc-nav-l" onclick="fcScroll(-1)" aria-label="Scroll left">&#8249;</button>
-          <div class="forecast-strip" id="forecast-strip"><div class="forecast-row" id="forecast-row"></div></div>
-          <button class="fc-nav fc-nav-r" onclick="fcScroll(1)" aria-label="Scroll right">&#8250;</button>
-        </div>
-        <div class="sec-lbl" style="margin-top:14px">Next 7 days</div>
+        <div class="sec-lbl" style="margin-top:10px">Forecast</div>
         <div class="forecast-wrap-inner">
           <button class="fc-nav fc-nav-l" onclick="fc7Scroll(-1)" aria-label="Scroll left">&#8249;</button>
           <div class="forecast-strip" id="forecast-strip-7"><div class="forecast-row" id="forecast-row-7"></div></div>
@@ -1585,55 +1579,8 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
 // ── Forecast + history ─────────────────────────────────────────────────────
 function renderForecast(fc){
   window._FC=fc;
-    var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m,uvs=fc.hourly.uv_index||[],precips=fc.hourly.precipitation||[];
-  var tz=fc.timezone,tzOff=getTZOffsetMin(tz),nowEpoch=Date.now();
-  function slotEpoch(i){var p=parseLocalTimeStr(times[i]);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
-  var nowHour=localHourInTZ(tz);
-  var startHour=-1;
-  for(var si=0;si<FC_SLOTS.length;si++){if(FC_SLOTS[si]>nowHour){startHour=FC_SLOTS[si];break;}}
-  if(startHour===-1)startHour=FC_SLOTS[0];
-  var startIdx=-1;
-  for(var i=0;i<times.length;i++){var h2=parseInt(times[i].slice(11,13));if(h2===startHour&&slotEpoch(i)>nowEpoch){startIdx=i;break;}}
-  if(startIdx===-1)startIdx=0;
-  var fcastHtml="",added=0,idx=startIdx;
-  while(added<16&&idx<times.length){
-    var hr=parseInt(times[idx].slice(11,13));
-    if(FC_SLOTS.indexOf(hr)!==-1){
-      var t=temps[idx],dp=dps[idx],w=winds[idx],res2=calc(t,dp,w),si3=scoreInfo(res2.score);
-      var nc2=SBANDS[bandForScore(res2.score)].col.replace("0.92","1");
-      var wxc=(fc.hourly.weather_code||[])[idx];if(wxc===undefined)wxc=null;
-      var slotEp=slotEpoch(idx);
-      var isNight=hr<6||hr>=20;
-      if(fc.daily&&fc.daily.sunrise&&fc.daily.sunset){
-        var sunrises=fc.daily.sunrise,sunsets=fc.daily.sunset;
-        for(var si2=0;si2<sunrises.length;si2++){
-          var sr2=toEpoch(sunrises[si2],tzOff),ss2=toEpoch(sunsets[si2],tzOff);
-          if(slotEp>=sr2-3600000&&slotEp<=ss2+3600000){isNight=slotEp<sr2||slotEp>ss2;break;}
-        }
-      }
-      var wst=wxStyle(wxc,isNight);
-      var bgAttr=wst.bg?"background:"+wst.bg+";":"";
-      var wxDiv=wst.emoji?"<div class='fc-wx'>"+wst.emoji+"</div>":"";
-      var uvAnn=uvAnnotation(uvs[idx]);
-      var uvDiv=uvAnn?"<div class='fc-wx' style='font-size:10px;margin-top:2px'><span class='ann ann-uv' style='padding:1px 5px;font-size:9px'>"+uvAnn.t+"</span></div>":"";
-      var aqiSlotVal=null;
-      if(window._AQ&&window._AQ.hourly){
-        // Match AQ hourly slot by time string (same format YYYY-MM-DDTHH:00)
-        var fcTimeStr=times[idx].slice(0,13);
-        for(var ai=0;ai<(window._AQ.hourly.time||[]).length;ai++){
-          if((window._AQ.hourly.time[ai]||"").slice(0,13)===fcTimeStr){aqiSlotVal=(window._AQ.hourly.us_aqi||[])[ai];break;}
-        }
-      }
-      var aqiSlotAnn=aqiAnnotation(aqiSlotVal);
-      var aqiDiv=aqiSlotAnn?"<div class='fc-wx' style='font-size:10px;margin-top:2px'><span class='ann ann-aqi' style='padding:1px 5px;font-size:9px'>"+aqiSlotAnn.t.replace(" 😷","")+"</span></div>":"";
-      fcastHtml+="<div class='fc-slot' style='"+bgAttr+"' onclick='showForecastSlot("+idx+")'><div class='fc-time'>"+fmtFcTime(times[idx],tz)+"</div><div class='fc-score' style='color:"+nc2+"'>"+res2.score+"</div><div class='fc-lbl' style='color:"+nc2+"'>"+si3.label+"</div><div class='fc-temp'>"+toDisp(t).toFixed(1)+unitSym()+"</div>"+wxDiv+uvDiv+aqiDiv+"</div>";
-      added++;
-    }
-    idx++;
-  }
-  document.getElementById("forecast-row").innerHTML=fcastHtml;
-  document.getElementById("forecast-wrap").style.display="block";
   render7Day(fc);
+  document.getElementById("forecast-wrap").style.display="block";
 }
 function showForecastSlot(idx){
   if(!window._FC)return;
@@ -2677,9 +2624,9 @@ function whatToWear(temp,wind,wxCode,s,dp){
   var isSnow=wxCode!==null&&((wxCode>=71&&wxCode<=77)||(wxCode>=85&&wxCode<=86));
   var isRain=!isSnow&&wxCode!==null&&wxCode>=51;
   var extra="";
-  var hotRain=isRain&&temp>=26;
+    var hotRain=isRain&&temp>=26;
   if(hotRain){
-    extra=windProof?"It's raining and it's hot — light poncho if you must 🌂, honestly just get wet":"It's raining and it's hot — honestly just get wet 🌧️";
+    // handled in display layer (dp > 25 + rain → just get wet)
   } else if(isSnow){
     // Snow: waterproof insulation over everything, boots matter
     if(layers<=1)layerLabel="Warm jacket + layers 🧣";
@@ -2699,19 +2646,41 @@ function showWearPop(temp,wind,wxCode,dp){
   var fromTitle=document.getElementById("pop-ttl").textContent;
   var fromBody=document.getElementById("pop-body").innerHTML;
   var dpVal=dp!==null&&dp!==undefined?dp:(window._LW?window._LW.effDP:null);
-  var s=gs(),w=whatToWear(temp,wind,wxCode,s,dpVal);
+      var s=gs(),w=whatToWear(temp,wind,wxCode,s,dpVal);
   var nc=w.layers===0?"#c07020":w.layers===1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
-    var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
+  var uvNow=0;
+  if(window._FC&&window._FC.hourly){
+    var uvHrs=window._FC.hourly.uv_index||[],uvTimes=window._FC.hourly.time||[];
+    var nowHr=localHourInTZ(window._FC.timezone);
+    for(var ui=0;ui<uvTimes.length;ui++){if(parseInt(uvTimes[ui].slice(11,13))===nowHr&&uvHrs[ui]!=null){uvNow=uvHrs[ui];break;}}
+  }
+  var uvSunW=uvNow>=3?(uvNow<6?"UV "+uvNow+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvNow<8?"UV "+uvNow+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvNow<11?"UV "+uvNow+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+uvNow+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
+  var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(w.extra&&w.extra.indexOf("ain jacket")>-1);
-      var dispLayers=(hasRain||hasWindRain)&&w.layers>=2?Math.max(1,w.layers-1):w.layers;
+  var tooHot=(dpVal!==null&&temp>35&&dpVal>25)||(temp>45);
+  var justGetWet=dpVal!==null&&dpVal>25&&(hasRain||hasWindRain||!!(w.extra&&w.extra.indexOf("get wet")>-1));
+  if(justGetWet){hasRain=false;hasWindRain=false;}
+  var baseDispLayers=w.layers<=1?0:w.layers-1;
+var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayers;
   var layerWord=dispLayers===1?"layer":"layers";
-  var outerLine=hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
+  var outerLine=justGetWet?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>Honestly, just get wet \uD83C\uDF27\uFE0F</div>"
+    :hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
     :hasRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 rain jacket</div>":"";
   var body="<div class='washing-reason'>"
-        +"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
-    +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>"
+        +(tooHot
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Little to none</div>"
+      :w.apparentTemp<-40
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
+      :w.apparentTemp<-25
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
+      :dispLayers===0
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>No layers required</div>"
+      :"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
+      +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>")
     +outerLine
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
+        +(tooHot||justGetWet||w.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
+    +(uvSunW?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSunW+"</div>":"")
     +"</div>";
   document.getElementById("pop-ttl").innerHTML="What to wear?";
   document.getElementById("pop-body").innerHTML=body;
@@ -2733,85 +2702,165 @@ function fc7Scroll(dir){
 }
 
 function render7Day(fc){
-    var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m,uvs=fc.hourly.uv_index||[],precips=fc.hourly.precipitation||[];
+  var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m,uvs=fc.hourly.uv_index||[],precips=fc.hourly.precipitation||[];
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
-  // Group hourly slots by local date
   var days={};
   for(var i=0;i<times.length;i++){
-    // Get local date string for this slot
-    var slotMs=Date.UTC(0,0)+0;
     try{
       var p=parseLocalTimeStr(times[i]);
       var utcMs=Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;
       var dateStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(utcMs));
-      if(!days[dateStr])days[dateStr]=[];      days[dateStr].push({idx:i,utcMs:utcMs,temp:temps[i],dp:dps[i],wind:winds[i],rain:precips[i]||0});
+      if(!days[dateStr])days[dateStr]=[];
+      days[dateStr].push({idx:i,utcMs:utcMs,temp:temps[i],dp:dps[i],wind:winds[i],rain:precips[i]||0});
     }catch(e){}
   }
-  // Get today's local date to skip it
   var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   var todayDayIdx=fc.daily&&fc.daily.time?fc.daily.time.indexOf(todayStr):0;
   if(todayDayIdx<0)todayDayIdx=0;
+  // Today tile — score from remaining future hours, all hours stored for popup
+  var todayHtml="";
+  if(days[todayStr]){
+    var nowMs=Date.now();
+    var todayAll=days[todayStr].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
+    var todayFuture=todayAll.filter(function(s){return s.utcMs>nowMs;});
+    var useSlots=todayFuture.length?todayFuture:todayAll;
+    if(useSlots.length){
+      var tmx=-1,tmn=999,tmxS=null,tmnS=null;
+      for(var ti=0;ti<useSlots.length;ti++){var ts=useSlots[ti],tr=calc(ts.temp,ts.dp,ts.wind);if(tr.score>tmx){tmx=tr.score;tmxS=ts;}if(tr.score<tmn){tmn=tr.score;tmnS=ts;}}
+      var tmxNc=SBANDS[bandForScore(tmx)].col.replace("0.92","1");
+      var tmnNc=SBANDS[bandForScore(tmn)].col.replace("0.92","1");
+      var tmxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(tmxS.utcMs)).toLowerCase().replace(" ","");
+      var tmnTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(tmnS.utcMs)).toLowerCase().replace(" ","");
+      var tWxCode=(fc.daily&&fc.daily.weather_code)?fc.daily.weather_code[todayDayIdx]:null;
+      if(tWxCode===undefined)tWxCode=null;
+      var tWst=wxStyle(tWxCode);
+      todayHtml="<div class='fc-slot-7' style='"+(tWst.bg?"background:"+tWst.bg+";":"")+"' onclick='show7DaySlot(0)'>"
+        +"<div class='fc-day'>Today"+(tWst.emoji?" "+tWst.emoji:"")+"</div>"
+        +"<div class='fc-hilo'>"
+        +"<div class='fc-hi' style='color:"+tmxNc+"'>\u2191"+tmx+"</div>"
+        +"<div class='fc-hitime'>"+tmxTime+"</div>"
+        +"<div class='fc-lo' style='color:"+tmnNc+"'>\u2193"+tmn+"</div>"
+        +"<div class='fc-hitime'>"+tmnTime+"</div>"
+        +"</div></div>"
+        +"<div style='width:2px;background:var(--card-border);border-radius:2px;margin:4px 6px;align-self:stretch'></div>";
+    }
+  }
   var dateKeys=Object.keys(days).sort().filter(function(d){return d>todayStr;}).slice(0,7);
-  var html="";
+  var html=todayHtml;
   for(var di=0;di<dateKeys.length;di++){
     var key=dateKeys[di];
     var slots=days[key].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
     if(!slots.length)continue;
-    // Find max and min score slots
     var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
-    for(var si=0;si<slots.length;si++){
-      var s=slots[si];
-      var r=calc(s.temp,s.dp,s.wind);
-      if(r.score>maxScore){maxScore=r.score;maxSlot=s;}
-      if(r.score<minScore){minScore=r.score;minSlot=s;}
-    }
+    for(var si=0;si<slots.length;si++){var s=slots[si],r=calc(s.temp,s.dp,s.wind);if(r.score>maxScore){maxScore=r.score;maxSlot=s;}if(r.score<minScore){minScore=r.score;minSlot=s;}}
     var maxNc=SBANDS[bandForScore(maxScore)].col.replace("0.92","1");
     var minNc=SBANDS[bandForScore(minScore)].col.replace("0.92","1");
-    // Day label
     var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(slots[0].utcMs));
-    // Time labels for max/min
     var maxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(maxSlot.utcMs)).toLowerCase().replace(" ","");
     var minTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(minSlot.utcMs)).toLowerCase().replace(" ","");
     var dWxCode=(fc.daily&&fc.daily.weather_code)?fc.daily.weather_code[todayDayIdx+di+1]:null;
     if(dWxCode===undefined)dWxCode=null;
     var dWst=wxStyle(dWxCode);
-    var dBgAttr=dWst.bg?"background:"+dWst.bg+";":"";
-html+="<div class='fc-slot-7' style='"+dBgAttr+"' onclick='show7DaySlot("+di+")'>"
-         +"<div class='fc-day'>"+dayLabel+(dWst.emoji?" "+dWst.emoji:"")+"</div>"
-         +"<div class='fc-hilo'>"
-         +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
-         +"<div class='fc-hitime'>"+maxTime+"</div>"
-         +"<div class='fc-lo' style='color:"+minNc+"'>\u2193"+minScore+"</div>"
-         +"<div class='fc-hitime'>"+minTime+"</div>"
-         +"</div></div>";
+    html+="<div class='fc-slot-7' style='"+(dWst.bg?"background:"+dWst.bg+";":"")+"' onclick='show7DaySlot("+(di+1)+")'>"
+      +"<div class='fc-day'>"+dayLabel+(dWst.emoji?" "+dWst.emoji:"")+"</div>"
+      +"<div class='fc-hilo'>"
+      +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
+      +"<div class='fc-hitime'>"+maxTime+"</div>"
+      +"<div class='fc-lo' style='color:"+minNc+"'>\u2193"+minScore+"</div>"
+      +"<div class='fc-hitime'>"+minTime+"</div>"
+      +"</div></div>";
   }
   document.getElementById("forecast-row-7").innerHTML=html;
-  // Store days data for tap handler
   window._7dayData=days;
-  window._7dayKeys=dateKeys;
+  window._7dayKeys=[todayStr].concat(dateKeys);
   window._7dayTZ=tz;
-  // Refresh chips with sunrise/sunset now that fc is available (covers WU path)
   if(window._LW){var lw=window._LW;renderChips(lw.temp,lw.effDP,lw.rh,lw.wind,fc);}
 }
 
 function showSlotWearPop(temp,wind,wxCode,dp,backDi,timeStr){
-  var s=gs();
+    var s=gs();
   var w=whatToWear(temp,wind,wxCode,s,dp);
   var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(w.extra&&w.extra.indexOf("ain jacket")>-1);
+  var tooHot=(dp!==null&&temp>35&&dp>25)||(temp>45);
+  var justGetWet=dp!==null&&dp>25&&(hasRain||hasWindRain||!!(w.extra&&w.extra.indexOf("get wet")>-1));
+  if(justGetWet){hasRain=false;hasWindRain=false;}
   var nc=w.layers===0?"#c07020":w.layers<=1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
-      var dispLayers=(hasRain||hasWindRain)&&w.layers>=2?Math.max(1,w.layers-1):w.layers;
+  var dispLayers=(hasRain||hasWindRain)&&w.layers>=2?Math.max(1,w.layers-1):w.layers;
   var layerWord=dispLayers===1?"layer":"layers";
-  var outerLine=hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
+  var outerLine=justGetWet?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>Honestly, just get wet \uD83C\uDF27\uFE0F</div>"
+    :hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
     :hasRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 rain jacket</div>":"";
   var body="<div class='washing-reason'>"
-        +"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
-    +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>"
+        +(tooHot
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Little to none</div>"
+      :w.apparentTemp<-40
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
+      :w.apparentTemp<-25
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
+      :dispLayers===0
+      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>No layers required</div>"
+      :"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
+      +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>")
     +outerLine
-            +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
-        +(backDi!==undefined?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>← Back</div>":"")
+    +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
+    +(tooHot||justGetWet||w.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
+    +(backDi!==undefined?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>← Back</div>":"")
     +"</div>";
     document.getElementById("pop-ttl").textContent="What to wear"+(timeStr?" \u2014 "+timeStr:"");
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
+function show7DayHourSlot(idx,di,timeStr){
+  if(!window._FC)return;
+  var fc=window._FC,tz=fc.timezone;
+  var t=fc.hourly.temperature_2m[idx],dp=fc.hourly.dew_point_2m[idx],w=fc.hourly.wind_speed_10m[idx];
+    var precips=fc.hourly.precipitation||[];
+  var rain2h=(precips[idx]||0)+(precips[idx+1]||0);
+  var uvVal=(fc.hourly.uv_index||[])[idx]||0;
+    var uvSun=uvVal>=3?(uvVal<6?"UV "+uvVal+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvVal<8?"UV "+uvVal+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvVal<11?"UV "+uvVal+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+uvVal+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
+  var r=calc(t,dp,w),si=scoreInfo(r.score),s=gs();
+  var wxCode=(fc.hourly.weather_code||[])[idx];
+  if(wxCode===undefined)wxCode=null;
+  var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
+  var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
+  var annHtml="";
+  for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
+    var ww=whatToWear(t,w,wxCode,s,dp);
+  var hasWindRain=!!(ww.extra&&ww.extra.indexOf("indproof rain")>-1);
+  var hasRain=!hasWindRain&&!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
+  var tooHot=(dp!==null&&t>35&&dp>25)||(t>45);
+  var justGetWet=dp!==null&&dp>25&&(hasRain||hasWindRain||!!(ww.extra&&ww.extra.indexOf("get wet")>-1));
+  if(justGetWet){hasRain=false;hasWindRain=false;}
+  var baseDispLayers=ww.layers<=1?0:ww.layers-1;
+var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayers;
+  var layerWord=dispLayers===1?"layer":"layers";
+  var wearNc=ww.layers===0?"#c07020":ww.layers<=1?"#2a9a60":ww.layers<=3?"#2a7fa8":"#5a4aaa";
+  var outerLine=justGetWet?"Honestly, just get wet \uD83C\uDF27\uFE0F":hasWindRain?"+ 1 wind/rainproof jacket":hasRain?"+ 1 rain jacket":"";
+  var rainStr=rain2h>=0.05?rain2h.toFixed(1)+"mm":"—";
+  var body="<div class='washing-reason'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" \u2014 "+si.label+"</div>"
+    +"<div style='margin-bottom:8px'>\uD83C\uDF21\uFE0F "+toDisp(t).toFixed(1)+unitSym()+" &nbsp;\u00B7&nbsp; \uD83D\uDCA7 DP "+toDisp(dp).toFixed(1)+unitSym()+" &nbsp;\u00B7&nbsp; \uD83D\uDCA8 "+Math.round(w)+" km/h &nbsp;\u00B7&nbsp; \uD83C\uDF27\uFE0F "+rainStr+"</div>"
+    +(annHtml?"<div style='margin-bottom:10px'>"+annHtml+"</div>":"")
+                +"<div style='border-top:1px solid var(--divider);padding-top:10px'>"
+    +"<div style='font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px'>What to wear</div>"
+        +(tooHot
+      ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Little to none"+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div>"
+      :ww.apparentTemp<-40
+      ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
+      :ww.apparentTemp<-25
+      ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
+      :dispLayers===0
+      ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>No layers required"+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div>"
+      :"<div style='display:flex;align-items:baseline;gap:8px'>"
+      +"<div style='font-size:28px;font-weight:800;color:"+wearNc+";line-height:1'>"+dispLayers+"</div>"
+      +"<div style='font-size:14px;font-weight:700;color:"+wearNc+"'>"+layerWord+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div></div>")
+    +(tooHot||justGetWet||ww.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
+    +(uvSun?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSun+"</div>":"")
+    +"</div>"
+    +"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+di+")'>← Back</div>"
+    +"</div>";
+  document.getElementById("pop-ttl").textContent=timeStr||"";
   document.getElementById("pop-body").innerHTML=body;
   document.getElementById("pop-ov").classList.add("open");
 }
@@ -2885,14 +2934,13 @@ function show7DaySlot(di){
     var rowBg=SBANDS[bandForScore(r.score)].col.replace("0.92","0.10");
     var rain2h=(hourlyPrecip[sl.idx]||0)+(hourlyPrecip[sl.idx+1]||0);
     var rainStr=rain2h>=0.05?rain2h.toFixed(1):"—";
-    tblRows+="<tr style='border-top:1px solid var(--divider);background:"+rowBg+"'>"
+        tblRows+="<tr style='border-top:1px solid var(--divider);background:"+rowBg+";cursor:pointer' onclick='show7DayHourSlot("+sl.idx+","+di+",\""+timeStr+"\")'>"
             +"<td style='padding:5px 8px 5px 6px;font-weight:800;color:var(--text);white-space:nowrap;border-right:1px solid var(--divider);border-left:2px solid var(--divider)'>"+timeStr+"</td>"
       +"<td style='padding:5px 4px'>"+toDisp(sl.temp).toFixed(1)+unitSym()+"</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+toDisp(sl.dp).toFixed(1)+unitSym()+"</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+Math.round(sl.wind)+"</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+rainStr+"</td>"
                   +"<td style='padding:5px 6px 5px 6px;text-align:right;border-left:2px solid var(--divider);border-right:2px solid var(--divider)'>"
-                  +"<span style='cursor:pointer;font-size:12px;margin-right:3px;opacity:0.7' onclick='showSlotWearPop("+sl.temp+","+sl.wind+","+(hcodes[sl.idx]!=null?hcodes[sl.idx]:"null")+","+sl.dp+","+di+",\""+timeStr+"\")'>\uD83E\uDDE5</span>"
       +"<span style='font-size:14px;font-weight:800;color:"+scoreCol+"'>"+r.score+"</span></td>"
       +"</tr>";
   }
@@ -2916,8 +2964,9 @@ function show7DaySlot(di){
     var wlh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(wsl.utcMs)));
     if(wlh<9||wlh>17)continue;
     var ww=whatToWear(wsl.temp,wsl.wind,hcodes[wsl.idx]||null,gs2,wsl.dp);
-        var wwRain=!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
-    var wwDisp=wwRain&&ww.layers>=2?Math.max(1,ww.layers-1):ww.layers;
+            var wwRain=!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
+    var wwBase=ww.layers<=1?0:ww.layers-1;
+    var wwDisp=wwRain?Math.max(0,wwBase-1):wwBase;
     if(wwDisp<dayMinL)dayMinL=wwDisp;
     if(wwDisp>dayMaxL)dayMaxL=wwDisp;
     if(ww.extra&&ww.extra.indexOf("indproof")>-1)dayNeedWind=true;
@@ -2925,7 +2974,7 @@ function show7DaySlot(di){
   }
   var wearSection="";
   if(dayMaxL>=0){
-    var layerRange=dayMinL===dayMaxL?dayMaxL+" "+(dayMaxL===1?"layer":"layers"):(dayMinL+"\u2013"+dayMaxL+" layers");
+            var layerRange=dayMaxL===0?"No layers required":dayMinL===0?"No layers to "+dayMaxL+" "+(dayMaxL===1?"layer":"layers"):dayMinL===dayMaxL?dayMaxL+" "+(dayMaxL===1?"layer":"layers"):(dayMinL+"\u2013"+dayMaxL+" layers");
     var outerDesc=dayNeedWind?"Wind/rainproof jacket":dayNeedRain?"Rain jacket":"";
     var wearDetail="<div style='font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px'>"+layerRange+"</div>"
       +(outerDesc?"<div style='font-size:13px;font-weight:700;color:var(--text-muted)'>"+outerDesc+"</div>":"")
@@ -2938,7 +2987,7 @@ function show7DaySlot(di){
       +wearDetail+"</div></div>";
   }
   var totalDays=window._7dayKeys.length;
-  var prevLabel=di>0?new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di-1]][0].utcMs)):"";
+    var prevLabel=di>0?(di===1?"Today":new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di-1]][0].utcMs))):"";
   var nextLabel=di<totalDays-1?new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(window._7dayData[window._7dayKeys[di+1]][0].utcMs)):"";
   var navHtml="<div style='display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"
     +(di>0?"<span style='font-size:13px;font-weight:800;color:var(--text-sec);cursor:pointer;padding:4px 8px' onclick='show7DaySlot("+(di-1)+")'>← "+prevLabel+"</span>":"<span></span>")
