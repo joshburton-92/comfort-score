@@ -2912,13 +2912,22 @@ function show7DaySlot(di){
     var fireLine="";
     var dayMaxFFDI=getMaxFFDIForDay(fc,dateKey);
     var dayFI=dayMaxFFDI!==null?ffdiInfo(dayMaxFFDI):null;
-        if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(0,20))*10)/10:5)+","+di+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
+            if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(0,20))*10)/10:5)+","+di+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
+    var uvHrs2=fc.hourly&&fc.hourly.uv_index?fc.hourly.uv_index:[];
+    var dayMaxUV=0;
+    for(var ui=0;ui<slots.length;ui++){
+      var usl=slots[ui];
+      var ulh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(usl.utcMs)));
+      if(ulh>=9&&ulh<=17){var uvv=uvHrs2[usl.idx]||0;if(uvv>dayMaxUV)dayMaxUV=uvv;}
+    }
+    var uvDayLine=dayMaxUV>=3?(dayMaxUV<6?"UV "+dayMaxUV+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":dayMaxUV<8?"UV "+dayMaxUV+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":dayMaxUV<11?"UV "+dayMaxUV+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+dayMaxUV+" \u2014 Avoid direct sun \u2620\uFE0F"):"";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
       +(condLine?"<div style='font-size:13px;color:var(--text)'>"+condLine+"</div>":"")
       +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
       +"<div>"+rainLine+"</div>"
       +(windLine?"<div>💨 "+windLine+"</div>":"")
       +fireLine
+      +(uvDayLine?"<div>\u2600\uFE0F "+uvDayLine+"</div>":"")
       +"</div>";
   }
   // 2-hourly table — even local hours only
