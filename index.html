@@ -2889,6 +2889,17 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
 var NARR_WORDS=[{min:95,w:"glorious"},{min:91,w:"beautiful"},{min:81,w:"comfortable"},{min:76,w:"pleasant"},{min:66,w:"reasonable"},{min:56,w:"middling"},{min:46,w:"uncomfortable"},{min:36,w:"unpleasant"},{min:-1,w:"brutal"}];
 function narrCap(t){return t.charAt(0).toUpperCase()+t.slice(1);}
 function narrArticle(w){return /^[aeiou]/i.test(w)?"an":"a";}
+function narrLabelList(a){return a.length>1?a.slice(0,-1).join(", ")+" and "+a[a.length-1]:a[0];}
+// Peak-wind wording for a single period. Thresholds key off the user's own wind
+// settings: pwhi is where the score starts penalising, swt where it ramps hard.
+function narrWindWord(mx,s){
+  if(mx===null||mx===undefined||mx<0)return"";
+  if(mx>=s.swt+25)return"damaging winds";
+  if(mx>=s.swt+15)return"very windy";
+  if(mx>=s.swt)return"windy";
+  if(mx>=s.pwhi+10)return"breezy";
+  return"";
+}
 function narrWxClass(code){
   if(code===null||code===undefined)return{r:2,adj:"partly cloudy",nadj:"partly cloudy",p:false};
   if(code>=95)return{r:8,adj:"stormy",nadj:"stormy",p:true};
@@ -2909,7 +2920,7 @@ function narrPeriods(slots,tz,hcodes,precips,onlyFuture){
   var defs=[{lo:6,hi:11,label:"morning",night:false},{lo:12,hi:17,label:"afternoon",night:false},{lo:18,hi:22,label:"evening",night:true}];
   var nowMs=Date.now(),out=[];
   for(var p=0;p<defs.length;p++){
-    var d=defs[p],ts=0,ds=0,ws=0,sc=0,n=0,rain=0,counts={},codes={};
+        var d=defs[p],ts=0,ds=0,ws=0,wmx=-1,sc=0,n=0,rain=0,counts={},codes={};
     for(var i=0;i<slots.length;i++){
       var sl=slots[i];
       if(sl.temp===null||sl.dp===null||sl.wind===null)continue;
@@ -2917,7 +2928,7 @@ function narrPeriods(slots,tz,hcodes,precips,onlyFuture){
       var lh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(sl.utcMs)),10);
       if(lh===24)lh=0;
       if(lh<d.lo||lh>d.hi)continue;
-      ts+=sl.temp;ds+=sl.dp;ws+=sl.wind;sc+=calc(sl.temp,sl.dp,sl.wind).score;n++;
+            ts+=sl.temp;ds+=sl.dp;ws+=sl.wind;if(sl.wind>wmx)wmx=sl.wind;sc+=calc(sl.temp,sl.dp,sl.wind).score;n++;
       rain+=(precips[sl.idx]||0);
       var c=hcodes[sl.idx];
       if(c!==undefined&&c!==null){var cl=narrWxClass(c);if(!counts[cl.adj])counts[cl.adj]=0;counts[cl.adj]++;codes[cl.adj]=cl;}
@@ -2930,7 +2941,7 @@ function narrPeriods(slots,tz,hcodes,precips,onlyFuture){
     }
     var cls=worst||best||narrWxClass(null);
     if(cls.p&&rain<0.1)cls={r:3,adj:"mostly cloudy",nadj:"mostly cloudy",p:false};
-    out.push({label:d.label,night:d.night,t:ts/n,dp:ds/n,w:ws/n,score:Math.round(sc/n),rain:rain,cls:cls,n:n});
+        out.push({label:d.label,night:d.night,t:ts/n,dp:ds/n,w:ws/n,wx:wmx,score:Math.round(sc/n),rain:rain,cls:cls,n:n});
   }
   return out;
 }
@@ -2986,9 +2997,32 @@ function dayNarrative(slots,tz,hcodes,precips,isToday){
     if(runs[1].r<runs[0].r)s3=narrCap(narrArticle(a1)+" "+a1+" "+rLbl(runs[0]))+(runs[1].cls.p?" easing to ":" clearing to ")+narrArticle(a2)+" "+a2+" "+rLbl(runs[1])+".";
     else s3=narrCap(narrArticle(a1)+" "+a1+" "+rLbl(runs[0]))+" turning "+a2+" in the "+rLbl(runs[1])+".";
   }else{
-    s3=narrCap(narrArticle(rAdj(runs[0]))+" "+rAdj(runs[0])+" "+rLbl(runs[0]))+", "+rAdj(runs[1])+" by the "+rLbl(runs[1])+", then "+rAdj(runs[2])+" for the "+rLbl(runs[2])+".";
+        s3=narrCap(narrArticle(rAdj(runs[0]))+" "+rAdj(runs[0])+" "+rLbl(runs[0]))+", "+rAdj(runs[1])+" by the "+rLbl(runs[1])+", then "+rAdj(runs[2])+" for the "+rLbl(runs[2])+".";
   }
-  return{s1:s1,s2:s2,s3:s3,mean:mean};
+  // 4 — noteworthy wind, per period, on peak rather than mean
+  var wgroups=[],wmap={};
+  for(i=0;i<ps.length;i++){
+    var pw=narrWindWord(ps[i].wx,s);
+    if(!pw)continue;
+    if(!wmap[pw]){wmap[pw]={word:pw,labels:[],idx:[]};wgroups.push(wmap[pw]);}
+    wmap[pw].labels.push(ps[i].label);wmap[pw].idx.push(i);
+  }
+  var s4="",covered=0;
+  for(i=0;i<wgroups.length;i++)covered+=wgroups[i].labels.length;
+  if(wgroups.length&&!(wgroups.length===1&&covered===ps.length&&wgroups[0].word===ww)){
+    if(wgroups.length===1&&covered===ps.length&&ps.length>=3)s4=narrCap(wgroups[0].word)+" all day.";
+    else{
+      var segs=[];
+      for(i=0;i<wgroups.length;i++){
+        var g=wgroups[i],contig=g.idx.length>1&&g.idx[g.idx.length-1]-g.idx[0]===g.idx.length-1;
+        segs.push(g.word+(contig?" through the ":" in the ")+narrLabelList(g.labels));
+      }
+      var joined=segs.join(" and ");
+      for(i=0;i<segs.length;i++)if(segs[i].indexOf(" and ")>-1){joined=segs.join(", ");break;}
+      s4=narrCap(joined)+".";
+    }
+  }
+  return{s1:s1,s2:s2,s3:s3,s4:s4,mean:mean};
 }
 function show7DaySlot(di){
   if(!window._7dayData||!window._7dayKeys)return;
@@ -3031,7 +3065,7 @@ function show7DaySlot(di){
       condLine="<div style='font-size:13px;color:var(--text);font-weight:700;line-height:1.45;margin-bottom:4px'>"
         +(wxInfo&&wxInfo.emoji?wxInfo.emoji+" ":"")
         +"<span style='font-weight:800;color:"+nCol+"'>"+narr.s1+"</span> "
-        +narr.s2+" "+narr.s3+"</div>";
+                +narr.s2+" "+narr.s3+(narr.s4?" "+narr.s4:"")+"</div>";
     }else{
       var cl0=(wxInfo?wxInfo.emoji+" ":"")+(wxDay!==null?(wxFromCode(wxDay)||{t:""}).t:"");
       condLine=cl0?"<div style='font-size:13px;color:var(--text)'>"+cl0+"</div>":"";
@@ -3125,9 +3159,8 @@ function show7DaySlot(di){
   if(dayMaxL>=0){
             var layerRange=dayMaxL===0?"No layers required":dayMinL===0?"No layers to "+dayMaxL+" "+(dayMaxL===1?"layer":"layers"):dayMinL===dayMaxL?dayMaxL+" "+(dayMaxL===1?"layer":"layers"):(dayMinL+"\u2013"+dayMaxL+" layers");
     var outerDesc=dayNeedWind?"Wind/rainproof jacket":dayNeedRain?"Rain jacket":dayJustWet?"Honestly, just get wet \uD83C\uDF27\uFE0F":"";
-    var wearDetail="<div style='font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px'>"+layerRange+"</div>"
-      +(outerDesc?"<div style='font-size:13px;font-weight:700;color:var(--text-muted)'>"+outerDesc+"</div>":"")
-      +"<div style='font-size:11px;color:var(--text-muted);margin-top:6px'>Tap \uD83E\uDDE5 on any row for that hour\u2019s detail</div>";
+        var wearDetail="<div style='font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px'>"+layerRange+"</div>"
+      +(outerDesc?"<div style='font-size:13px;font-weight:700;color:var(--text-muted)'>"+outerDesc+"</div>":"");
     wearSection="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px'>"
       +"<div style='cursor:pointer;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;display:flex;justify-content:space-between;align-items:center' onclick=\"var el=document.getElementById('wd"+di+"');var op=el.style.display!=='none';el.style.display=op?'none':'block';this.querySelector('.wdch').textContent=op?'\u25B8':'\u25BE'\">"
       +"<span>What to wear \uD83E\uDDE5</span><span class='wdch'>\u25B8</span></div>"
