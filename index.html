@@ -2054,6 +2054,24 @@ function checkConditions(temp,dew,wind,wxCode){
 function formatHour(h){var ampm=h>=12?"pm":"am";var h12=h%12||12;return h12+":00"+ampm;}
 function toEpoch(s,tzOff){var p=parseLocalTimeStr(s);return Date.UTC(p.yr,p.mo,p.dy,p.hr,p.mn,0)-tzOff*60000;}
 
+// Rain-amount gate — a wet weather code carrying a negligible forecast amount
+// (0.1mm and under) is not enough to call a window "wet". Raise WASH_WET_MM to
+// be stricter, lower it to be more cautious.
+var WASH_WET_MM=0.2;
+function washMm(i){var h=window._FC&&window._FC.hourly,pr=h&&h.precipitation;if(!pr||pr[i]===null||pr[i]===undefined)return null;return pr[i];}
+function washWet(i,codes){
+  var c=(codes&&codes[i]!==null&&codes[i]!==undefined)?codes[i]:0;
+  if(c<51)return false;
+  var mm=washMm(i);
+  return mm===null||mm>=WASH_WET_MM;
+}
+function washNowIdx(tzOff){
+  var h=window._FC&&window._FC.hourly;if(!h||!h.time)return -1;
+  var now=Date.now(),best=-1;
+  for(var i=0;i<h.time.length;i++){if(toEpoch(h.time[i],tzOff)<=now)best=i;else break;}
+  return best;
+}
+
 function findBetterWindow(tzOff,sunsetEpoch,dryHours){
   if(!window._FC||!window._FC.hourly)return null;
   var h=window._FC.hourly,times=h.time||[],temps=h.temperature_2m||[],
@@ -2066,7 +2084,7 @@ function findBetterWindow(tzOff,sunsetEpoch,dryHours){
     if(t===null||d===null||w===null)continue;
     var slotEp=toEpoch(times[j],tzOff);
     if(sunsetEpoch&&slotEp>sunsetEpoch)break;
-    var issues=checkConditions(t,d,w,c);
+    var issues=checkConditions(t,d,w,washWet(j,codes)?c:0);
     if(issues.length>0)continue;
     var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:6;
     // Drying quality — based on VPD, wind, temp only; not comfort score
@@ -2097,7 +2115,7 @@ function findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch){
   for(var i=rainStartIdx+1;i<times.length;i++){
     var slotEp=toEpoch(times[i],tzOff);
     if(sunsetEpoch&&slotEp>sunsetEpoch)return null;
-    if((codes[i]||0)>=51)continue;
+    if(washWet(i,codes))continue;
     var t=temps[i],d=dews[i],w=winds[i];
     if(t===null||d===null||w===null)continue;
     var hoursToSunset=sunsetEpoch?(sunsetEpoch-slotEp)/3600000:3;
@@ -2316,9 +2334,10 @@ function checkWashing(){
         var tCode=hcodes[ti]||0,tTemp=htemps[ti],tDp=hdps[ti],tWind=hwinds[ti];
         if(tTemp===null||tDp===null||tWind===null)continue;
         var tHour=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:false}).format(new Date(tSlotMs)),10);
-        if(tCode>=51&&tHour<=12)tmrwRainByNoon=true;
-        if(!tmrwFirstSlot&&tCode<51)tmrwFirstSlot={temp:tTemp,dp:tDp,wind:tWind};
-        if(tCode<51&&tHour>=12&&tHour<=16&&!tmrwAfternoonOk){
+                var tWet=washWet(ti,hcodes);
+        if(tWet&&tHour<=12)tmrwRainByNoon=true;
+        if(!tmrwFirstSlot&&!tWet)tmrwFirstSlot={temp:tTemp,dp:tDp,wind:tWind};
+        if(!tWet&&tHour>=12&&tHour<=16&&!tmrwAfternoonOk){
           var tSvp=0.6108*Math.exp(17.27*tTemp/(tTemp+237.3));
           var tAvp=0.6108*Math.exp(17.27*tDp/(tDp+237.3));
           var tVpd=tSvp-tAvp;
@@ -2365,9 +2384,10 @@ function checkWashing(){
       var mCode=mhcodes[mi]||0,mTemp=mhtemps[mi],mDp=mhdps[mi],mWind=mhwinds[mi];
       if(mTemp===null||mDp===null||mWind===null)continue;
       var mHour=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:false}).format(new Date(mSlotMs)),10);
-      if(mCode>=51&&mHour<=12)mornRain=true;
-      if(!mornFirstSlot&&mCode<51)mornFirstSlot={temp:mTemp,dp:mDp,wind:mWind};
-      if(mCode<51&&mHour>=12&&mHour<=16&&!mornAfternoonOk){
+            var mWet=washWet(mi,mhcodes);
+      if(mWet&&mHour<=12)mornRain=true;
+      if(!mornFirstSlot&&!mWet)mornFirstSlot={temp:mTemp,dp:mDp,wind:mWind};
+      if(!mWet&&mHour>=12&&mHour<=16&&!mornAfternoonOk){
         var mSvp=0.6108*Math.exp(17.27*mTemp/(mTemp+237.3));
         var mAvp=0.6108*Math.exp(17.27*mDp/(mDp+237.3));
         var mVpd=mSvp-mAvp;
@@ -2418,7 +2438,7 @@ function checkWashing(){
       if(sunsetEpoch&&fSlotMs>sunsetEpoch)break;
       var fTemp=temps2[fi],fDew=dews2[fi],fWind=winds2[fi],fCode=codes2[fi]||0;
       if(fTemp===null||fTemp<=0)continue;
-      if(fCode>=51)continue;
+      if(washWet(fi,codes2))continue;
       var fHoursLeft=sunsetEpoch?(sunsetEpoch-fSlotMs)/3600000:3;
       if(fHoursLeft<1)break;
       var fTimeLabel=fmtFcTime(times2[fi],tz);
@@ -2427,14 +2447,15 @@ function checkWashing(){
     }
     return washingPop("Below freezing \u2744\uFE0F","Washing will freeze on the line rather than dry."+warmWindowMsg+(warmWindowMsg?"":" Best to dry inside."),"#5a8aa8");
   }
-  var rainingNow=wxNow>=51;
-  var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
+    var times=fc.hourly.time,wxCodes=fc.hourly.weather_code||[];
+  var nowMm=washMm(washNowIdx(tzOff));
+  var rainingNow=wxNow>=51&&(nowMm===null||nowMm>=WASH_WET_MM);
   var rainStartIdx=null,rainInHours=null;
   for(var i=0;i<times.length;i++){
     var slotMs=toEpoch(times[i],tzOff);
     if(slotMs<now)continue;
     if(sunsetEpoch&&slotMs>sunsetEpoch)break;
-    if((wxCodes[i]||0)>=51){rainInHours=Math.round((slotMs-now)/3600000);rainStartIdx=i;break;}
+    if(washWet(i,wxCodes)){rainInHours=Math.round((slotMs-now)/3600000);rainStartIdx=i;break;}
   }
   // VPD drying index
   var svp=0.6108*Math.exp(17.27*temp/(temp+237.3));
@@ -2497,7 +2518,7 @@ if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 th
     for(var j=0;j<times.length;j++){
       var slotMs2=toEpoch(times[j],tzOff);
       if(slotMs2<now)continue;
-      if((wxCodes[j]||0)<51){clearAfterIdx=j;break;}
+      if(!washWet(j,wxCodes)){clearAfterIdx=j;break;}
     }
     if(clearAfterIdx!==null){
       var clearWindow=findAfterRainWindow(clearAfterIdx-1,tzOff,sunsetEpoch);
@@ -3082,25 +3103,28 @@ function show7DaySlot(di){
     +"</table></div>";
     // Daytime wear summary (9am–5pm)
   var gs2=gs();
-  var dayMinL=99,dayMaxL=-1,dayNeedWind=false,dayNeedRain=false;
+  var dayMinL=99,dayMaxL=-1,dayNeedWind=false,dayNeedRain=false,dayJustWet=false;
   for(var wi=0;wi<slots.length;wi++){
     var wsl=slots[wi];
     if(wsl.temp===null||wsl.dp===null||wsl.wind===null)continue;
     var wlh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(wsl.utcMs)));
     if(wlh<9||wlh>17)continue;
     var ww=whatToWear(wsl.temp,wsl.wind,hcodes[wsl.idx]||null,gs2,wsl.dp);
-            var wwRain=!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
+                var wwWindRain=!!(ww.extra&&ww.extra.indexOf("indproof rain")>-1);
+    var wwRain=!wwWindRain&&!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
+    var wwWet=wsl.dp!==null&&wsl.dp>25&&(wwRain||wwWindRain||!!(ww.extra&&ww.extra.indexOf("get wet")>-1));
+    if(wwWet){wwRain=false;wwWindRain=false;dayJustWet=true;}
     var wwBase=ww.layers<=1?0:ww.layers-1;
-    var wwDisp=wwRain?Math.max(0,wwBase-1):wwBase;
+    var wwDisp=(wwRain||wwWindRain)?Math.max(0,wwBase-1):wwBase;
     if(wwDisp<dayMinL)dayMinL=wwDisp;
     if(wwDisp>dayMaxL)dayMaxL=wwDisp;
-    if(ww.extra&&ww.extra.indexOf("indproof")>-1)dayNeedWind=true;
-    if(ww.extra&&ww.extra.indexOf("ain jacket")>-1)dayNeedRain=true;
+    if(wwWindRain)dayNeedWind=true;
+    if(wwRain)dayNeedRain=true;
   }
   var wearSection="";
   if(dayMaxL>=0){
             var layerRange=dayMaxL===0?"No layers required":dayMinL===0?"No layers to "+dayMaxL+" "+(dayMaxL===1?"layer":"layers"):dayMinL===dayMaxL?dayMaxL+" "+(dayMaxL===1?"layer":"layers"):(dayMinL+"\u2013"+dayMaxL+" layers");
-    var outerDesc=dayNeedWind?"Wind/rainproof jacket":dayNeedRain?"Rain jacket":"";
+    var outerDesc=dayNeedWind?"Wind/rainproof jacket":dayNeedRain?"Rain jacket":dayJustWet?"Honestly, just get wet \uD83C\uDF27\uFE0F":"";
     var wearDetail="<div style='font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px'>"+layerRange+"</div>"
       +(outerDesc?"<div style='font-size:13px;font-weight:700;color:var(--text-muted)'>"+outerDesc+"</div>":"")
       +"<div style='font-size:11px;color:var(--text-muted);margin-top:6px'>Tap \uD83E\uDDE5 on any row for that hour\u2019s detail</div>";
