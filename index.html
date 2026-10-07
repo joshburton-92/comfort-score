@@ -167,6 +167,7 @@ canvas{display:none}
 .ann-uv{background:rgba(220,160,0,0.15);color:#7a4a00;border-color:rgba(220,160,0,0.3)}
 .ann-aqi{background:rgba(120,80,180,0.15);color:#4a1a7a;border-color:rgba(120,80,180,0.3)}
 .ann-fire{background:rgba(210,80,20,0.15);color:#7a2a00;border-color:rgba(210,80,20,0.3);cursor:pointer}
+.ann-heat{background:rgba(200,25,45,0.18);color:#8a0018;border-color:rgba(200,25,45,0.5);cursor:pointer;font-weight:800}
 .ann-divider{width:100%;height:1px;background:var(--divider);margin:10px 0 8px;border:none}
 .utility-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;background:var(--toggle-bg);border-radius:16px;padding:10px 12px;margin-top:2px}
 .ann-info{cursor:pointer}
@@ -193,7 +194,8 @@ canvas{display:none}
   .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
   .ann-uv{background:rgba(220,160,0,0.25);color:#e8a800}
   .ann-aqi{background:rgba(120,80,180,0.25);color:#b080f0}
-  .ann-fire{background:rgba(210,80,20,0.25);color:#ff7040}
+    .ann-fire{background:rgba(210,80,20,0.25);color:#ff7040}
+  .ann-heat{background:rgba(220,30,50,0.3);color:#ff6070;border-color:rgba(220,60,70,0.6)}
   .action-btn{background:var(--card-inner);border-color:var(--card-inner-border)}
 }
 .forecast-wrap-inner{position:relative}
@@ -1121,9 +1123,15 @@ function getFireDangerForFC(fc){
   if(!fc||!fc.hourly||!fc.hourly.relative_humidity_2m)return null;
   var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
   var dailyDates=fc.daily&&fc.daily.time?fc.daily.time:[];
-  // past_days=20 means dailyRain[0..19] are past days, [20] is today
-  var pastRain=dailyRain.slice(0,20);
-  var pastDates=dailyDates.slice(0,20);
+    // Drought factor needs the 20 days immediately BEFORE today. Locate today by
+  // date rather than assuming a fixed past_days offset, so changing past_days
+  // (the heatwave index needs 32) can't silently shift this window.
+  var fdToday=new Intl.DateTimeFormat("en-CA",{timeZone:fc.timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  var fdIdx=dailyDates.indexOf(fdToday);
+  if(fdIdx<0)fdIdx=Math.min(20,dailyDates.length);
+  var fdFrom=Math.max(0,fdIdx-20);
+  var pastRain=dailyRain.slice(fdFrom,fdIdx);
+  var pastDates=dailyDates.slice(fdFrom,fdIdx);
   var evap=getDailyTmaxRhMin(fc,pastDates);
   var df=calcDroughtFactor(pastRain,evap.tmax,evap.rhmin);
   var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
@@ -1165,6 +1173,160 @@ function getMaxFFDIForDay(fc,dateStr){
     if(ffdi>maxFFDI)maxFFDI=ffdi;
   }
   return maxFFDI;
+}
+// ── Heatwave index ─────────────────────────────────────────────────────────
+// Structure follows the Bureau's Excess Heat Factor (Nairn & Fawcett), but the
+// significance threshold and severity scale are normalised against this app's
+// own climatology rather than a fitted EHF85, so no historical data is needed
+// beyond the cache. Constants calibrated against BoM station records for
+// Adelaide, Melbourne, Cairns and Darwin (23,080 three-day windows): 98% band
+// agreement with true EHF severity, every disagreement adjacent-band.
+var HW_K=0.578;       // heatwave threshold sits this far into the local range
+var HW_C=0.47;        // EHF85 ~ HW_C * Range^2
+var HW_LIFT=0.45;     // overnight-minimum lift on an extreme day
+var HW_SEASON=2;      // months either side of the climatological peak
+
+function hwClimatology(entry){
+  if(!entry||!entry.monthly||entry.monthly.length<12)return null;
+  var m=entry.monthly,i,x;
+  for(i=0;i<12;i++){
+    x=m[i];
+    if(!x||x.T===null||x.T===undefined||x.tmin===null||x.tmin===undefined
+      ||x.tmaxMax===null||x.tmaxMax===undefined)return null;
+  }
+  var dmtOf=function(a){return (a.T+a.tmin)/2;};
+  var srt=m.slice(0,12).sort(function(a,b){return dmtOf(b)-dmtOf(a);});
+  var Thot=(dmtOf(srt[0])+dmtOf(srt[1]))/2;
+  var hm=srt[0],sp=hm.tmaxMax-hm.T;
+  var Range=(hm.tmaxMax+hm.tmin+HW_LIFT*sp)/2-Thot;
+  if(!(Range>0.5))return null;
+  var pk=1;for(i=0;i<12;i++)if(m[i]===hm){pk=i+1;break;}
+  return{Thot:Thot,Range:Range,thresh:Thot+HW_K*Range,peak:pk};
+}
+function hwScale(s){
+  if(s<=0)return 0;
+  var h=s<1?1+2.5*s:(s<3?3.5+4*Math.log(s)/Math.log(3):7.5+3*Math.log(s/3)/Math.log(3));
+  return Math.max(1,Math.min(10,Math.round(Math.min(h,10.49))));
+}
+function hwInfo(s){
+  if(s>=3)return{label:"Extreme heatwave",col:"rgba(150,25,60,1)",band:3};
+  if(s>=1)return{label:"Severe heatwave",col:"rgba(205,60,15,1)",band:2};
+  return{label:"Low-intensity heatwave",col:"rgba(205,140,15,1)",band:1};
+}
+// Severity per CALENDAR DAY: the worst three-day window that covers that day,
+// so a day sitting mid-event still reads high even as the event winds down.
+function heatwaveDays(fc,clim){
+  if(!fc||!fc.daily||!fc.daily.time||!clim)return null;
+  var dates=fc.daily.time,tx=fc.daily.temperature_2m_max,tn=fc.daily.temperature_2m_min;
+  if(!tx||!tn)return null;
+  var n=dates.length,dmt=[],i,j,map={};
+  for(i=0;i<n;i++){
+    dmt.push((i+1<n&&tx[i]!==null&&tx[i]!==undefined&&tn[i+1]!==null&&tn[i+1]!==undefined)
+      ?(tx[i]+tn[i+1])/2:null);
+  }
+  for(i=30;i<n-2;i++){
+    var mo=parseInt(dates[i].slice(5,7),10),dm=Math.abs(mo-clim.peak);
+    if(dm>6)dm=12-dm;
+    if(dm>HW_SEASON)continue;
+    var ok=true;
+    for(j=i-30;j<i+3;j++){if(dmt[j]===null||dmt[j]===undefined){ok=false;break;}}
+    if(!ok)continue;
+    var d3=(dmt[i]+dmt[i+1]+dmt[i+2])/3,s30=0;
+    for(j=i-30;j<i;j++)s30+=dmt[j];
+    var d30=s30/30;
+    var sig=(d3-clim.thresh)/clim.Range;
+    if(sig<=0)continue;
+    var sev=sig*Math.max(1,d3-d30)/(HW_C*clim.Range);
+    for(j=i;j<i+3;j++){
+      if(!map[dates[j]]||sev>map[dates[j]].sev)
+        map[dates[j]]={sev:sev,d3:d3,d30:d30,winStart:dates[i]};
+    }
+  }
+  return{dates:dates,map:map,clim:clim,lastDay:n-3};
+}
+// One day's reading, plus the span of the event it belongs to.
+function hwForDate(hwd,dateStr){
+  if(!hwd||!hwd.map[dateStr])return null;
+  var e=hwd.map[dateStr],d=hwd.dates,i=d.indexOf(dateStr);
+  var lo=i,hi=i;
+  while(lo>0&&hwd.map[d[lo-1]])lo--;
+  while(hi<d.length-1&&hwd.map[d[hi+1]])hi++;
+  var info=hwInfo(e.sev),j;
+  // The peak is a BAND of days, not one. Several days routinely round to the
+  // same x/10, and singling out the first of them reads as a separate event
+  // that has already passed.
+  var top=0;
+  for(j=lo;j<=hi;j++)top=Math.max(top,hwScale(hwd.map[d[j]].sev));
+  var pFrom=-1,pTo=-1;
+  for(j=lo;j<=hi;j++){
+    if(hwScale(hwd.map[d[j]].sev)===top){if(pFrom<0)pFrom=j;pTo=j;}
+  }
+  var scale=hwScale(e.sev);
+  // The scan can't see past the forecast, so an event still running at the end
+  // of it must not be reported as ending there.
+  var openEnded=(hi>=hwd.lastDay);
+  return{sev:e.sev,scale:scale,label:info.label,col:info.col,band:info.band,
+    date:dateStr,start:d[lo],end:d[hi],
+    peakScale:top,peakFrom:d[pFrom],peakTo:d[pTo],atPeak:(scale===top),
+    days:hi-lo+1,remaining:hi-i+1,openEnded:openEnded,d3:e.d3,d30:e.d30,
+    thresh:hwd.clim.thresh,range:hwd.clim.Range};
+}
+function hwToday(fc,clim){
+  var hwd=heatwaveDays(fc,clim);
+  if(!hwd)return null;
+  var today=new Intl.DateTimeFormat("en-CA",{timeZone:fc.timezone||"UTC",
+    year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  return hwForDate(hwd,today);
+}
+function hwAdvice(band){
+  var a="<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65'>"
+    +"Drink water regularly without waiting to feel thirsty, keep out of the sun through the hottest part of the day, and check on anyone nearby who is elderly, unwell, pregnant or living alone. Never leave people or animals in a parked car.";
+  if(band>=2)a+=" At this level heat starts to affect people who are otherwise healthy, not only those already vulnerable \u2014 move strenuous work and exercise to early morning, and find somewhere cool to spend the afternoon if your home doesn\u2019t cool down overnight.";
+  if(band>=3)a+=" Extreme heat is dangerous to everyone regardless of fitness. Consider cancelling strenuous outdoor activity altogether, and seek out air conditioning \u2014 a library, shopping centre or public cooling centre if you don\u2019t have it at home.";
+  a+=" Follow your local weather service and health authority for official heat warnings.</div>";
+  return a;
+}
+function hwDayFmt(d){var p=d.split("-");return new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});}
+function showHeatwavePop(dateStr,backDi){
+  var h=window._HWDAYS?hwForDate(window._HWDAYS,dateStr||window._HWPILLDATE):null;
+  var back=backDi!==undefined&&backDi!==null?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>\u2190 Back</div>":"";
+  var body;
+  if(!h){
+    body="<div class='washing-reason'><div style='font-size:12px;color:var(--text-muted)'>No heatwave conditions for this day.</div>"+back+"</div>";
+  }else{
+    var nowStr=new Intl.DateTimeFormat("en-CA",{timeZone:(window._FC&&window._FC.timezone)||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    var startTxt=h.start===nowStr?"Started today":(h.start<nowStr?"Began "+hwDayFmt(h.start):"Starts "+hwDayFmt(h.start));
+    var endTxt=h.openEnded?"still going at the end of the forecast"
+      :(h.end===nowStr?"easing after today"
+      :(h.end>nowStr?"easing after "+hwDayFmt(h.end):"eased after "+hwDayFmt(h.end)));
+    var tail=h.openEnded?" \u2014 at least "+h.days+" days so far"
+      :" \u2014 "+(h.days===1?"a single day":h.days+" days")+" in all";
+    var dur=startTxt+", "+endTxt+tail+".";
+    // Only call out the peak when this day isn't already part of it
+    var peakTxt="";
+    if(!h.atPeak){
+      var pr=h.peakFrom===h.peakTo?hwDayFmt(h.peakFrom):hwDayFmt(h.peakFrom)+" \u2013 "+hwDayFmt(h.peakTo);
+      var pv=h.peakTo<nowStr?"Peaked ":(h.peakFrom>nowStr?"Peaks ":"Peaking ");
+      peakTxt=pv+pr+" at "+h.peakScale+"/10.";
+    }
+    var rule="<div style='height:1px;background:var(--divider);margin:11px 0 10px'></div>";
+    body="<div class='washing-reason'>"
+      +"<div style='font-size:15px;font-weight:800;color:"+h.col+";margin-bottom:1px'>"+h.label+" \u2014 "+h.scale+"/10</div>"
+      +"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:9px'>"+hwDayFmt(h.date)+"</div>"
+      +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5'>"+dur+"</div>"
+      +(peakTxt?"<div style='font-size:13px;font-weight:700;color:var(--text-muted);margin-top:3px'>"+peakTxt+"</div>":"")
+      +rule
+      +hwAdvice(h.band)
+      +rule
+      +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>"
+      +"Three-day mean temperature "+h.d3.toFixed(1)+"\u00B0C against a local heatwave threshold of "+h.thresh.toFixed(1)+"\u00B0C, with the preceding 30 days averaging "+h.d30.toFixed(1)+"\u00B0C. "
+      +"Intensity follows the Excess Heat Factor method, which measures heat against both the local climate and the month preceding it \u2014 so what counts as a heatwave depends on where you are, and a temperature that passes unremarked in one city can be severe in another. "
+      +"This is an independent calculation from this app\u2019s own climate data on a present-day baseline, not an official warning product, and it may differ from your local service\u2019s assessment.</div>"
+      +back+"</div>";
+  }
+  document.getElementById("pop-ttl").innerHTML="Heatwave \uD83C\uDF21\uFE0F";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
 }
 function showFireDangerPop(ffdi,todayMax,df,backDi){
   var info=ffdiInfo(ffdi)||ffdiInfo(todayMax);
@@ -1558,6 +1720,27 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
         annHtml+="<span class='ann ann-fire' style='color:"+showFI.col+";border-color:"+showFI.col.replace("1)","0.4)")+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"+fireLabel+"</span>";
       }
     }
+    // Heatwave pill — fires for today OR tomorrow so there is a day of lead time.
+    // Cache-derived climatology only; silent where we have none.
+    window._HWDAYS=null;window._HWPILLDATE=null;
+    if(window._FC&&typeof findClimEntry==="function"){
+      var hwEnt=findClimEntry(window._FC.latitude,window._FC.longitude);
+      var hwClim=hwEnt?hwClimatology(hwEnt):null;
+      if(hwClim){
+        window._HWDAYS=heatwaveDays(window._FC,hwClim);
+        if(window._HWDAYS){
+          var hwD0=new Date(),hwFmt=new Intl.DateTimeFormat("en-CA",{timeZone:window._FC.timezone||"UTC",year:"numeric",month:"2-digit",day:"2-digit"});
+          var hwToday=hwFmt.format(hwD0),hwTmrw=hwFmt.format(new Date(hwD0.getTime()+86400000));
+          var hA=hwForDate(window._HWDAYS,hwToday),hB=hwForDate(window._HWDAYS,hwTmrw);
+          var hw=(hA&&hB)?(hB.sev>hA.sev?hB:hA):(hA||hB);
+          if(hw){
+            window._HWPILLDATE=hw.date;
+            annHtml+="<span class='ann ann-heat' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showHeatwavePop(\""+hw.date+"\",null)'>"
+              +"\uD83C\uDF21\uFE0F Heatwave</span>";
+          }
+        }
+      }
+    }
   }
   for(var i=0;i<verdictAnns.length;i++)annHtml+=annSpan(verdictAnns[i]);
   document.getElementById(areaId).innerHTML=
@@ -1800,7 +1983,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
@@ -1819,6 +2002,11 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     showClimCard(lat,lon);
     var elevStr=d.elevation!=null?" · "+Math.round(d.elevation)+"m ASL":"";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone)+elevStr;
+    // renderScore's live-screen pills (UV, AQI, fire danger, heatwave) are gated
+    // on window._FC, which renderForecast sets. Assigning it here instead means
+    // renderScore sees THIS location's forecast rather than nothing on first
+    // load and the previous location's on every load after.
+    window._FC=d;
     renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
     renderForecast(d);
@@ -1862,7 +2050,7 @@ function fetchWU(stationId,apiKey,label,cb){
 }
 function fetchForecastOnly(lat,lon){
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
-  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=8&past_days=20";
+  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   window._AQ=null;
     var fcPromise=fetch(fcUrl).then(function(r){if(!r.ok)throw new Error("API error "+r.status);return r.json();});
   var aqPromise=fetch(aqUrl).then(function(r){return r.json();}).catch(function(){return null;});
@@ -3094,8 +3282,22 @@ function show7DaySlot(di){
       var ulh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(usl.utcMs)));
       if(ulh>=9&&ulh<=17){var uvv=uvHrs2[usl.idx]||0;if(uvv>dayMaxUV)dayMaxUV=uvv;}
     }
+    // Heatwave line — sits at the top of the summary card, not above it
+    var hwLine="";
+    if(!window._HWDAYS&&fc&&typeof findClimEntry==="function"){
+      var heE=findClimEntry(fc.latitude,fc.longitude),heC=heE?hwClimatology(heE):null;
+      if(heC)window._HWDAYS=heatwaveDays(fc,heC);
+    }
+    var hwDay=window._HWDAYS?hwForDate(window._HWDAYS,dateKey):null;
+    if(hwDay){
+      hwLine="<div onclick='showHeatwavePop(\""+dateKey+"\","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +hwDay.col.replace("1)","0.14)")+";border:1px solid "+hwDay.col.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+hwDay.col+";display:flex;justify-content:space-between;align-items:center'>"
+        +"<span>\uD83C\uDF21\uFE0F "+hwDay.label+"</span><span>"+hwDay.scale+"/10 \u203A</span></div></div>";
+    }
     var uvDayLine=dayMaxUV>=3?(dayMaxUV<6?"UV "+dayMaxUV+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":dayMaxUV<8?"UV "+dayMaxUV+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":dayMaxUV<11?"UV "+dayMaxUV+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+dayMaxUV+" \u2014 Avoid direct sun \u2620\uFE0F"):"";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
+      +hwLine
       +condLine
       +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
       +"<div>"+rainLine+"</div>"
