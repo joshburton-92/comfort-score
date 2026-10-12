@@ -298,7 +298,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .result-item:last-child{border-bottom:none}
 .result-sub{font-size:clamp(11px,2.8vw,12px);color:var(--text-muted);margin-top:2px;font-weight:600}
 .world-section{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.08em;text-transform:uppercase;margin:10px 0 6px}
-.world-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--divider)}
+.world-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--divider);cursor:pointer}
+.world-row:active{opacity:0.6}
 .world-row:last-child{border-bottom:none}
 .world-score{font-size:18px;font-weight:800;min-width:36px;text-align:right}
 .world-name{flex:1;font-size:13px;font-weight:700;color:var(--text)}
@@ -1505,9 +1506,9 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
     +"<div style='margin-bottom:12px'>A drying index is calculated from vapour pressure deficit, wind, and temperature. This estimates how quickly moisture evaporates from fabric. Forecast slots are scanned to find usable drying windows, accounting for sunset, incoming rain, and overnight freezes.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Where in the world?</div>"
-    +"<div style='margin-bottom:12px'>Compares current conditions against 200 locations worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings — so the ranking reflects your personal comfort profile, not a universal standard.</div>"
+    +"<div style='margin-bottom:12px'>Compares current conditions against nearly 200 cities worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings — so the ranking reflects your personal comfort profile, not a universal standard. Tap any city to load its full Comfort Score.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate data</div>"
-    +"<div style='margin-bottom:12px'>The climatology card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Data sourced from national meteorological services and WMO records.</div>"
+    +"<div style='margin-bottom:12px'>The climatology card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
     +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
@@ -2414,10 +2415,19 @@ function openLiveability(){window.open('liveability.html','_blank');}
 
 function openWorldCheck(){
   document.getElementById("world-ov").classList.add("open");
-  document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking 200 cities\u2026</div>";
+  document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking "+WORLD_CITIES.length+" cities\u2026</div>";
   fetchWorldScores();
 }
 function closeWorld(){document.getElementById("world-ov").classList.remove("open");}
+// Rows pass their WORLD_CITIES index rather than the name, so names carrying an
+// apostrophe (Nuku'alofa, N'Djamena) can't break the onclick attribute.
+function worldLoad(i){
+  var c=WORLD_CITIES[i];
+  if(!c)return;
+  closeWorld();
+  fetchWeather(c.lat,c.lon,c.name);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 
 function fetchWorldScores(){
   var lats=WORLD_CITIES.map(function(c){return c.lat;}).join(",");
@@ -2435,6 +2445,7 @@ function fetchWorldScores(){
       var cur=d.current;
       var r=calc(cur.temperature_2m,cur.dew_point_2m,cur.wind_speed_10m);
       scored.push({
+        idx:i,
         name:WORLD_CITIES[i].name,
         cc:WORLD_CITIES[i].cc,
         score:r.score,
@@ -2479,7 +2490,7 @@ function renderWorldBody(){
   }
   function row(c){
     var nc=SBANDS[bandForScore(c.score)].col.replace("0.92","1");
-    return "<div class='world-row'>"
+    return "<div class='world-row' onclick='worldLoad("+c.idx+")'>"
       +"<div class='world-score' style='color:"+nc+"'>"+c.score+"</div>"
       +"<div class='world-name'>"+c.name+"</div>"
       +"<div class='world-cc'>"+c.cc+" \u00B7 "+toDisp(c.temp).toFixed(1)+unitSym()+"</div></div>";
