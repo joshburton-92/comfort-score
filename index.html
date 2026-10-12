@@ -19,6 +19,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
 #liv-map{height:260px;border-radius:12px;border:1px solid var(--card-border);margin-top:10px;z-index:1}
+.liv-map-expand{margin-left:auto}
+#liv-map-wrap.expanded{position:fixed;inset:0;z-index:190;background:var(--pop-bg);display:flex;flex-direction:column;padding:max(env(safe-area-inset-top,12px),12px) 12px max(env(safe-area-inset-bottom,12px),12px)}
+#liv-map-wrap.expanded .liv-map-toggle{margin-top:0}
+#liv-map-wrap.expanded #liv-map{flex:1;height:auto}
 .liv-map-toggle{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
 .liv-map-btn{font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid var(--card-border);background:var(--card-inner);color:var(--text-sec);cursor:pointer}
 .liv-map-btn.active{background:var(--range-fill);color:#fff;border-color:var(--range-fill)}
@@ -320,7 +324,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   <div class="onboard-card" id="liv-feature-card" style="display:none">
     <div class="onboard-title">✨ New — Liveability</div>
-    <div class="onboard-body">The <strong>Liveability Score</strong> is now built into Comfort Score — load any location and scroll down to see how well it matches your ideal climate year-round. There are new preferences to play with too: tune your heat, cold, rainfall, sun and snow tolerances, plus two new toggles for requiring a genuinely warm summer or a properly cool winter.</div>
+    <div class="onboard-body">The <strong>Liveability Score</strong> is now built into Comfort Score — load any location and open <strong>Climate Explorer</strong> below your result to see how well it matches your ideal climate year-round. There are new preferences to play with too: tune your heat, cold, rainfall, sun and snow tolerances, plus two new toggles for requiring a genuinely warm summer or a properly cool winter.</div>
     <button class="onboard-close" onclick="dismissLivFeature()">Got it</button>
   </div>
 
@@ -390,7 +394,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <div class="card clim-card" id="clim-card">
     <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Climatology</span>
+      <span>Climate Explorer</span>
     </div>
     <div class="s-panel" id="clim-panel">
       <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
@@ -402,33 +406,33 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         </tr></thead>
         <tbody id="clim-tbody"></tbody>
       </table>
-    </div>
-  </div>
-
-  <div class="card liv-card" id="liv-card">
-    <div class="adv-tog" id="liv-tog" onclick="toggleLiv()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Liveability</span>
-    </div>
-    <div class="s-panel" id="liv-panel">
-      <div class="liv-score-area" id="liv-score-area">
-        <div class="liv-score-loc" id="liv-score-loc"></div>
-        <div class="vol-bar" id="liv-vol-bar"></div>
-        <div class="liv-score-bottom">
-          <div class="liv-score-identity">
-            <div class="liv-score-num" id="liv-score-num">—</div>
-            <div class="liv-score-lbl" id="liv-score-lbl"></div>
-            <div id="liv-score-ann" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-top:4px;line-height:1.5"></div>
+      <!-- Liveability: hidden by showLivCard() when there's no cache row for this location -->
+      <div class="liv-card" id="liv-card">
+        <div style="height:1px;background:var(--divider);margin:10px 0"></div>
+        <div class="sec-lbl" style="margin-bottom:6px">Liveability</div>
+        <div class="liv-score-area" id="liv-score-area">
+          <div class="liv-score-loc" id="liv-score-loc"></div>
+          <div class="vol-bar" id="liv-vol-bar"></div>
+          <div class="liv-score-bottom">
+            <div class="liv-score-identity">
+              <div class="liv-score-num" id="liv-score-num">—</div>
+              <div class="liv-score-lbl" id="liv-score-lbl"></div>
+              <div id="liv-score-ann" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-top:4px;line-height:1.5"></div>
+            </div>
           </div>
         </div>
       </div>
+      <!-- Map stays visible even with no cache row, so you can jump to the nearest place that has data -->
       <div style="height:1px;background:var(--divider);margin:10px 0"></div>
       <div class="sec-lbl" style="margin-bottom:6px">Climate map</div>
-      <div class="liv-map-toggle">
-        <button class="liv-map-btn active" id="liv-map-btn-exc" onclick="livMapFilter('exc')">Excellent only</button>
-        <button class="liv-map-btn" id="liv-map-btn-all" onclick="livMapFilter('all')">Show all</button>
+      <div id="liv-map-wrap">
+        <div class="liv-map-toggle">
+          <button class="liv-map-btn active" id="liv-map-btn-exc" onclick="livMapFilter('exc')">Excellent only</button>
+          <button class="liv-map-btn" id="liv-map-btn-all" onclick="livMapFilter('all')">Show all</button>
+          <button class="liv-map-btn liv-map-expand" id="liv-map-btn-expand" onclick="livMapToggleExpand()">&#x2922; Expand</button>
+        </div>
+        <div id="liv-map"></div>
       </div>
-      <div id="liv-map"></div>
     </div>
   </div>
 
@@ -493,7 +497,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <div class="adv-tog" id="liv-pref-tog" onclick="toggleLivPref()" style="padding:10px 0 6px">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span style="font-size:13px;font-weight:800;color:var(--text-head)">Liveability preferences</span>
-          <div class="ibtn" onclick="event.stopPropagation();showPop('Liveability preferences','These preferences apply to the Liveability Score beneath the climatology card.\n\nBand sliders let you choose your preferred range for each dimension. The score is highest within your chosen band and drops away on either side, with the sensitivity sliders controlling how steeply.\n\nHard fail toggles let you set absolute limits — any location exceeding them scores zero for that dimension regardless of sensitivity.')">i</div>
+          <div class="ibtn" onclick="event.stopPropagation();showPop('Liveability preferences','These preferences apply to the Liveability Score in the Climate Explorer card.\n\nBand sliders let you choose your preferred range for each dimension. The score is highest within your chosen band and drops away on either side, with the sensitivity sliders controlling how steeply.\n\nHard fail toggles let you set absolute limits — any location exceeding them scores zero for that dimension regardless of sensitivity.')">i</div>
         </div>
         <div id="liv-pref-panel" style="display:none">
           <div class="liv-band-row">
@@ -1507,8 +1511,8 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>A drying index is calculated from vapour pressure deficit, wind, and temperature. This estimates how quickly moisture evaporates from fabric. Forecast slots are scanned to find usable drying windows, accounting for sunset, incoming rain, and overnight freezes.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Where in the world?</div>"
     +"<div style='margin-bottom:12px'>Compares current conditions against nearly 200 cities worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings — so the ranking reflects your personal comfort profile, not a universal standard. Tap any city to load its full Comfort Score.</div>"
-    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate data</div>"
-    +"<div style='margin-bottom:12px'>The climatology card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate Explorer</div>"
+    +"<div style='margin-bottom:12px'>The Climate Explorer card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Beneath that, the Liveability Score rates how well the location's year-round climate matches your liveability preferences, and the climate map shows how every location in the database scores for you — tap any marker to load it.Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
     +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
@@ -3417,6 +3421,13 @@ function findClimEntry(lat,lon){
 function toggleClim(){
   var tog=document.getElementById("clim-tog"),panel=document.getElementById("clim-panel");
   tog.classList.toggle("open");panel.classList.toggle("open");
+  // Leaflet can't size itself inside a hidden panel, so build/resize the map once it's visible
+  if(panel.classList.contains("open")){
+    setTimeout(function(){
+      initLivMap();
+      if(_livMap)_livMap.invalidateSize();
+    },60);
+  }
 }
 var CLIM_SBANDS=[{max:35,col:"rgba(190,50,50,1)"},{max:55,col:"rgba(210,120,20,1)"},{max:75,col:"rgba(190,185,20,1)"},{max:90,col:"rgba(100,180,50,1)"},{max:100,col:"rgba(25,140,65,1)"}];
 function climScoreCol(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<CLIM_SBANDS.length;i++)if(v<=CLIM_SBANDS[i].max)return CLIM_SBANDS[i].col;return CLIM_SBANDS[CLIM_SBANDS.length-1].col;}
@@ -3432,6 +3443,7 @@ function showClimCard(lat,lon){
     document.getElementById("clim-tbody").innerHTML="";
     var es=document.getElementById("clim-summary");if(es)es.remove();
     var en=document.getElementById("clim-notes-wrap");if(en)en.remove();
+    showLivCard(null);
     return;
   }
   var kopHtml=entry.koppen?"<span onclick='showKoppenPop("+JSON.stringify(entry.koppen)+")' style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec);cursor:pointer'>"+entry.koppen+" ↗</span>":"";
@@ -3547,19 +3559,6 @@ function toggleLivPref(){
   var open=panel.style.display==="none";
   panel.style.display=open?"block":"none";
   tog.querySelector("svg path").setAttribute("d",open?"M2 3l4 4 4-3":"M4 2l4 4-4 4");
-}
-function toggleLiv(){
-  var tog=document.getElementById("liv-tog"),panel=document.getElementById("liv-panel");
-  if(!tog||!panel)return;
-  var open=panel.style.display==="none";
-  panel.style.display=open?"block":"none";
-  tog.querySelector("svg path").setAttribute("d",open?"M2 3l4 4 4-3":"M4 2l4 4-4 4");
-  if(open){
-    setTimeout(function(){
-      initLivMap();
-      if(_livMap)_livMap.invalidateSize();
-    },60);
-  }
 }
 function onLivBand(dim){
   var bands={heat:LIV_HEAT_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
@@ -3951,7 +3950,9 @@ function livMapRegionBounds(lat,lon){
 function initLivMap(){
   if(_livMap)return;
   if(typeof L==="undefined")return;
-  _livMap=L.map("liv-map",{zoomControl:true});
+  // Scroll-wheel zoom is off in the card (so the page scrolls past the map on a laptop)
+  // and switched on only in the expanded view — see livMapToggleExpand()
+  _livMap=L.map("liv-map",{zoomControl:true,scrollWheelZoom:false});
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
     attribution:"\u00a9 OpenStreetMap contributors",
     maxZoom:13
@@ -3986,7 +3987,7 @@ function livMapBuildMarkers(){
       });
       var popHtml="<div style='font-size:13px;font-weight:800;color:"+c+";margin-bottom:2px'>"+s+" \u2014 "+livScoreLabel(s)+"</div>"
         +"<div style='font-size:12px;font-weight:700;margin-bottom:6px'>"+e.name+(e.ter?", "+e.ter:"")+"</div>"
-        +"<button onclick='livMapLoad("+e.lat+","+e.lon+","+JSON.stringify(e.name+(e.ter?", "+e.ter:""))+")' "
+        +"<button onclick='livMapLoad("+e.lat+","+e.lon+","+JSON.stringify(e.name+(e.ter?", "+e.ter:"")).replace(/'/g,"&#39;")+")' "
         +"style='font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid #2a9fd6;background:#2a9fd6;color:#fff;cursor:pointer;width:100%'>"
         +"Load in Comfort Score</button>";
       marker.bindPopup(popHtml,{maxWidth:200,className:"liv-map-popup"});
@@ -4003,7 +4004,24 @@ function livMapFilter(mode){
   livMapBuildMarkers();
 }
 
+function livMapToggleExpand(force){
+  var wrap=document.getElementById("liv-map-wrap"),btn=document.getElementById("liv-map-btn-expand");
+  if(!wrap)return;
+  var expand=(force===undefined)?!wrap.classList.contains("expanded"):force;
+  if(expand===wrap.classList.contains("expanded"))return;
+  wrap.classList.toggle("expanded",expand);
+  document.body.style.overflow=expand?"hidden":"";
+  if(btn)btn.innerHTML=expand?"&#x2715; Close":"&#x2922; Expand";
+  initLivMap();
+  if(_livMap){
+    if(expand)_livMap.scrollWheelZoom.enable();else _livMap.scrollWheelZoom.disable();
+    setTimeout(function(){_livMap.invalidateSize();},60);
+  }
+}
+document.addEventListener("keydown",function(e){if(e.key==="Escape")livMapToggleExpand(false);});
+
 function livMapLoad(lat,lon,label){
+  livMapToggleExpand(false);
   var popups=document.querySelectorAll(".leaflet-popup");
   for(var i=0;i<popups.length;i++)popups[i].style.display="none";
   fetchWeather(lat,lon,label);
