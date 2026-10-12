@@ -3961,6 +3961,7 @@ function initLivMap(){
   var userLon=window._currentLon||null;
   var bounds=livMapRegionBounds(userLat,userLon);
   _livMap.fitBounds(bounds,{padding:[10,10]});
+  _livMap.on("move",livMapWrapMarkers);
   livMapBuildMarkers();
 }
 
@@ -3992,8 +3993,23 @@ function livMapBuildMarkers(){
         +"Load in Comfort Score</button>";
       marker.bindPopup(popHtml,{maxWidth:200,className:"liv-map-popup"});
       marker.addTo(_livMap);
+      marker._origLon=e.lon;
       _livMapMarkers.push(marker);
     })(entry,score,col);
+  }
+  livMapWrapMarkers();
+}
+
+// The tiles repeat endlessly east-west but each pin exists once, at its real longitude.
+// Keep every pin on whichever copy of the world is nearest the map centre, so pins are
+// always there however far you pan — and both sides of the date line show together.
+function livMapWrapMarkers(){
+  if(!_livMap)return;
+  var c=_livMap.getCenter().lng;
+  for(var i=0;i<_livMapMarkers.length;i++){
+    var m=_livMapMarkers[i],ll=m.getLatLng();
+    var lon=m._origLon+360*Math.round((c-m._origLon)/360);
+    if(ll.lng!==lon)m.setLatLng([ll.lat,lon]);
   }
 }
 
