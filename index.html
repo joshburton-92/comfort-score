@@ -417,7 +417,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-score-identity">
               <div class="liv-score-num" id="liv-score-num">—</div>
               <div class="liv-score-lbl" id="liv-score-lbl"></div>
-              <div id="liv-score-ann" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-top:4px;line-height:1.5"></div>
+              <div id="liv-score-ann" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-top:4px;line-height:1.5;white-space:pre-line"></div>
             </div>
           </div>
         </div>
@@ -497,7 +497,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <div class="adv-tog" id="liv-pref-tog" onclick="toggleLivPref()" style="padding:10px 0 6px">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span style="font-size:13px;font-weight:800;color:var(--text-head)">Liveability preferences</span>
-          <div class="ibtn" onclick="event.stopPropagation();showPop('Liveability preferences','These preferences apply to the Liveability Score in the Climate Explorer card.\n\nBand sliders let you choose your preferred range for each dimension. The score is highest within your chosen band and drops away on either side, with the sensitivity sliders controlling how steeply.\n\nHard fail toggles let you set absolute limits — any location exceeding them scores zero for that dimension regardless of sensitivity.')">i</div>
+          <div class="ibtn" onclick="event.stopPropagation();showPop('Liveability preferences','These preferences apply to the Liveability Score in the Climate Explorer card.\n\nBand sliders let you choose your preferred range for each dimension. The score is highest within your chosen band and drops away on either side, with the sensitivity sliders controlling how steeply.\n\n"Rule out" toggles turn a preference into an absolute limit — any location beyond it scores zero overall, however well it does elsewhere, and the score explains which limits it broke.')">i</div>
         </div>
         <div id="liv-pref-panel" style="display:none">
           <div class="liv-band-row">
@@ -511,7 +511,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-band-sub" id="liv-heat-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-heat" onchange="saveLivPrefs();renderLivScore();"/>
-              <label for="hf-liv-heat">Hard fail above this</label>
+              <label for="hf-liv-heat">Rule out anywhere hotter</label>
             </div>
           </div>
           <div class="liv-band-row">
@@ -525,7 +525,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-band-sub" id="liv-cold-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-cold" onchange="saveLivPrefs();renderLivScore();"/>
-              <label for="hf-liv-cold">Hard fail below this</label>
+              <label for="hf-liv-cold">Rule out anywhere colder</label>
             </div>
           </div>
           <div class="liv-band-row">
@@ -539,7 +539,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-band-sub" id="liv-dp-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-dp" onchange="saveLivPrefs();renderLivScore();"/>
-              <label for="hf-liv-dp">Hard fail above this</label>
+              <label for="hf-liv-dp">Rule out anywhere more humid</label>
             </div>
           </div>
           <div class="liv-band-row">
@@ -553,7 +553,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-band-sub" id="liv-rain-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-rain" onchange="saveLivPrefs();renderLivScore();"/>
-              <label for="hf-liv-rain">Hard fail below this</label>
+              <label for="hf-liv-rain">Rule out anywhere drier</label>
             </div>
           </div>
           <div class="liv-band-row">
@@ -567,7 +567,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-band-sub" id="liv-sun-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-sun" onchange="saveLivPrefs();renderLivScore();"/>
-              <label for="hf-liv-sun">Hard fail below this</label>
+              <label for="hf-liv-sun">Rule out anywhere less sunny</label>
             </div>
           </div>
           <div class="liv-band-row">
@@ -581,7 +581,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
             <div class="liv-band-sub" id="liv-snow-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-snow" onchange="saveLivPrefs();renderLivScore();"/>
-              <label for="hf-liv-snow">Hard fail above this</label>
+              <label for="hf-liv-snow">Rule out anywhere snowier</label>
             </div>
           </div>
           <div style="margin-bottom:14px;padding-top:4px;border-top:1px solid var(--divider)">
@@ -1512,7 +1512,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Where in the world?</div>"
     +"<div style='margin-bottom:12px'>Compares current conditions against nearly 200 cities worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings — so the ranking reflects your personal comfort profile, not a universal standard. Tap any city to load its full Comfort Score.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate Explorer</div>"
-    +"<div style='margin-bottom:12px'>The Climate Explorer card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Beneath that, the Liveability Score rates how well the location's year-round climate matches your liveability preferences, and the climate map shows how every location in the database scores for you — tap any marker to load it.Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
+    +"<div style='margin-bottom:12px'>The Climate Explorer card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Beneath that, the Liveability Score rates how well the location's year-round climate matches your liveability preferences, and the climate map shows how every location in the database scores for you — tap any marker to load it. Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
     +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
@@ -1992,7 +1992,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
-    var weatherPromise=fetch(url).then(function(r){if(!r.ok)throw new Error("API error "+r.status);return r.json();});
+    var weatherPromise=fetch(url).then(function(r){if(!r.ok)throw apiError(r.status);return r.json();});
   var aqPromise=fetch(aqUrl).then(function(r){return r.json();}).catch(function(){return null;});
   Promise.all([weatherPromise,aqPromise]).then(function(results){
     var d=results[0],aq=results[1];
@@ -2017,7 +2017,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     renderForecast(d);
     updateHomeBtn();
     if(cb)cb();
-  }).catch(function(e){document.getElementById("live-status").textContent="Fetch failed: "+e.message;if(cb)cb();});
+  }).catch(function(e){document.getElementById("live-status").textContent=(e.friendly?"":"Fetch failed: ")+e.message;if(cb)cb();});
 }
 
 // ── Weather Underground ────────────────────────────────────────────────────
@@ -2417,8 +2417,21 @@ function openClimatology(){
 }
 function openLiveability(){window.open('liveability.html','_blank');}
 
+// Open-Meteo's free tier is rate-limited per connection (600 calls/min). A 429 gets a
+// plain-English message instead of "API error 429".
+function apiError(status){
+  var e=new Error(status===429?"Weather service is busy \u2014 try again in a minute.":"API error "+status);
+  e.friendly=(status===429);
+  return e;
+}
+// The world check costs ~198 API calls, so its raw conditions are kept for 15 minutes
+// (Open-Meteo's "current" values only update every 15 min anyway). Scores are recalculated
+// from the kept conditions each time, so changed comfort settings still apply.
+var WORLD_TTL_MS=15*60*1000;
+var _worldRaw=null,_worldRawAt=0;
 function openWorldCheck(){
   document.getElementById("world-ov").classList.add("open");
+  if(_worldRaw&&Date.now()-_worldRawAt<WORLD_TTL_MS){scoreWorld(_worldRaw);return;}
   document.getElementById("world-body").innerHTML="<div class='world-loading'>Checking "+WORLD_CITIES.length+" cities\u2026</div>";
   fetchWorldScores();
 }
@@ -2439,29 +2452,37 @@ function fetchWorldScores(){
   var url="https://api.open-meteo.com/v1/forecast?latitude="+lats+"&longitude="+lons
     +"&current=temperature_2m,dew_point_2m,wind_speed_10m"
     +"&wind_speed_unit=kmh&timezone=auto&forecast_days=1";
-  fetch(url).then(function(r){return r.json();}).then(function(data){
+  fetch(url).then(function(r){if(!r.ok)throw apiError(r.status);return r.json();}).then(function(data){
     // data is array when multiple locations
     var results=Array.isArray(data)?data:[data];
-    var scored=[];
+    var raw=[];
     for(var i=0;i<results.length;i++){
       var d=results[i];
-      if(!d.current)continue;
-      var cur=d.current;
-      var r=calc(cur.temperature_2m,cur.dew_point_2m,cur.wind_speed_10m);
-      scored.push({
-        idx:i,
-        name:WORLD_CITIES[i].name,
-        cc:WORLD_CITIES[i].cc,
-        score:r.score,
-        temp:cur.temperature_2m,
-        dp:cur.dew_point_2m,
-        wind:cur.wind_speed_10m
-      });
+      raw.push(d&&d.current?{temp:d.current.temperature_2m,dp:d.current.dew_point_2m,wind:d.current.wind_speed_10m}:null);
     }
-    renderWorldResults(scored);
+    if(!raw.some(function(x){return x;}))throw new Error("No data returned");
+    _worldRaw=raw;_worldRawAt=Date.now();
+    scoreWorld(raw);
   }).catch(function(e){
-    document.getElementById("world-body").innerHTML="<div class='world-loading'>Failed to load: "+e.message+"</div>";
+    document.getElementById("world-body").innerHTML="<div class='world-loading'>"+(e.friendly?"":"Failed to load: ")+e.message+"</div>";
   });
+}
+function scoreWorld(raw){
+  var scored=[];
+  for(var i=0;i<raw.length&&i<WORLD_CITIES.length;i++){
+    var c=raw[i];
+    if(!c)continue;
+    scored.push({
+      idx:i,
+      name:WORLD_CITIES[i].name,
+      cc:WORLD_CITIES[i].cc,
+      score:calc(c.temp,c.dp,c.wind).score,
+      temp:c.temp,
+      dp:c.dp,
+      wind:c.wind
+    });
+  }
+  renderWorldResults(scored);
 }
 
 function renderWorldResults(scored){
@@ -2507,6 +2528,8 @@ function renderWorldBody(){
   for(var i=0;i<pinned.length;i++)html+=row(pinned[i]);
   html+="<div class='world-section'>\uD83C\uDF21\uFE0F Bottom 5 right now"+(bottomPool.length>5?shuffleBtn:"")+"</div>";
   for(var i=0;i<bottom.length;i++)html+=row(bottom[i]);
+  var agoMin=Math.floor((Date.now()-_worldRawAt)/60000);
+  if(_worldRawAt&&agoMin>=1)html+="<div style='font-size:10px;font-weight:600;color:var(--text-muted);text-align:center;margin-top:10px'>Conditions checked "+agoMin+" min ago</div>";
   document.getElementById("world-body").innerHTML=html;
 }
 
@@ -3724,6 +3747,36 @@ function livScoreLabel(s){
   if(s>35)return"Poor";
   return"Very poor";
 }
+// Plain-English reasons a location breaks any "Rule out" limit (or seasonality requirement),
+// quoting the location's figure against the user's limit. Empty array = not ruled out.
+// Mirrors the zero-score checks at the top of calcLiveability() — keep the two in step.
+function livRuleOutReasons(entry){
+  if(!entry||!entry.monthly||entry.monthly.length<12)return[];
+  var p=getLivPrefs();
+  var st=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
+  var wt=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
+  var peakDp=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
+  var hotmaxMax=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
+  var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
+  var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
+  var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
+  var totalPrecip=totalRain+totalSnow;
+  var sun=entry.sun||0;
+  function t(v){return String(toDisp(v)).replace("-","\u2212")+unitSym();}
+  function n(v){return Math.round(v).toLocaleString("en-AU");}
+  function cm(v){return v<10?(Math.round(v*10)/10):Math.round(v);}
+  var r=[];
+  if(p.hfHeat&&st>p.heatMax)r.push("Summers too hot: the warmest month averages "+t(st)+", above your "+t(p.heatMax)+" limit");
+  if(p.hfHeat&&hotmaxMax>p.heatMax+3)r.push("Heat extremes too high: the hottest days typically reach "+t(hotmaxMax)+", well past your "+t(p.heatMax)+" limit");
+  if(p.hfCold&&coldtminMin<p.coldMin)r.push("Cold extremes too low: the coldest nights typically drop to "+t(coldtminMin)+", below your "+t(p.coldMin)+" limit");
+  if(p.hfDp&&peakDp>p.dpMax)r.push("Too humid: the dew point peaks at "+t(peakDp)+" in the most humid month, above your "+t(p.dpMax)+" limit");
+  if(p.hfRain&&totalPrecip<p.rainMin)r.push("Too dry: "+n(totalPrecip)+" mm of "+(totalSnow>0?"rain and snow":"rain")+" a year, below your "+n(p.rainMin)+" mm minimum");
+  if(p.hfSun&&sun<p.sunMin)r.push("Not sunny enough: "+n(sun)+" hours of sunshine a year, below your "+n(p.sunMin)+"-hour minimum");
+  if(p.hfSnow&&totalSnow>p.snowMax)r.push("Too snowy: "+cm(totalSnow)+" cm of snow a year"+(p.snowMax>0?", above your "+p.snowMax+" cm limit":", and you've chosen none"));
+  if(p.reqSummerWarm&&st<18)r.push("No warm summer: the warmest month averages "+t(st)+", below the "+t(18)+" you require");
+  if(p.reqWinterCool&&wt>=18)r.push("No cool winter: the coolest month averages "+t(wt)+", above the "+t(18)+" you require");
+  return r;
+}
 function livScoreAnnotations(entry){
   if(!entry||!entry.monthly||entry.monthly.length<12)return"";
   var p=getLivPrefs();
@@ -3737,18 +3790,9 @@ function livScoreAnnotations(entry){
   var totalPrecip=totalRain+totalSnow; // liquid-equivalent: 10:1 snow:water depth ratio means snow cm ≈ extra liquid mm
   var sun=entry.sun||0;
   var wind=entry.wind||0;
-  // Hard fail annotations — report all triggered fails
-  var fails=[];
-  if(p.hfHeat&&st>p.heatMax)fails.push("summers too hot");
-  if(p.hfHeat&&hotmaxMax>p.heatMax+3)fails.push("extreme heat too high");
-  if(p.hfCold&&coldtminMin<p.coldMin)fails.push("extreme cold too low");
-  if(p.hfDp&&peakDp>p.dpMax)fails.push("humidity too high");
-  if(p.hfRain&&totalPrecip<p.rainMin)fails.push("too dry");
-  if(p.hfSun&&sun<p.sunMin)fails.push("not enough sunshine");
-  if(p.hfSnow&&totalSnow>p.snowMax)fails.push("too much snow");
-  if(p.reqSummerWarm&&st<18)fails.push("no warm summer");
-  if(p.reqWinterCool&&wt>=18)fails.push("no cool winter");
-  if(fails.length)return"Hard fail: "+fails.join(", ");
+  // Ruled-out locations: list each broken limit with the figures behind it
+  var ruled=livRuleOutReasons(entry);
+  if(ruled.length)return"Ruled out by your limits:\n\u00B7 "+ruled.join("\n\u00B7 ");
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
   function scoreCeil(val,ceil,sens,hardFail){
@@ -3895,7 +3939,7 @@ function renderLivScore(){
     numEl.style.textShadow="0 0 18px "+col+"80";
     numEl.textContent=score;
   }
-  if(lblEl)lblEl.textContent=livScoreLabel(score);
+  if(lblEl)lblEl.textContent=livRuleOutReasons(entry).length?"Ruled out":livScoreLabel(score);
   if(barEl)drawGauge("liv-vol-bar",score);
   var annEl=document.getElementById("liv-score-ann");
   if(annEl)annEl.textContent=livScoreAnnotations(entry);
@@ -3986,8 +4030,10 @@ function livMapBuildMarkers(){
         weight:1.5,
         fillOpacity:0.9
       });
-      var popHtml="<div style='font-size:13px;font-weight:800;color:"+c+";margin-bottom:2px'>"+s+" \u2014 "+livScoreLabel(s)+"</div>"
+      var ro=livRuleOutReasons(e);
+      var popHtml="<div style='font-size:13px;font-weight:800;color:"+c+";margin-bottom:2px'>"+s+" \u2014 "+(ro.length?"Ruled out":livScoreLabel(s))+"</div>"
         +"<div style='font-size:12px;font-weight:700;margin-bottom:6px'>"+e.name+(e.ter?", "+e.ter:"")+"</div>"
+        +(ro.length?"<div style='font-size:11px;line-height:1.4;color:#777;margin-bottom:6px'>"+ro.map(function(x){return x.split(":")[0];}).join(" \u00B7 ")+"</div>":"")
         +"<button onclick='livMapLoad("+e.lat+","+e.lon+","+JSON.stringify(e.name+(e.ter?", "+e.ter:"")).replace(/'/g,"&#39;")+")' "
         +"style='font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid #2a9fd6;background:#2a9fd6;color:#fff;cursor:pointer;width:100%'>"
         +"Load in Comfort Score</button>";
