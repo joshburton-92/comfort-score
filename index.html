@@ -398,6 +398,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
     <div class="s-panel" id="clim-panel">
       <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
+      <div id="clim-home-cmp" style="display:none;font-size:12px;font-weight:600;line-height:1.5;color:var(--text-sec);margin:-4px 0 12px"></div>
       <div class="clim-chart-grid" id="clim-chart-grid"></div>
       <div class="clim-month-row" id="clim-month-row"></div>
       <table class="clim-table" id="clim-table">
@@ -2203,6 +2204,8 @@ function toggleDefaultLoc(){
   }
 }
 function updateHomeBtn(){
+  // Setting or clearing home changes the "compared with home" line on the current location
+  if(window._climCur!==undefined)renderHomeCompare(window._climCur);
   var btn=document.getElementById("loc-home-btn");
   if(!btn)return;
   var existing=localStorage.getItem("default_loc");
@@ -3441,6 +3444,110 @@ function findClimEntry(lat,lon){
   }
   return best;
 }
+// ── Compared with home ─────────────────────────────────────────────────────
+// Neutral climate similarity between the viewed location and the default ("home") location.
+// Both must have a CLIM_CACHE row. Seasons are aligned across hemispheres (Adelaide's
+// January is compared with London's July). Each difference is scaled to one "noticeable
+// step" — 3° for temperature/dew point, 1.5x for rainfall, 15% for rain seasonality,
+// 400 hrs for sunshine — then weighted into a 0–100 score.
+var HOME_TWIN_MIN_KM=2000;   // "Places most like home" only lists places at least this far away
+var HOME_TWIN_COUNT=5;
+var SIM_W={summer:1.0,winter:1.0,dp:0.9,rain:0.8,season:0.6,sun:0.4,snow:0.5};
+function getHome(){
+  var d=null;
+  try{d=JSON.parse(localStorage.getItem("default_loc")||"null");}catch(e){}
+  if(!d||d.lat==null||d.lon==null)return null;
+  var e=findClimEntry(d.lat,d.lon);
+  return e?{entry:e,label:(d.label||e.name).split(",")[0]}:null;
+}
+function simProfile(e){
+  var m=e&&e.monthly;
+  if(!m||m.length<12)return null;
+  if(e.lat<0)m=m.slice(6).concat(m.slice(0,6));
+  var rain=0,warm=0,snow=0,su=-99,wi=99,dp=-99;
+  for(var i=0;i<12;i++){
+    var x=m[i];
+    if(x.T==null||x.tmin==null||x.dp==null||x.rain==null)return null;
+    rain+=x.rain;snow+=x.snow||0;if(i>=3&&i<=8)warm+=x.rain;
+    su=Math.max(su,x.T);wi=Math.min(wi,x.tmin);dp=Math.max(dp,x.dp);
+  }
+  return{summer:su,winter:wi,dp:dp,rain:rain,season:rain>0?warm/rain:0.5,sun:e.sun||0,snow:snow};
+}
+function simDiffs(h,o){
+  return{
+    summer:(o.summer-h.summer)/3,
+    winter:(o.winter-h.winter)/3,
+    dp:(o.dp-h.dp)/3,
+    rain:Math.log(Math.max(o.rain,50)/Math.max(h.rain,50))/Math.log(1.5),
+    season:(o.season-h.season)/0.15,
+    sun:(o.sun&&h.sun)?(o.sun-h.sun)/400:0,
+    snow:(Math.log(1+o.snow)-Math.log(1+h.snow))/1.2
+  };
+}
+function simScore(d){
+  var s=0,w=0;
+  for(var k in SIM_W){s+=SIM_W[k]*d[k]*d[k];w+=SIM_W[k];}
+  return Math.round(100*Math.exp(-Math.sqrt(s/w)/1.6));
+}
+function simBand(s){return s>=90?"Almost identical":s>=75?"Very similar":s>=60?"Similar":s>=40?"Noticeably different":s>=20?"Very different":"A world apart";}
+function simDetail(h,o,d){
+  var words={summer:["hotter summers","milder summers"],winter:["milder winters","colder winters"],dp:["more humid","less humid"],
+    rain:["wetter","drier"],season:["more summer rain","more winter rain"],sun:["sunnier","cloudier"],snow:["snowier","less snow"]};
+  var list=[];
+  for(var k in d)if(Math.abs(d[k])>=0.7)list.push({k:k,v:d[k],w:SIM_W[k]*Math.abs(d[k])});
+  list.sort(function(a,b){return b.w-a.w;});
+  return list.slice(0,3).map(function(x){
+    var w=words[x.k][x.v>0?0:1];
+    var deg=Math.round(x.v*3*(useFahrenheit?1.8:1)),sg=deg>0?"+":deg<0?"\u2212":"";
+    if(x.k==="summer"||x.k==="winter")return w+" ("+sg+Math.abs(deg)+unitSym()+")";
+    if(x.k==="dp")return w+" (dew point "+sg+Math.abs(deg)+unitSym()+")";
+    if(x.k==="rain")return w+" ("+(o.rain/Math.max(h.rain,1)).toFixed(1)+"\u00D7 the rain)";
+    return w;
+  });
+}
+function renderHomeCompare(entry){
+  window._climCur=entry||null;
+  var el=document.getElementById("clim-home-cmp");
+  if(!el)return;
+  var home=getHome(),hp=home?simProfile(home.entry):null;
+  if(!entry||!hp){el.style.display="none";el.innerHTML="";return;}
+  if(entry===home.entry){
+    // Viewing home itself: list the most similar places a long way away
+    var list=[];
+    for(var i=0;i<CLIM_CACHE.length;i++){
+      var e=CLIM_CACHE[i];
+      var km=haversineKm(home.entry.lat,home.entry.lon,e.lat,e.lon);
+      if(km<HOME_TWIN_MIN_KM)continue;
+      var p=simProfile(e);
+      if(!p)continue;
+      list.push({i:i,s:simScore(simDiffs(hp,p)),km:km});
+    }
+    list.sort(function(a,b){return b.s-a.s;});
+    if(!list.length){el.style.display="none";el.innerHTML="";return;}
+    var html="<div style='font-weight:800;color:var(--text-head);margin-bottom:4px'>\uD83C\uDF0D Places most like home</div>";
+    list.slice(0,HOME_TWIN_COUNT).forEach(function(t){
+      var e=CLIM_CACHE[t.i];
+      html+="<div onclick='homeTwinLoad("+t.i+")' style='cursor:pointer;display:flex;gap:8px;align-items:baseline;padding:3px 0'>"
+        +"<span style='font-weight:800;min-width:24px;text-align:right;color:"+climScoreCol(t.s)+"'>"+t.s+"</span>"
+        +"<span style='flex:1;color:var(--text)'>"+e.name+(e.ter?", "+e.ter:"")+"</span>"
+        +"<span style='font-size:10px;color:var(--text-muted)'>"+Math.round(t.km/100)*100+" km</span></div>";
+    });
+    el.innerHTML=html;el.style.display="block";
+    return;
+  }
+  var op=simProfile(entry);
+  if(!op){el.style.display="none";el.innerHTML="";return;}
+  var d=simDiffs(hp,op),s=simScore(d),det=simDetail(hp,op,d);
+  el.innerHTML="<span style='font-weight:800;color:var(--text-head)'>"+simBand(s)+"</span> "+(s<20?"from":"to")
+    +" your home climate ("+home.label+")"+(det.length?" \u2014 "+det.join(", "):" \u2014 hard to tell apart");
+  el.style.display="block";
+}
+function homeTwinLoad(i){
+  var e=CLIM_CACHE[i];
+  if(!e)return;
+  fetchWeather(e.lat,e.lon,e.name+(e.ter?", "+e.ter:""));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 function toggleClim(){
   var tog=document.getElementById("clim-tog"),panel=document.getElementById("clim-panel");
   tog.classList.toggle("open");panel.classList.toggle("open");
@@ -3467,6 +3574,7 @@ function showClimCard(lat,lon){
     var es=document.getElementById("clim-summary");if(es)es.remove();
     var en=document.getElementById("clim-notes-wrap");if(en)en.remove();
     showLivCard(null);
+    renderHomeCompare(null);
     return;
   }
   var kopHtml=entry.koppen?"<span onclick='showKoppenPop("+JSON.stringify(entry.koppen)+")' style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec);cursor:pointer'>"+entry.koppen+" ↗</span>":"";
@@ -3529,6 +3637,7 @@ function showClimCard(lat,lon){
       +"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'>"+entry.notes+"</div>";
     sumDiv.after(notesWrap);
   }
+  renderHomeCompare(entry);
   showLivCard(entry);
 }
 // ── Liveability preference data ────────────────────────────────────────────
