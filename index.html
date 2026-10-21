@@ -172,6 +172,13 @@ canvas{display:none}
 .ann-aqi{background:rgba(120,80,180,0.15);color:#4a1a7a;border-color:rgba(120,80,180,0.3)}
 .ann-fire{background:rgba(210,80,20,0.15);color:#7a2a00;border-color:rgba(210,80,20,0.3);cursor:pointer}
 .ann-heat{background:rgba(200,25,45,0.18);color:#8a0018;border-color:rgba(200,25,45,0.5);cursor:pointer;font-weight:800}
+.ann-cwave{background:rgba(30,90,210,0.16);color:#0b2f80;border-color:rgba(30,90,210,0.5);cursor:pointer;font-weight:800}
+.ann-csnap{background:rgba(60,125,175,0.1);color:#21506f;border-color:rgba(60,125,175,0.35);cursor:pointer}
+.ann-wb{background:rgba(220,90,0,0.2);color:#7a2c00;border-color:rgba(220,90,0,0.55);cursor:pointer;font-weight:800}
+.ann-wbx{background:rgba(120,0,40,0.85);color:#fff;border-color:rgba(120,0,40,1);cursor:pointer;font-weight:800}
+.ann-wc{background:rgba(20,130,210,0.18);color:#0a3a70;border-color:rgba(20,130,210,0.55);cursor:pointer;font-weight:800}
+.ann-wcx{background:rgba(60,30,150,0.88);color:#fff;border-color:rgba(60,30,150,1);cursor:pointer;font-weight:800}
+.ann-hypo{background:rgba(40,120,150,0.18);color:#0d4558;border-color:rgba(40,120,150,0.55);cursor:pointer;font-weight:800}
 .ann-divider{width:100%;height:1px;background:var(--divider);margin:10px 0 8px;border:none}
 .utility-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;background:var(--toggle-bg);border-radius:16px;padding:10px 12px;margin-top:2px}
 .ann-info{cursor:pointer}
@@ -200,6 +207,13 @@ canvas{display:none}
   .ann-aqi{background:rgba(120,80,180,0.25);color:#b080f0}
     .ann-fire{background:rgba(210,80,20,0.25);color:#ff7040}
   .ann-heat{background:rgba(220,30,50,0.3);color:#ff6070;border-color:rgba(220,60,70,0.6)}
+  .ann-cwave{background:rgba(60,120,240,0.3);color:#9cc0ff;border-color:rgba(90,140,250,0.6)}
+  .ann-csnap{background:rgba(80,150,200,0.16);color:#a8d0ea;border-color:rgba(90,150,200,0.4)}
+  .ann-wb{background:rgba(240,110,20,0.3);color:#ffa060;border-color:rgba(240,110,20,0.6)}
+  .ann-wbx{background:rgba(190,20,70,0.85);color:#fff;border-color:rgba(255,90,130,0.8)}
+  .ann-wc{background:rgba(40,150,230,0.28);color:#8fd0ff;border-color:rgba(60,160,240,0.6)}
+  .ann-wcx{background:rgba(100,70,220,0.85);color:#fff;border-color:rgba(160,140,255,0.8)}
+  .ann-hypo{background:rgba(60,160,190,0.28);color:#9fe0f0;border-color:rgba(80,170,200,0.6)}
   .action-btn{background:var(--card-inner);border-color:var(--card-inner-border)}
 }
 .forecast-wrap-inner{position:relative}
@@ -221,6 +235,21 @@ canvas{display:none}
 .fc-wx{font-size:14px;line-height:1;margin-top:5px}
 .fc-slot-7{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:84px;cursor:pointer}
 .fc-slot-7:active{opacity:0.75}
+.fc-wb{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;background:rgba(220,90,0,0.2);color:#7a2c00;border:1px solid rgba(220,90,0,0.55);white-space:nowrap;display:inline-block}
+.fc-wb-x{background:rgba(120,0,40,0.85);color:#fff;border-color:rgba(120,0,40,1)}
+@media(prefers-color-scheme:dark){.fc-wb{background:rgba(240,110,20,0.3);color:#ffa060;border-color:rgba(240,110,20,0.6)}.fc-wb-x{background:rgba(190,20,70,0.85);color:#fff;border-color:rgba(255,90,130,0.8)}}
+.fc-wc{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;background:rgba(20,130,210,0.18);color:#0a3a70;border:1px solid rgba(20,130,210,0.55);white-space:nowrap;display:inline-block}
+.fc-wc-x{background:rgba(60,30,150,0.88);color:#fff;border-color:rgba(60,30,150,1)}
+@media(prefers-color-scheme:dark){.fc-wc{background:rgba(40,150,230,0.28);color:#8fd0ff;border-color:rgba(60,160,240,0.6)}.fc-wc-x{background:rgba(100,70,220,0.85);color:#fff;border-color:rgba(160,140,255,0.8)}}
+.fc-hypo{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;background:rgba(40,120,150,0.18);color:#0d4558;border:1px solid rgba(40,120,150,0.55);white-space:nowrap;display:inline-block}
+@media(prefers-color-scheme:dark){.fc-hypo{background:rgba(60,160,190,0.28);color:#9fe0f0;border-color:rgba(80,170,200,0.6)}}
+.fc-hw,.fc-cw,.fc-cs{font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;white-space:nowrap}
+/* All 7-day tile tags stack, centred, so two warnings on one day never widen the tile */
+.fc-slot-7 .fc-hw,.fc-slot-7 .fc-cw,.fc-slot-7 .fc-cs,.fc-slot-7 .fc-wb,.fc-slot-7 .fc-wc,.fc-slot-7 .fc-hypo{display:block;width:fit-content;margin:4px auto 0}
+.fc-hw{background:rgba(200,25,45,0.18);color:#8a0018;border:1px solid rgba(200,25,45,0.5)}
+.fc-cw{background:rgba(30,90,210,0.16);color:#0b2f80;border:1px solid rgba(30,90,210,0.5)}
+.fc-cs{background:rgba(60,125,175,0.1);color:#21506f;border:1px solid rgba(60,125,175,0.35);font-weight:700}
+@media(prefers-color-scheme:dark){.fc-hw{background:rgba(220,30,50,0.3);color:#ff6070;border-color:rgba(220,60,70,0.6)}.fc-cw{background:rgba(60,120,240,0.3);color:#9cc0ff;border-color:rgba(90,140,250,0.6)}.fc-cs{background:rgba(80,150,200,0.16);color:#a8d0ea;border-color:rgba(90,150,200,0.4)}}
 .fc-day{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:6px}
 .fc-hilo{display:flex;flex-direction:column;gap:3px}
 .fc-hi{font-size:16px;font-weight:800;line-height:1}
@@ -308,6 +337,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .world-score{font-size:18px;font-weight:800;min-width:36px;text-align:right}
 .world-name{flex:1;font-size:13px;font-weight:700;color:var(--text)}
 .world-cc{font-size:11px;color:var(--text-muted);font-weight:600}
+.hiw-sec{border-bottom:1px solid var(--divider)}
+.hiw-sec:last-child{border-bottom:none}
+.hiw-sec summary{list-style:none;cursor:pointer;font-size:13px;font-weight:800;color:var(--text-head);padding:10px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hiw-sec summary::-webkit-details-marker{display:none}
+.hiw-sec summary::after{content:"\203A";font-size:18px;line-height:1;color:var(--text-muted);transition:transform 0.2s}
+.hiw-sec[open] summary::after{transform:rotate(90deg)}
 .world-loading{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;padding:20px 0}
 .washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
@@ -1257,7 +1292,7 @@ function hwForDate(hwd,dateStr){
   var lo=i,hi=i;
   while(lo>0&&hwd.map[d[lo-1]])lo--;
   while(hi<d.length-1&&hwd.map[d[hi+1]])hi++;
-  var info=hwInfo(e.sev),j;
+  var info=(hwd.info||hwInfo)(e.sev),j;
   // The peak is a BAND of days, not one. Several days routinely round to the
   // same x/10, and singling out the first of them reads as a separate event
   // that has already passed.
@@ -1283,6 +1318,133 @@ function hwToday(fc,clim){
   var today=new Intl.DateTimeFormat("en-CA",{timeZone:fc.timezone||"UTC",
     year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   return hwForDate(hwd,today);
+}
+// ── Coldwave index (Excess Cold Factor, from cache + forecast) ─────────────
+// Mirror of the heatwave index. Constants fitted against 31 years of daily data for
+// 21 cities from Darwin to Harbin (99,090 cold-season three-day windows): 97% exact
+// band agreement with true ECF severity, almost never more than one band out.
+var CW_K=0.49;        // coldwave threshold sits this far below the coldest-month baseline, in Ranges
+var CW_C=0.50;        // ECF85 ~ CW_C * Range^2
+var CW_DROP=0.5;      // daytime-maximum drop on an extreme cold day
+var CW_SEASON=2;      // months either side of the climatological coldest month
+function cwClimatology(entry){
+  if(!entry||!entry.monthly||entry.monthly.length<12)return null;
+  var m=entry.monthly,i,x;
+  for(i=0;i<12;i++){
+    x=m[i];
+    if(!x||x.T==null||x.tmin==null||x.tminMin==null)return null;
+  }
+  var dmtOf=function(a){return (a.T+a.tmin)/2;};
+  var srt=m.slice(0,12).sort(function(a,b){return dmtOf(a)-dmtOf(b);});
+  var Tcold=(dmtOf(srt[0])+dmtOf(srt[1]))/2;
+  var cm=srt[0],sp=cm.tmin-cm.tminMin;
+  var Range=Tcold-(cm.T+cm.tminMin-CW_DROP*sp)/2;
+  if(!(Range>0.5))return null;
+  var pk=1;for(i=0;i<12;i++)if(m[i]===cm){pk=i+1;break;}
+  return{Tcold:Tcold,Range:Range,thresh:Tcold-CW_K*Range,peak:pk};
+}
+function cwInfo(s){
+  if(s>=3)return{label:"Extreme coldwave",col:"rgba(90,40,180,1)",band:3};
+  if(s>=1)return{label:"Severe coldwave",col:"rgba(30,90,210,1)",band:2};
+  return{label:"Cold snap",col:"rgba(60,125,175,1)",band:1};
+}
+// Same per-calendar-day scan as heatwaveDays, mirrored for cold
+function coldwaveDays(fc,clim){
+  if(!fc||!fc.daily||!fc.daily.time||!clim)return null;
+  var dates=fc.daily.time,tx=fc.daily.temperature_2m_max,tn=fc.daily.temperature_2m_min;
+  if(!tx||!tn)return null;
+  var n=dates.length,dmt=[],i,j,map={};
+  for(i=0;i<n;i++){
+    dmt.push((i+1<n&&tx[i]!=null&&tn[i+1]!=null)?(tx[i]+tn[i+1])/2:null);
+  }
+  for(i=30;i<n-2;i++){
+    var mo=parseInt(dates[i].slice(5,7),10),dm=Math.abs(mo-clim.peak);
+    if(dm>6)dm=12-dm;
+    if(dm>CW_SEASON)continue;
+    var ok=true;
+    for(j=i-30;j<i+3;j++){if(dmt[j]==null){ok=false;break;}}
+    if(!ok)continue;
+    var d3=(dmt[i]+dmt[i+1]+dmt[i+2])/3,s30=0;
+    for(j=i-30;j<i;j++)s30+=dmt[j];
+    var d30=s30/30;
+    var sig=(clim.thresh-d3)/clim.Range;
+    if(sig<=0)continue;
+    var sev=sig*Math.max(1,d30-d3)/(CW_C*clim.Range);
+    for(j=i;j<i+3;j++){
+      if(!map[dates[j]]||sev>map[dates[j]].sev)
+        map[dates[j]]={sev:sev,d3:d3,d30:d30,winStart:dates[i]};
+    }
+  }
+  return{dates:dates,map:map,clim:clim,lastDay:n-3,info:cwInfo};
+}
+function cwAdvice(band){
+  var a="<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65'>"
+    +"Keep your home warm \u2014 around 18\u00B0C or more in the rooms you use \u2014 especially for older people, babies and anyone unwell. Wear layers indoors as well as out, and check on neighbours who are elderly or living alone.";
+  if(band>=2)a+=" At this level cold raises the risk of heart attacks, strokes and chest infections for people who are otherwise well, not only the frail. Avoid long spells in cold rooms, eat warm meals, and keep hard outdoor exertion short. Never run an outdoor gas heater, barbecue or generator indoors \u2014 carbon monoxide kills.";
+  if(band>=3)a+=" Extreme cold is dangerous to everyone. Limit time outdoors, protect water pipes where freezing is a risk, and make sure anyone without reliable heating has somewhere warm to go.";
+  a+=" Follow your local weather service and health authority for official cold warnings.</div>";
+  return a;
+}
+function showColdwavePop(dateStr,backDi){
+  var h=window._CWDAYS?hwForDate(window._CWDAYS,dateStr||window._CWPILLDATE):null;
+  var back=backDi!==undefined&&backDi!==null?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>\u2190 Back</div>":"";
+  var body,title="Coldwave \u2744\uFE0F";
+  if(!h){
+    body="<div class='washing-reason'><div style='font-size:12px;color:var(--text-muted)'>No coldwave conditions for this day.</div>"+back+"</div>";
+  }else{
+    if(h.band===1)title="Cold snap \u2744\uFE0F";
+    var nowStr=new Intl.DateTimeFormat("en-CA",{timeZone:(window._FC&&window._FC.timezone)||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    var startTxt=h.start===nowStr?"Started today":(h.start<nowStr?"Began "+hwDayFmt(h.start):"Starts "+hwDayFmt(h.start));
+    var endTxt=h.openEnded?"still going at the end of the forecast"
+      :(h.end===nowStr?"easing after today"
+      :(h.end>nowStr?"easing after "+hwDayFmt(h.end):"eased after "+hwDayFmt(h.end)));
+    var tail=h.openEnded?" \u2014 at least "+h.days+" days so far"
+      :" \u2014 "+(h.days===1?"a single day":h.days+" days")+" in all";
+    var dur=startTxt+", "+endTxt+tail+".";
+    var peakTxt="";
+    if(!h.atPeak){
+      var pr=h.peakFrom===h.peakTo?hwDayFmt(h.peakFrom):hwDayFmt(h.peakFrom)+" \u2013 "+hwDayFmt(h.peakTo);
+      var pv=h.peakTo<nowStr?"Peaked ":(h.peakFrom>nowStr?"Peaks ":"Peaking ");
+      peakTxt=pv+pr+" at "+h.peakScale+"/10.";
+    }
+    var rule="<div style='height:1px;background:var(--divider);margin:11px 0 10px'></div>";
+    var deg=function(v){return String(toDisp(v).toFixed(1)).replace("-","\u2212")+unitSym();};
+    body="<div class='washing-reason'>"
+      +"<div style='font-size:15px;font-weight:800;color:"+h.col+";margin-bottom:1px'>"+h.label+" \u2014 "+h.scale+"/10</div>"
+      +"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:9px'>"+hwDayFmt(h.date)+"</div>"
+      +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5'>"+dur+"</div>"
+      +(peakTxt?"<div style='font-size:13px;font-weight:700;color:var(--text-muted);margin-top:3px'>"+peakTxt+"</div>":"")
+      +rule
+      +cwAdvice(h.band)
+      +rule
+      +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>"
+      +"Three-day mean temperature "+deg(h.d3)+" against a local coldwave threshold of "+deg(h.thresh)+", with the preceding 30 days averaging "+deg(h.d30)+". "
+      +"Intensity follows the Excess Cold Factor method, the cold counterpart of the Excess Heat Factor: it measures cold against both the local climate and the month before it, so a spell that passes unremarked in one city can be severe in another. "
+      +"Cold snaps are the low-intensity end (1\u20133/10); severe and extreme coldwaves start at 4/10. "
+      +"This is an independent calculation from this app\u2019s own climate data on a present-day baseline, not an official warning product, and it may differ from your local service\u2019s assessment.</div>"
+      +back+"</div>";
+  }
+  document.getElementById("pop-ttl").innerHTML=title;
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
+// Heat- and cold-wave readings for the 7-day tiles, worked out once per forecast
+function waveDaysFor(fc){
+  if(window._WAVEFC===fc&&window._WAVEDAYS)return window._WAVEDAYS;
+  var ent=(fc&&typeof findClimEntry==="function")?findClimEntry(fc.latitude,fc.longitude):null;
+  var hc=ent?hwClimatology(ent):null,cc=ent?cwClimatology(ent):null;
+  window._WAVEFC=fc;
+  window._WAVEDAYS={hw:hc?heatwaveDays(fc,hc):null,cw:cc?coldwaveDays(fc,cc):null};
+  return window._WAVEDAYS;
+}
+function waveTileTags(fc,dateStr){
+  var w=waveDaysFor(fc),out="";
+  if(w.hw&&w.hw.map[dateStr])out+="<div class='fc-hw'>\uD83C\uDF21\uFE0F Heatwave</div>";
+  if(w.cw&&w.cw.map[dateStr]){
+    var b=cwInfo(w.cw.map[dateStr].sev).band;
+    out+="<div class='"+(b>=2?"fc-cw":"fc-cs")+"'>\u2744\uFE0F "+(b>=2?"Coldwave":"Cold snap")+"</div>";
+  }
+  return out;
 }
 function hwAdvice(band){
   var a="<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65'>"
@@ -1488,8 +1650,8 @@ var SETTINGS=[
   {id:"s-hmax",label:"Humidity max penalty (pts)",val:50,step:1,title:"Humidity penalty ceiling",info:"The maximum score points humidity can take off. Raise this if humidity affects your comfort more than temperature does."},
   {id:"s-hdp_ceil",label:"Humidity DP ceiling (C)",val:26,step:0.5,title:"Extreme humidity reference point",info:"The dew point at which humidity penalty reaches its maximum. Lower this if you want tropical-level dew points to hit maximum penalty sooner."},
   {id:"s-hexp",label:"Humidity curve exponent",val:0.6,step:0.05,title:"Humidity penalty shape",info:"Controls how the humidity penalty ramps up. Below 1.0, even mild humidity gets a meaningful penalty quickly, then levels off toward maximum."},
-  {id:"s-int",label:"Interaction penalty (pts)",val:8,step:0.5,title:"Heat and humidity combined penalty",info:"An extra penalty that only fires when both temperature AND humidity are above your comfortable range at the same time."},
-  {id:"s-iscale",label:"Interaction scaling (x)",val:1.2,step:0.1,title:"Combined penalty aggressiveness",info:"Controls how quickly the heat and humidity combined penalty reaches its maximum."},
+  {id:"s-wb0",label:"Heat stress starts (wet bulb \u00B0C)",val:21,step:0.5,title:"Heat stress threshold",info:"Above your comfort ceiling, a heat-stress penalty starts once the wet-bulb temperature passes this value. Wet bulb combines heat and humidity into one number: it is the lowest temperature sweat can cool you to. The penalty builds over the next 8\u00B0C of wet bulb. Lower this if hot, humid days wear you down quickly."},
+  {id:"s-wbmax",label:"Heat stress max penalty (pts)",val:25,step:1,title:"Heat stress penalty ceiling",info:"The maximum score points the heat-stress (wet bulb) penalty can take off. It sits on top of the temperature and humidity penalties, so it mainly separates hot-and-humid from hot-and-dry."},
   {grp:"Wind"},
   {id:"s-wmax",label:"Wind max penalty (pts)",val:20,step:1,title:"Wind penalty ceiling",info:"The maximum score points wind can take off. A gentle breeze in comfortable conditions can add a small bonus to the score."},
   {id:"s-wchill_thresh",label:"Wind chill threshold (C)",val:10,step:0.5,title:"Wind chill activation temperature",info:"Wind only adds a chill penalty when below this temperature. Lower this to make wind chill kick in only at genuinely cold temperatures."},
@@ -1500,12 +1662,29 @@ var SETTINGS=[
 ];
 function showPop(title,text){document.getElementById("pop-ttl").textContent=title;document.getElementById("pop-body").textContent=text;document.getElementById("pop-ov").classList.add("open");}
 function closePop(){document.getElementById("pop-ov").classList.remove("open");}
+// Folds each bold heading + its paragraph in "How it works" into a tap-to-open section.
+// Works on the rendered popup, so new sections added to the text get the same treatment.
+function hiwCollapse(wrap){
+  if(!wrap)return;
+  var isHead=function(el){return el&&/font-weight:\s*800/.test(el.getAttribute("style")||"");};
+  var kids=[].slice.call(wrap.children);
+  for(var i=0;i<kids.length;i++){
+    var h=kids[i];
+    if(!isHead(h))continue;
+    var d=document.createElement("details"),s=document.createElement("summary");
+    d.className="hiw-sec";s.textContent=h.textContent;
+    wrap.insertBefore(d,h);d.appendChild(s);
+    var c=kids[i+1];
+    if(c&&!isHead(c)){c.style.margin="0 0 10px";d.appendChild(c);i++;}
+    h.remove();
+  }
+}
 function showHowItWorks(){
   var body="<div class='washing-reason pop-body-scroll'>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>The Comfort Score</div>"
     +"<div style='margin-bottom:12px'>A score from 0–100 representing how comfortable it is to be outside, personalised to your preferences. 100 is perfect. Penalties are applied for heat, cold, humidity, and wind based on your comfort range settings — so two people in the same place can get different scores.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Why dew point, not humidity?</div>"
-    +"<div style='margin-bottom:12px'>Relative humidity tells you how full the air is compared to its capacity — but capacity changes with temperature. A 70% humidity day at 10°C feels crisp; at 30°C it's oppressive. Dew point measures the actual moisture in the air regardless of temperature, making it a far better indicator of how sticky or clammy conditions feel.</div>"
+    +"<div style='margin-bottom:12px'>Relative humidity tells you how full the air is compared to its capacity — but capacity changes with temperature. A 70% humidity day at 10°C feels crisp; at 30°C it's oppressive. Dew point measures the actual moisture in the air regardless of temperature, making it a far better indicator of how sticky or clammy conditions feel. Once it is hotter than your comfort ceiling, the score also uses wet-bulb temperature, which combines heat and humidity into the lowest temperature sweat can cool you to — so the same humidity costs more the hotter it gets. When wet bulb reaches 28°C a “Dangerously hot” warning appears, and at 31°C “Extremely dangerous heat”.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Clothing recommendation</div>"
     +"<div style='margin-bottom:12px'>Layers are calculated from your comfort floor and ceiling, adjusted for wind chill. The outer layer accounts for rain and wind independently — a rain jacket replaces rather than adds to the insulating layer recommendation.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
@@ -1520,11 +1699,18 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>Shows the US AQI (Air Quality Index) from 0–500. The pill appears when AQI is Good (≤50) or above. Tapping it shows a breakdown of PM2.5, PM10, ozone, nitrogen dioxide, sulphur dioxide, dust, and pollen. PM2.5 (fine particulate matter) is the primary driver of health risk — it penetrates deep into the lungs and is the main concern during bushfire smoke events. Pollen data is only available for Europe. Data from Open-Meteo Air Quality API.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Fire Danger 🔥</div>"
     +"<div style='margin-bottom:12px'>Uses the McArthur FFDI formula — temperature, humidity, wind, and an estimated drought factor — mapped to the current Australian Fire Danger Rating System (AFDRS) bands introduced in September 2022. The drought factor is calculated from recent rainfall weighted by daily evaporative demand: rain suppresses fire risk for longer in cool, humid conditions and decays faster in hot, dry conditions. It may still understate risk during prolonged dry periods. The official AFDRS also accounts for fuel type and vegetation, which this app cannot determine. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Dangerous cold 🥶</div>"
+    +"<div style='margin-bottom:12px'>Uses the North American wind chill index — how cold bare skin feels once wind is taken into account — with thresholds from Environment Canada's frostbite risk table. At a wind chill of −28°C or below a “Dangerously cold” warning appears (exposed skin can freeze in 10–30 minutes); at −40°C or below, “Extremely dangerous cold” (5–10 minutes). The What to Wear advice switches to full coverage and specialist gear at the same two points.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Hypothermia risk 🌧️</div>"
+    +"<div style='margin-bottom:12px'>The cold hazard of mild climates: rain soaks clothing and wind strips its warmth, so a few degrees above zero can be more dangerous than a dry frost. The warning appears when it is 8°C or colder, the wind averages 30 km/h or more, and it is raining. In the forecast, a day is flagged when at least two such hours are expected. It stays quiet when a frostbite warning is already showing.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Heatwaves & coldwaves 🌡️❄️</div>"
+    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within 20 km. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Low-intensity cold spells are called cold snaps. Both are independent calculations, not official warnings.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
     +"<div>Weather data: Open-Meteo (open-meteo.com) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
   document.getElementById("pop-ttl").textContent="How it works";
   document.getElementById("pop-body").innerHTML=body;
+  hiwCollapse(document.querySelector("#pop-body .pop-body-scroll"));
   document.getElementById("pop-ov").classList.add("open");
 }
 function buildSettings(){
@@ -1542,7 +1728,7 @@ function scheduleRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTime
 // ── Get settings ───────────────────────────────────────────────────────────
 function gs(){
   function v(id){var el=document.getElementById(id);return el?(parseFloat(el.value)||0):0;}
-  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:_coolmax||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,int:v("s-int")||8,iscale:v("s-iscale")||1.2,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
+  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:_coolmax||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,wb0:v("s-wb0")||21,wbmax:v("s-wbmax")||25,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
 }
 
 // ── Calc ───────────────────────────────────────────────────────────────────
@@ -1581,8 +1767,14 @@ tP=Math.min(s.tmax,tP);
   var mid2=(s.tlo+s.thi)/2;
   var hTempScale=Math.max(0,Math.min(1,(temp-s.tlo)/(s.thi-s.tlo)));
   hP=hP*hTempScale;
+  // Heat stress: above the comfort ceiling, penalise by wet-bulb temperature, which rises
+  // with BOTH heat and humidity — so humidity's cost grows as it gets hotter. Ramps from
+  // s.wb0 to s.wb0+8. (Kept in iP so the breakdown and annotations need no changes.)
   var iP=0;
-  if(temp>s.thi&&dp>s.dp)iP=Math.min(s.int,s.int*Math.min(1,(temp-s.thi)/10)*Math.min(1,(dp-s.dp)/10)*s.iscale);
+  if(temp>s.thi){
+    var wbF=Math.max(0,Math.min(1,(wetBulb(temp,dp)-s.wb0)/8));
+    iP=Math.pow(wbF,1.3)*s.wbmax;
+  }
   var mid=(s.tlo+s.thi)/2,wBase=0;
   if(wind>=s.pwlo){if(wind<=s.pwhi)wBase=temp>=s.tlo?-2*(1-Math.min(1,Math.max(0,Math.abs(temp-mid)/5))):0;else if(wind<=s.swt)wBase=(wind-s.pwhi)/(s.swt-s.pwhi)*s.wmax*0.4;else wBase=s.wmax*0.4+(wind-s.swt)/Math.max(1,120-s.swt)*s.wmax*0.6;}
   var wChill=0;
@@ -1594,6 +1786,174 @@ tP=Math.min(s.tmax,tP);
 
 // ── Display ────────────────────────────────────────────────────────────────
 function bandForScore(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<SBANDS.length;i++)if(v<=SBANDS[i].max)return i;return SBANDS.length-1;}
+// Wet-bulb temperature from air temperature and dew point (Stull 2011, valid −20–50°C, RH 5–99%)
+function wetBulb(t,dp){
+  var es=function(x){return 6.112*Math.exp(17.62*x/(243.12+x));};
+  var rh=Math.max(5,Math.min(99,100*es(dp)/es(t)));
+  return t*Math.atan(0.151977*Math.sqrt(rh+8.313659))+Math.atan(t+rh)-Math.atan(rh-1.676331)
+    +0.00391838*Math.pow(rh,1.5)*Math.atan(0.023101*rh)-4.686035;
+}
+// Two-tier heat-stress pill: wet bulb ≥ 28°C dangerous, ≥ 31°C extremely dangerous
+var WB_DANGER=28,WB_EXTREME=31;
+function wetBulbPill(t,dp){
+  if(t==null||dp==null||isNaN(t)||isNaN(dp))return"";
+  var w=wetBulb(t,dp);
+  if(w<WB_DANGER)return"";
+  var ext=w>=WB_EXTREME;
+  return"<span class='ann "+(ext?"ann-wbx":"ann-wb")+"' onclick='showWetBulbPop("+t+","+dp+")'>"
+    +(ext?"\uD83D\uDEA8 Extremely dangerous heat":"\uD83E\uDD75 Dangerously hot")+"</span>";
+}
+// ── Dangerous cold (wind chill) ────────────────────────────────────────────
+// North American wind chill index (Environment Canada / US NWS). Applies at or below 0°C;
+// below 5 km/h uses Environment Canada's light-wind version. Tiers follow Environment
+// Canada's frostbite risk table: −28 (skin freezes in 10–30 min) and −40 (5–10 min).
+var WC_DANGER=-28,WC_EXTREME=-40;
+function windChill(t,wind){
+  if(t==null||isNaN(t))return null;
+  var v=wind==null||isNaN(wind)?0:wind;
+  if(t>0)return t;
+  if(v<5)return t+((-1.59+0.1345*t)/5)*v;
+  var p=Math.pow(v,0.16);
+  return 13.12+0.6215*t-11.37*p+0.3965*t*p;
+}
+function coldTier(t,wind){
+  var wc=windChill(t,wind);
+  return wc==null?0:wc<=WC_EXTREME?2:wc<=WC_DANGER?1:0;
+}
+function coldPill(t,wind){
+  var tier=coldTier(t,wind);
+  if(!tier)return"";
+  return"<span class='ann "+(tier===2?"ann-wcx":"ann-wc")+"' onclick='showColdPop("+t+","+(wind||0)+")'>"
+    +(tier===2?"\uD83D\uDEA8 Extremely dangerous cold":"\uD83E\uDD76 Dangerously cold")+"</span>";
+}
+function showColdPop(t,wind,backDi){
+  var wc=windChill(t,wind),tier=coldTier(t,wind);
+  var neg=function(x){return String(x).replace("-","\u2212");};
+  var wcTxt=neg(Math.round(toDisp(wc)))+unitSym();
+  var freeze=wc<=-55?"in under 2 minutes":wc<=-48?"in 2 to 5 minutes":wc<=-40?"in 5 to 10 minutes":"in 10 to 30 minutes";
+  showPop((tier===2?"Extremely dangerous cold":"Dangerously cold")+" \u2014 wind chill "+wcTxt,
+    "Wind chill is how cold it feels on bare skin once the wind is taken into account. "
+    +"Right now it is "+wcTxt+" ("+neg(toDisp(t).toFixed(1))+unitSym()+" air, "+Math.round(wind||0)+" km/h wind).\n\n"
+    +"At this wind chill, exposed skin can freeze "+freeze+"."+(wind>50?" In winds over 50 km/h it can happen faster still.":"")+"\n\n"
+    +(tier===2
+      ?"Limit time outdoors as much as possible. Cover every patch of skin, including face and hands, wear insulated layers with a windproof outer shell, and watch for numb, white or waxy skin. Don't travel without warm clothing and supplies in case you're stranded."
+      :"Cover exposed skin — face, ears, hands — and wear insulated layers under a windproof outer shell. Keep time outdoors short, stay dry, and watch for numbness or pale skin, the first signs of frostbite.")
+    +"\n\nFollow advice from your local weather service and health authority.");
+  if(backDi!==undefined&&backDi!==null){
+    var bk=document.createElement("div");
+    bk.style.cssText="margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;white-space:normal";
+    bk.textContent="\u2190 Back";
+    bk.onclick=function(){show7DaySlot(backDi);};
+    document.getElementById("pop-body").appendChild(bk);
+  }
+}
+// Lowest wind chill across a day's forecast slots ({temp,wind,utcMs}); futureOnly skips hours already past
+function dayMinWindChill(slots,futureOnly){
+  var now=Date.now(),best=null;
+  for(var i=0;i<slots.length;i++){
+    var sl=slots[i];
+    if(sl.temp==null)continue;
+    if(futureOnly&&sl.utcMs<now-3600000)continue;
+    var wc=windChill(sl.temp,sl.wind);
+    if(!best||wc<best.wc)best={wc:wc,slot:sl};
+  }
+  return best;
+}
+function wcTileTag(slots,futureOnly){
+  var pk=dayMinWindChill(slots,futureOnly);
+  if(!pk||pk.wc>WC_DANGER)return"";
+  var ext=pk.wc<=WC_EXTREME;
+  return"<div class='fc-wc"+(ext?" fc-wc-x":"")+"'>"+(ext?"\uD83D\uDEA8 Extreme":"\uD83E\uDD76 Dangerous")+"</div>";
+}
+// ── Hypothermia risk (cold + wet + wind) ───────────────────────────────────
+// The cold hazard of mild climates: rain soaks clothing and wind strips its warmth.
+// An hour qualifies at ≤ HYPO_T °C with mean wind ≥ HYPO_WIND km/h and rain
+// (≥ HYPO_MM mm in the hour, or a rain/drizzle/sleet code when no amount is known;
+// wet snow counts near 0°C). Forecast days need ≥ HYPO_HOURS such hours.
+var HYPO_T=8,HYPO_WIND=30,HYPO_MM=0.3,HYPO_HOURS=2;
+function hypoWet(code,mm,t){
+  if(mm!=null&&!isNaN(mm))return mm>=HYPO_MM;
+  if(code==null)return false;
+  if((code>=51&&code<=67)||(code>=80&&code<=82))return true;
+  return ((code>=71&&code<=77)||code===85||code===86)&&t>=-1;
+}
+function hypoHour(t,wind,code,mm){
+  if(t==null||wind==null||isNaN(t)||isNaN(wind))return false;
+  if(coldTier(t,wind))return false;              // frostbite warning already covers it
+  return t<=HYPO_T&&wind>=HYPO_WIND&&hypoWet(code,mm,t);
+}
+function hypoPill(t,wind,code,mm){
+  if(!hypoHour(t,wind,code,mm))return"";
+  return"<span class='ann ann-hypo' onclick='showHypoPop("+t+","+wind+")'>\uD83C\uDF27\uFE0F Hypothermia risk</span>";
+}
+function showHypoPop(t,wind,backDi,hours){
+  var tTxt=String(toDisp(t).toFixed(1)).replace("-","\u2212")+unitSym();
+  showPop("Hypothermia risk",
+    "Cold rain and strong wind together are the most common cause of hypothermia in mild climates. Wet clothing loses most of its insulation, and wind strips heat from it far faster than still air \u2014 so a few degrees above zero in rain and wind can chill you faster than a dry, still frost.\n\n"
+    +(hours?"Expected for about "+hours+" hour"+(hours>1?"s":"")+", at worst ":"Right now: ")+tTxt+" with rain and "+Math.round(wind)+" km/h wind.\n\n"
+    +"If you're outdoors \u2014 walking, cycling, working \u2014 wear a waterproof, windproof outer shell over wool or synthetic layers (not cotton), carry a spare dry layer, and keep moving or get under cover. Watch for uncontrolled shivering, clumsiness, slurred speech or confusion in yourself and others. Newly shorn sheep and young livestock are especially vulnerable in these conditions.\n\n"
+    +"Follow advice from your local weather service and health authority.");
+  if(backDi!==undefined&&backDi!==null){
+    var bk=document.createElement("div");
+    bk.style.cssText="margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;white-space:normal";
+    bk.textContent="\u2190 Back";
+    bk.onclick=function(){show7DaySlot(backDi);};
+    document.getElementById("pop-body").appendChild(bk);
+  }
+}
+// Qualifying hours in a day's slots ({temp,wind,rain,idx,utcMs}); codes = fc.hourly.weather_code
+function dayHypo(slots,codes,futureOnly){
+  var now=Date.now(),n=0,first=null,worst=null;
+  for(var i=0;i<slots.length;i++){
+    var sl=slots[i];
+    if(futureOnly&&sl.utcMs<now-3600000)continue;
+    if(!hypoHour(sl.temp,sl.wind,codes?codes[sl.idx]:null,sl.rain))continue;
+    n++;
+    if(!first)first=sl;
+    if(!worst||(sl.temp-sl.wind/10)<(worst.temp-worst.wind/10))worst=sl;
+  }
+  return n>=HYPO_HOURS?{n:n,first:first,worst:worst}:null;
+}
+function hypoTileTag(slots,codes,futureOnly){
+  return dayHypo(slots,codes,futureOnly)?"<div class='fc-hypo'>\uD83C\uDF27\uFE0F Hypothermia</div>":"";
+}
+// Peak wet bulb across a day's forecast slots ({temp,dp,utcMs}); futureOnly skips hours already past
+function dayPeakWetBulb(slots,futureOnly){
+  var now=Date.now(),best=null;
+  for(var i=0;i<slots.length;i++){
+    var sl=slots[i];
+    if(sl.temp==null||sl.dp==null)continue;
+    if(futureOnly&&sl.utcMs<now-3600000)continue;
+    var w=wetBulb(sl.temp,sl.dp);
+    if(!best||w>best.w)best={w:w,slot:sl};
+  }
+  return best;
+}
+// Small tag for a 7-day tile when the day's peak wet bulb is dangerous
+function wbTileTag(slots,futureOnly){
+  var pk=dayPeakWetBulb(slots,futureOnly);
+  if(!pk||pk.w<WB_DANGER)return"";
+  var ext=pk.w>=WB_EXTREME;
+  return"<div class='fc-wb"+(ext?" fc-wb-x":"")+"'>"+(ext?"\uD83D\uDEA8 Extreme":"\uD83E\uDD75 Dangerous")+"</div>";
+}
+function showWetBulbPop(t,dp,backDi){
+  var w=wetBulb(t,dp),ext=w>=WB_EXTREME;
+  var wTxt=toDisp(w).toFixed(1)+unitSym();
+  showPop((ext?"Extremely dangerous heat":"Dangerously hot")+" \u2014 wet bulb "+wTxt,
+    "Wet-bulb temperature combines heat and humidity: it is the lowest temperature your sweat can cool you to. "
+    +"Right now it is "+wTxt+" ("+toDisp(t).toFixed(1)+unitSym()+" air, "+toDisp(dp).toFixed(1)+unitSym()+" dew point).\n\n"
+    +(ext
+      ?"Above about 31\u00B0C wet bulb, even fit, healthy people resting in the shade struggle to shed heat. Avoid exertion entirely, stay somewhere cooled, drink water steadily, and check on anyone elderly, very young or unwell."
+      :"Above about 28\u00B0C wet bulb, sweating stops cooling you effectively and heat illness can set in quickly with any exertion. Avoid strenuous activity, rest in shade or air-conditioning, and drink water regularly.")
+    +"\n\nFollow advice from your local weather service and health authority.");
+  if(backDi!==undefined&&backDi!==null){
+    var bk=document.createElement("div");
+    bk.style.cssText="margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;white-space:normal";
+    bk.textContent="\u2190 Back";
+    bk.onclick=function(){show7DaySlot(backDi);};
+    document.getElementById("pop-body").appendChild(bk);
+  }
+}
 function scoreInfo(s){
   if(s>90)return{label:"Excellent",emoji:"\uD83D\uDE0A",col:"#1a7a3a"};
   if(s>75)return{label:"Good",emoji:"\uD83D\uDE42",col:"#3a9a2a"};
@@ -1686,6 +2046,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   }
   var annHtml="";
   for(var i=0;i<condAnns.length;i++)annHtml+=annSpan(condAnns[i]);
+  // Heat-stress pill — from current temperature and dew point, so it needs no forecast
+  annHtml+=wetBulbPill(temp,effDP);
+  annHtml+=coldPill(temp,wind);
+  annHtml+=hypoPill(temp,wind,wxCode,null);
   // Hazard pills: UV, AQI, Fire — inserted between conditions and verdict
   if(areaId==="live-score-area"&&window._FC){
     // UV — always shown during daylight, even when low
@@ -1743,6 +2107,26 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
             window._HWPILLDATE=hw.date;
             annHtml+="<span class='ann ann-heat' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showHeatwavePop(\""+hw.date+"\",null)'>"
               +"\uD83C\uDF21\uFE0F Heatwave</span>";
+          }
+        }
+      }
+    }
+    // Coldwave pill — today or tomorrow, same rules as the heatwave pill.
+    // Low intensity reads as a quieter "Cold snap"; severe and extreme as "Coldwave".
+    window._CWDAYS=null;window._CWPILLDATE=null;
+    if(window._FC&&typeof findClimEntry==="function"){
+      var cwEnt=findClimEntry(window._FC.latitude,window._FC.longitude);
+      var cwClim=cwEnt?cwClimatology(cwEnt):null;
+      if(cwClim){
+        window._CWDAYS=coldwaveDays(window._FC,cwClim);
+        if(window._CWDAYS){
+          var cwD0=new Date(),cwFmt=new Intl.DateTimeFormat("en-CA",{timeZone:window._FC.timezone||"UTC",year:"numeric",month:"2-digit",day:"2-digit"});
+          var cA=hwForDate(window._CWDAYS,cwFmt.format(cwD0)),cB=hwForDate(window._CWDAYS,cwFmt.format(new Date(cwD0.getTime()+86400000)));
+          var cw=(cA&&cB)?(cB.sev>cA.sev?cB:cA):(cA||cB);
+          if(cw){
+            window._CWPILLDATE=cw.date;
+            annHtml+="<span class='ann "+(cw.band>=2?"ann-cwave":"ann-csnap")+"' onclick='showColdwavePop(\""+cw.date+"\",null)'>"
+              +"\u2744\uFE0F "+(cw.band>=2?"Coldwave":"Cold snap")+"</span>";
           }
         }
       }
@@ -1819,7 +2203,7 @@ function showBreakdown(tP,hP,iP,wP,score){
     lines.push({l:tLbl,pts:-Math.round(tP),bonus:false});
   }
   if(Math.round(hP)>0)lines.push({l:"Humid air",pts:-Math.round(hP),bonus:false});
-  if(Math.round(iP)>0)lines.push({l:"Hot & steamy",pts:-Math.round(iP),bonus:false});
+  if(Math.round(iP)>0)lines.push({l:"Heat stress (wet bulb)",pts:-Math.round(iP),bonus:false});
   if(Math.round(wP)<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP),bonus:true});
   else if(Math.round(wP)>0)lines.push({l:"Windy",pts:-Math.round(wP),bonus:false});
   var rows="";
@@ -2885,7 +3269,7 @@ function whatToWear(temp,wind,wxCode,s,dp){
   } else if(windProof){
     extra="+ windproof layer 🌬️";
   }
-  return{layerLabel:layerLabel,extra:extra,apparentTemp:apparentTemp,layers:layers};
+  return{layerLabel:layerLabel,extra:extra,apparentTemp:apparentTemp,layers:layers,coldTier:coldTier(temp,wind)};
 }
 function showWearPop(temp,wind,wxCode,dp){
   var fromTitle=document.getElementById("pop-ttl").textContent;
@@ -2914,9 +3298,9 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
   var body="<div class='washing-reason'>"
         +(tooHot
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Little to none</div>"
-      :w.apparentTemp<-40
+      :w.coldTier>=2
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
-      :w.apparentTemp<-25
+      :w.coldTier>=1
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
       :dispLayers===0
             ?(hasWindRain?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Wind/rainproof jacket recommended</div>"
@@ -2926,7 +3310,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
       +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>")
         +(dispLayers===0&&(hasRain||hasWindRain)?"":outerLine)
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
-        +(tooHot||justGetWet||w.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
+        +(tooHot||justGetWet||w.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
     +(uvSunW?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSunW+"</div>":"")
     +"</div>";
   document.getElementById("pop-ttl").innerHTML="What to wear?";
@@ -2988,7 +3372,7 @@ function render7Day(fc){
         +"<div class='fc-hitime'>"+tmxTime+"</div>"
         +"<div class='fc-lo' style='color:"+tmnNc+"'>\u2193"+tmn+"</div>"
         +"<div class='fc-hitime'>"+tmnTime+"</div>"
-        +"</div></div>"
+        +"</div>"+waveTileTags(fc,todayStr)+wbTileTag(useSlots,true)+wcTileTag(useSlots,true)+hypoTileTag(useSlots,fc.hourly.weather_code,true)+"</div>"
         +"<div style='width:2px;background:var(--card-border);border-radius:2px;margin:4px 6px;align-self:stretch'></div>";
     }
   }
@@ -3015,7 +3399,7 @@ function render7Day(fc){
       +"<div class='fc-hitime'>"+maxTime+"</div>"
       +"<div class='fc-lo' style='color:"+minNc+"'>\u2193"+minScore+"</div>"
       +"<div class='fc-hitime'>"+minTime+"</div>"
-      +"</div></div>";
+      +"</div>"+waveTileTags(fc,key)+wbTileTag(slots,false)+wcTileTag(slots,false)+hypoTileTag(slots,fc.hourly.weather_code,false)+"</div>";
   }
   document.getElementById("forecast-row-7").innerHTML=html;
   window._7dayData=days;
@@ -3042,9 +3426,9 @@ function showSlotWearPop(temp,wind,wxCode,dp,backDi,timeStr){
         +(tooHot
             ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:6px'>No layers required</div>"
       +"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>Honestly, it's too hot for any clothes at all.</div>"
-      :w.apparentTemp<-40
+      :w.coldTier>=2
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
-      :w.apparentTemp<-25
+      :w.coldTier>=1
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
       :dispLayers===0
       ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>No layers required</div>"
@@ -3052,7 +3436,7 @@ function showSlotWearPop(temp,wind,wxCode,dp,backDi,timeStr){
       +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>")
     +outerLine
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
-    +(tooHot||justGetWet||w.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
+    +(tooHot||justGetWet||w.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
     +(backDi!==undefined?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>← Back</div>":"")
     +"</div>";
     document.getElementById("pop-ttl").textContent="What to wear"+(timeStr?" \u2014 "+timeStr:"");
@@ -3074,6 +3458,9 @@ function show7DayHourSlot(idx,di,timeStr){
   var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
   var annHtml="";
   for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
+  annHtml+=wetBulbPill(t,dp);
+  annHtml+=coldPill(t,w);
+  annHtml+=hypoPill(t,w,wxCode,precips[idx]);
     var ww=whatToWear(t,w,wxCode,s,dp);
   var hasWindRain=!!(ww.extra&&ww.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
@@ -3094,9 +3481,9 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
     +"<div style='font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px'>What to wear</div>"
         +(tooHot
             ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>No layers required &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>Honestly, it's too hot for any clothes at all.</span></div>"
-      :ww.apparentTemp<-40
+      :ww.coldTier>=2
       ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
-      :ww.apparentTemp<-25
+      :ww.coldTier>=1
       ?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
             :dispLayers===0
       ?(hasWindRain?"<div style='font-size:18px;font-weight:800;color:"+wearNc+"'>Wind/rainproof jacket recommended</div>"
@@ -3105,7 +3492,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
       :"<div style='display:flex;align-items:baseline;gap:8px'>"
       +"<div style='font-size:28px;font-weight:800;color:"+wearNc+";line-height:1'>"+dispLayers+"</div>"
       +"<div style='font-size:14px;font-weight:700;color:"+wearNc+"'>"+layerWord+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div></div>")
-    +(tooHot||justGetWet||ww.apparentTemp<-25?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
+    +(tooHot||justGetWet||ww.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
     +(uvSun?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSun+"</div>":"")
     +"</div>"
     +"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+di+")'>← Back</div>"
@@ -3315,7 +3702,7 @@ function show7DaySlot(di){
     var fireLine="";
     var dayMaxFFDI=getMaxFFDIForDay(fc,dateKey);
     var dayFI=dayMaxFFDI!==null?ffdiInfo(dayMaxFFDI):null;
-            if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(0,20))*10)/10:5)+","+di+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
+            if(dayFI)fireLine="<div style='color:"+dayFI.col+";cursor:pointer' onclick='showFireDangerPop(null,"+dayMaxFFDI+","+(fc.daily&&fc.daily.precipitation_sum?Math.round(calcDroughtFactor(fc.daily.precipitation_sum.slice(Math.max(0,dOff-20),dOff))*10)/10:5)+","+di+")'>🔥 Fire danger peak: "+dayFI.label+" ("+dayMaxFFDI+")</div>";
     var uvHrs2=fc.hourly&&fc.hourly.uv_index?fc.hourly.uv_index:[];
     var dayMaxUV=0;
     for(var ui=0;ui<slots.length;ui++){
@@ -3336,9 +3723,62 @@ function show7DaySlot(di){
         +"<div style='font-size:14px;font-weight:800;color:"+hwDay.col+";display:flex;justify-content:space-between;align-items:center'>"
         +"<span>\uD83C\uDF21\uFE0F "+hwDay.label+"</span><span>"+hwDay.scale+"/10 \u203A</span></div></div>";
     }
+    // Heat-stress line — the day's peak wet bulb, if dangerous (Today: remaining hours only)
+    var wbLine="";
+    var wbPk=dayPeakWetBulb(slots,di===0);
+    if(wbPk&&wbPk.w>=WB_DANGER){
+      var wbExt=wbPk.w>=WB_EXTREME,wbCol=wbExt?"rgba(220,30,80,1)":"rgba(230,105,0,1)";
+      var wbHr=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(wbPk.slot.utcMs)).toLowerCase().replace(" ","");
+      wbLine="<div onclick='showWetBulbPop("+wbPk.slot.temp+","+wbPk.slot.dp+","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +wbCol.replace("1)","0.14)")+";border:1px solid "+wbCol.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+wbCol+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+        +"<span>"+(wbExt?"\uD83D\uDEA8 Extremely dangerous heat":"\uD83E\uDD75 Dangerously hot")+" around "+wbHr+"</span>"
+        +"<span style='white-space:nowrap'>"+toDisp(wbPk.w).toFixed(1)+unitSym()+" WB \u203A</span></div></div>";
+    }
+    // Dangerous-cold line — the day's lowest wind chill, if dangerous (Today: remaining hours only)
+    var wcLine="";
+    var wcPk=dayMinWindChill(slots,di===0);
+    if(wcPk&&wcPk.wc<=WC_DANGER){
+      var wcExt=wcPk.wc<=WC_EXTREME,wcCol=wcExt?"rgba(110,80,230,1)":"rgba(20,130,210,1)";
+      var wcHr=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(wcPk.slot.utcMs)).toLowerCase().replace(" ","");
+      wcLine="<div onclick='showColdPop("+wcPk.slot.temp+","+(wcPk.slot.wind||0)+","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +wcCol.replace("1)","0.14)")+";border:1px solid "+wcCol.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+wcCol+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+        +"<span>"+(wcExt?"\uD83D\uDEA8 Extremely dangerous cold":"\uD83E\uDD76 Dangerously cold")+" around "+wcHr+"</span>"
+        +"<span style='white-space:nowrap'>"+String(Math.round(toDisp(wcPk.wc))).replace("-","\u2212")+unitSym()+" WC \u203A</span></div></div>";
+    }
+    // Hypothermia line — at least HYPO_HOURS cold, wet, windy hours (Today: remaining hours only)
+    var hypoLine="";
+    var hy=dayHypo(slots,hcodes,di===0);
+    if(hy){
+      var hyCol="rgba(40,120,150,1)";
+      var hyHr=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(hy.first.utcMs)).toLowerCase().replace(" ","");
+      hypoLine="<div onclick='showHypoPop("+hy.worst.temp+","+hy.worst.wind+","+di+","+hy.n+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +hyCol.replace("1)","0.14)")+";border:1px solid "+hyCol.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+hyCol+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+        +"<span>\uD83C\uDF27\uFE0F Hypothermia risk from "+hyHr+"</span>"
+        +"<span style='white-space:nowrap'>"+hy.n+" hr"+(hy.n>1?"s":"")+" \u203A</span></div></div>";
+    }
+    // Coldwave line — mirrors the heatwave line
+    var cwLine="";
+    if(!window._CWDAYS&&fc&&typeof findClimEntry==="function"){
+      var ceE=findClimEntry(fc.latitude,fc.longitude),ceC=ceE?cwClimatology(ceE):null;
+      if(ceC)window._CWDAYS=coldwaveDays(fc,ceC);
+    }
+    var cwDay=window._CWDAYS?hwForDate(window._CWDAYS,dateKey):null;
+    if(cwDay){
+      cwLine="<div onclick='showColdwavePop(\""+dateKey+"\","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +cwDay.col.replace("1)","0.14)")+";border:1px solid "+cwDay.col.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+cwDay.col+";display:flex;justify-content:space-between;align-items:center'>"
+        +"<span>\u2744\uFE0F "+cwDay.label+"</span><span>"+cwDay.scale+"/10 \u203A</span></div></div>";
+    }
     var uvDayLine=dayMaxUV>=3?(dayMaxUV<6?"UV "+dayMaxUV+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":dayMaxUV<8?"UV "+dayMaxUV+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":dayMaxUV<11?"UV "+dayMaxUV+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+dayMaxUV+" \u2014 Avoid direct sun \u2620\uFE0F"):"";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
       +hwLine
+      +cwLine
+      +wbLine
+      +wcLine
+      +hypoLine
       +condLine
       +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
       +"<div>"+rainLine+"</div>"
@@ -3625,7 +4065,7 @@ function showClimCard(lat,lon){
   var sumDiv=document.createElement("div");
   sumDiv.id="clim-summary";
   sumDiv.style.cssText="font-size:12px;font-weight:700;color:var(--text-muted);display:flex;gap:12px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);flex-wrap:wrap";
-  sumDiv.innerHTML=summaryParts.join("");
+  sumDiv.innerHTML=summaryParts.map(function(p){return"<span>"+p+"</span>";}).join("");
   document.getElementById("clim-table").after(sumDiv);
   if(entry.notes){
     var notesWrap=document.createElement("div");
@@ -3956,7 +4396,7 @@ function livScoreAnnotations(entry){
       score:scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold),
       pos:coldtminMin>5?"cold nights rare or mild":null,
       mild_neg:"cold nights push your tolerance",
-      neg:"cold snaps too intense",
+      neg:"coldest nights beyond your tolerance",
       bad:"severe overnight lows"
     },
     {
@@ -4123,12 +4563,20 @@ function livMapBuildMarkers(){
   if(typeof CLIM_CACHE==="undefined")return;
   _livMapMarkers.forEach(function(m){_livMap.removeLayer(m);});
   _livMapMarkers=[];
+  // Pins are drawn in the order they're added, so add the lowest scores first —
+  // that way better-scoring pins always sit on top where pins overlap
+  var items=[];
   for(var i=0;i<CLIM_CACHE.length;i++){
     var entry=CLIM_CACHE[i];
     if(entry.lat===null||entry.lat===undefined||entry.lon===null||entry.lon===undefined)continue;
     var score=calcLiveability(entry);
     if(score===null)continue;
     if(_livMapFilter==="exc"&&score<=90)continue;
+    items.push({e:entry,s:score});
+  }
+  items.sort(function(a,b){return a.s-b.s;});
+  for(var j=0;j<items.length;j++){
+    var entry=items[j].e,score=items[j].s;
     var col=climScoreCol(score);
     var radius=score>=75?8:score>=60?7:6;
     (function(e,s,c){
