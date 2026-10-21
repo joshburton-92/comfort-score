@@ -327,6 +327,54 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .star-save-row input{width:100%;padding:8px 10px;font-size:13px;font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text);margin-bottom:8px}
 .star-save-btns{display:flex;gap:6px}
 .results-list{margin-top:4px;border-radius:10px;overflow:hidden;border:1px solid var(--card-border)}
+.topbar{position:sticky;top:max(env(safe-area-inset-top,8px),8px);z-index:150;display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 10px;background:var(--pop-bg);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);box-shadow:0 4px 18px rgba(20,60,80,0.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.tb-group{display:flex;align-items:center;gap:6px;flex:1}
+.tb-group.tb-right{justify-content:flex-end}
+.tb-title{font-size:16px;font-weight:800;color:var(--text-head);white-space:nowrap;letter-spacing:-0.2px}
+.tb-btn{width:34px;height:34px;flex-shrink:0;border-radius:10px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.tb-btn:active{opacity:0.7}
+.tb-btn.active{background:var(--range-fill);border-color:var(--range-fill);color:#fff}
+.topbar .unit-toggle{position:static}
+/* Score ring */
+.score-hero{display:flex;align-items:center;gap:14px;padding:4px 0 2px}
+.ring-wrap{position:relative;width:136px;height:136px;flex-shrink:0;cursor:pointer}
+.ring-wrap svg{width:100%;height:100%;display:block}
+.ring-track{stroke:var(--range-bg)}
+.ring-centre{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:4px;pointer-events:none}
+.ring-num{font-size:46px;font-weight:300;line-height:1;letter-spacing:-2px}
+.ring-lbl{font-size:12px;font-weight:800;margin-top:3px;display:flex;align-items:center;gap:4px}
+.ring-info{font-size:10px;font-weight:800;color:var(--text-muted);margin-top:2px}
+.score-hero .annotations{justify-content:flex-start;align-content:center}
+.score-hero .ann{font-size:12px;padding:4px 9px}
+@media(max-width:340px){.score-hero{flex-direction:column}.score-hero .annotations{justify-content:center}}
+/* Current conditions tiles */
+.cond-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.cond-tile{background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:12px;padding:8px 9px;min-width:0}
+.cond-tile.tap{cursor:pointer}
+.cond-lbl{font-size:9.5px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap}
+.cond-val{font-size:18px;font-weight:800;color:var(--text);line-height:1.25;margin-top:2px;white-space:nowrap}
+.cond-sub{font-size:11px;font-weight:700;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cond-card .action-btns{margin-top:10px}
+.cond-card .action-btn{aspect-ratio:auto;flex-direction:row;max-width:none;padding:8px 6px;gap:6px;font-size:11px;border-radius:12px}
+.cond-card .action-btn-icon{font-size:18px}
+/* Richer 7-day tiles */
+.fc-slot-7{min-width:96px}
+.fc-temps{display:flex;justify-content:center;gap:6px;align-items:baseline}
+.fc-tmax{font-size:17px;font-weight:800;color:var(--text)}
+.fc-tmin{font-size:13px;font-weight:700;color:var(--text-muted)}
+.fc-scores{display:flex;justify-content:center;gap:6px;margin-top:4px;font-size:14px;font-weight:800}
+.fc-meta{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px;white-space:nowrap}
+body.manual-mode #clim-card{display:none!important}
+/* Hazard alert strip at the top of the score card */
+.alert-strip{display:flex;flex-direction:column;gap:6px;margin:2px 0 12px}
+.alert-strip .ann{display:flex;justify-content:space-between;align-items:center;width:100%;border-radius:10px;padding:8px 11px;font-size:13.5px;font-weight:800;cursor:pointer}
+.alert-strip .ann::after{content:"\203A";font-size:19px;line-height:1;opacity:0.7;margin-left:8px}
+.alert-strip .ann.quiet{font-size:12.5px;font-weight:700;padding:6px 11px}
+.topbar .unit-btn{padding:8px 9px}
+.top-status{text-align:center;margin:-4px 0 8px}
+.top-status:empty{display:none}
+#search-ov{align-items:flex-start;padding-top:max(env(safe-area-inset-top,60px),60px)}
+#search-ov .results-list{max-height:45vh;overflow-y:auto}
 .result-item{padding:11px 14px;background:var(--result-item);cursor:pointer;border-bottom:1px solid var(--divider);font-size:clamp(13px,3.5vw,14px);color:var(--text);font-weight:600}
 .result-item:last-child{border-bottom:none}
 .result-sub{font-size:clamp(11px,2.8vw,12px);color:var(--text-muted);margin-top:2px;font-weight:600}
@@ -343,6 +391,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .hiw-sec summary::-webkit-details-marker{display:none}
 .hiw-sec summary::after{content:"\203A";font-size:18px;line-height:1;color:var(--text-muted);transition:transform 0.2s}
 .hiw-sec[open] summary::after{transform:rotate(90deg)}
+.hiw-sec.sim-dd{border-bottom:none}
+.hiw-sec.sim-dd summary{font-size:12px;padding:6px 0 4px}
 .world-loading{font-size:13px;font-weight:600;color:var(--text-muted);text-align:center;padding:20px 0}
 .washing-reason{font-size:13px;font-weight:600;color:var(--text-muted);line-height:1.5;margin-top:4px}
 .footer-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
@@ -363,39 +413,30 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="onboard-close" onclick="dismissLivFeature()">Got it</button>
   </div>
 
-  <div class="header">
-    <button class="star-btn" onclick="openStars()" title="Saved locations">&#9733;</button>
-    <div class="header-icon">&#127780;&#65039;</div>
-    <h1>Comfort Score</h1>
-    <p>Your personal weather comfort rating</p>
-    <div class="unit-toggle">
-      <div class="unit-btn active" id="btn-c" onclick="setUnit('C')">&#176;C</div>
-      <div class="unit-btn"        id="btn-f" onclick="setUnit('F')">&#176;F</div>
+  <div class="topbar">
+    <div class="tb-group">
+      <button class="tb-btn" onclick="openSearch()" title="Find a place" aria-label="Find a place"><svg width='17' height='17' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round'><circle cx='10.5' cy='10.5' r='6.5'/><path d='M15.5 15.5L21 21'/></svg></button>
+      <button class="tb-btn" onclick="openStars()" title="Saved locations" aria-label="Saved locations">&#9733;</button>
+    </div>
+    <div class="tb-title">&#127780;&#65039; Comfort Score</div>
+    <div class="tb-group tb-right">
+      <button class="tb-btn" id="manual-btn" onclick="toggleManual()" title="Manual input" aria-label="Manual input"><svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 20h4L19 9l-4-4L4 16v4z'/><path d='M13.5 6.5l4 4'/></svg></button>
+      <div class="unit-toggle">
+        <div class="unit-btn active" id="btn-c" onclick="setUnit('C')">&#176;C</div>
+        <div class="unit-btn"        id="btn-f" onclick="setUnit('F')">&#176;F</div>
+      </div>
     </div>
   </div>
+  <div id="live-status" class="status top-status">Detecting your location...</div>
 
   <div class="install-banner" id="install-banner">
     <p>Add to your home screen for quick access</p>
     <button class="btn btn-p" onclick="installApp()">Install</button>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" id="tab-live"   onclick="switchTab('live')">Live weather</div>
-    <div class="tab"        id="tab-manual" onclick="switchTab('manual')">Manual input</div>
-  </div>
-
   <div class="page active" id="page-live">
+    <div id="live-result" style="display:none">
     <div class="card">
-      <div class="sec-lbl">Location</div>
-      <div class="search-row">
-        <input type="text" id="city-input" placeholder="Search city or suburb..." onkeydown="if(event.key==='Enter')searchCity()"/>
-        <button class="btn" onclick="searchCity()">Search</button>
-        <button class="btn" onclick="detectLocation()">Detect</button>
-      </div>
-      <div id="results-list" class="results-list" style="display:none"></div>
-      <div id="live-status" class="status">Detecting your location...</div>
-    </div>
-    <div class="card" id="live-result" style="display:none">
       <div class="loc-row">
         <div class="loc-name" id="live-locname"></div>
         <button class="loc-home" id="loc-home-btn" onclick="toggleDefaultLoc()" title="Set as default location">&#8962;</button>
@@ -405,18 +446,21 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <div class="obs-time" id="live-obstime"></div>
         <button class="refresh-btn" id="refresh-btn" onclick="refreshWeather()" title="Refresh">&#8635;</button>
       </div>
-      <div class="chips" id="live-chips"></div>
       <div class="score-outer" id="live-score-area"></div>
+    </div>
+    <div class="card cond-card">
+      <div class="sec-lbl">Current conditions</div>
+      <div class="cond-grid" id="live-chips"></div>
       <div id="utility-row" style="display:none">
-        <div style="width:100%;height:1px;background:var(--divider);margin:10px 0 12px"></div>
         <div class="action-btns">
-          <button class="action-btn" id="washing-btn" onclick="checkWashing()"><span class="action-btn-icon">&#129531;</span>Will washing dry?</button>
-          <button class="action-btn" id="clothing-btn" onclick="checkWhatToWear()"><span class="action-btn-icon">&#128085;</span>What to wear?</button>
-          <button class="action-btn" id="world-btn" onclick="openWorldCheck()"><span class="action-btn-icon">&#127758;</span>Where in the world?</button>
+          <button class="action-btn" id="washing-btn" onclick="checkWashing()"><span class="action-btn-icon">&#129531;</span>Washing</button>
+          <button class="action-btn" id="clothing-btn" onclick="checkWhatToWear()"><span class="action-btn-icon">&#128085;</span>What to wear</button>
+          <button class="action-btn" id="world-btn" onclick="openWorldCheck()"><span class="action-btn-icon">&#127758;</span>World</button>
         </div>
       </div>
-      <div id="forecast-wrap" style="display:none">
-        <div class="sec-lbl" style="margin-top:10px">Forecast</div>
+    </div>
+    <div class="card" id="forecast-wrap" style="display:none">
+        <div class="sec-lbl">Forecast</div>
         <div class="forecast-wrap-inner">
           <button class="fc-nav fc-nav-l" onclick="fc7Scroll(-1)" aria-label="Scroll left">&#8249;</button>
           <div class="forecast-strip" id="forecast-strip-7"><div class="forecast-row" id="forecast-row-7"></div></div>
@@ -702,6 +746,20 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </div>
     </div>
     <span class="pop-close" onclick="closeStars()">Tap to close</span>
+  </div>
+</div>
+
+<div class="pop-ov" id="search-ov" onclick="closeSearch()">
+  <div class="pop" onclick="event.stopPropagation()">
+    <div class="pop-ttl">Find a place</div>
+    <div class="search-row">
+      <input type="text" id="city-input" placeholder="City, suburb or town..." enterkeyhint="search" onkeydown="if(event.key==='Enter')searchCity()"/>
+      <button class="btn btn-p" onclick="searchCity()">Search</button>
+    </div>
+    <button class="btn" style="width:100%" onclick="detectLocation()">&#128205; Use my location</button>
+    <div id="search-status" class="status" style="margin-top:6px"></div>
+    <div id="results-list" class="results-list" style="display:none"></div>
+    <span class="pop-close" onclick="closeSearch()">Tap to close</span>
   </div>
 </div>
 
@@ -1517,7 +1575,7 @@ function showHeatwavePop(dateStr,backDi){
       +hwAdvice(h.band)
       +rule
       +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>"
-      +"Three-day mean temperature "+h.d3.toFixed(1)+"\u00B0C against a local heatwave threshold of "+h.thresh.toFixed(1)+"\u00B0C, with the preceding 30 days averaging "+h.d30.toFixed(1)+"\u00B0C. "
+      +"Three-day mean temperature "+toDisp(h.d3).toFixed(1)+unitSym()+" against a local heatwave threshold of "+toDisp(h.thresh).toFixed(1)+unitSym()+", with the preceding 30 days averaging "+toDisp(h.d30).toFixed(1)+unitSym()+". "
       +"Intensity follows the Excess Heat Factor method, which measures heat against both the local climate and the month preceding it \u2014 so what counts as a heatwave depends on where you are, and a temperature that passes unremarked in one city can be severe in another. "
       +"This is an independent calculation from this app\u2019s own climate data on a present-day baseline, not an official warning product, and it may differ from your local service\u2019s assessment.</div>"
       +back+"</div>";
@@ -1527,18 +1585,24 @@ function showHeatwavePop(dateStr,backDi){
   document.getElementById("pop-ov").classList.add("open");
 }
 function showFireDangerPop(ffdi,todayMax,df,backDi){
-  var info=ffdiInfo(ffdi)||ffdiInfo(todayMax);
-  var backLink=backDi!==undefined?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>\u2190 Back</div>":"";
-  var body="<div class='washing-reason'>"
-    +(ffdi!==null&&ffdiInfo(ffdi)?"<div style='font-size:15px;font-weight:800;color:"+ffdiInfo(ffdi).col+";margin-bottom:4px'>Now: "+ffdiInfo(ffdi).label+" ("+ffdi+")</div>":"")
-    +(todayMax&&ffdiInfo(todayMax)?"<div style='font-size:13px;font-weight:700;color:"+ffdiInfo(todayMax).col+";margin-bottom:10px'>Today\u2019s peak: "+ffdiInfo(todayMax).label+" ("+todayMax+")</div>":"")
-    +"<div style='font-size:12px;color:var(--text-muted);margin-bottom:8px'>Drought factor: "+df+"/10 (estimated from recent rainfall)</div>"
-    +"<div style='font-size:12px;color:var(--text-muted);line-height:1.6'>Based on the McArthur Forest Fire Danger Index (FFDI). The drought factor is approximated from recent rainfall data and may understate risk during prolonged dry periods. Always check with your local fire authority for official ratings and total fire ban declarations.</div>"
-    +backLink
-    +"</div>";
-  document.getElementById("pop-ttl").innerHTML="Fire Danger 🔥";
-  document.getElementById("pop-body").innerHTML=body;
-  document.getElementById("pop-ov").classList.add("open");
+  var cur=ffdi!==null&&ffdi!==undefined?ffdiInfo(ffdi):null,pk=todayMax?ffdiInfo(todayMax):null;
+  var main=pk||cur;
+  var key={Moderate:"Plan and prepare.",High:"Be ready to act.",Extreme:"Take action now to protect your life and property.",Catastrophic:"For your survival, leave bush fire risk areas."};
+  var sub=[];
+  if(cur)sub.push("Now: "+cur.label+" ("+ffdi+")");
+  if(pk&&(!cur||todayMax>ffdi))sub.push((backDi!==undefined&&backDi!==null?"Peak":"Today’s peak")+": "+pk.label+" ("+todayMax+")");
+  sub.push("drought factor "+df+"/10");
+  hazardPop({
+    title:"Fire danger",
+    col:main?main.col:"#64BF30",
+    headline:"🔥 "+(main?main.label:"Low")+" fire danger",
+    sub:sub.join(" · "),
+    lead:main?key[main.label]:"No significant fire danger.",
+    advice:main&&main.label!=="Moderate"
+      ?"Know your bushfire plan and your triggers to leave. Keep up with warnings and check whether a total fire ban is in place — that usually means no fires in the open, and limits on welding, grinding and similar work outdoors."
+      :"Most fires can be controlled at this level, but stay aware of conditions and check for local restrictions before lighting fires or using machinery outdoors.",
+    foot:"Estimated with the McArthur Forest Fire Danger Index from temperature, humidity, wind and a drought factor approximated from recent rainfall, then mapped to the Australian Fire Danger Rating System bands. The official rating also accounts for vegetation and fuel type, which this app can’t see, so it may differ. Always check your local fire authority for official ratings and total fire bans.",
+    backDi:backDi});
 }
 
 // ── Onboarding ─────────────────────────────────────────────────────────────
@@ -1562,6 +1626,9 @@ function setUnit(unit){
   if(window._LW)renderChips(window._LW.temp,window._LW.effDP,window._LW.rh,window._LW.wind);
   reRenderAll();
   initTempPrefs();
+  ["heat","cold","dp"].forEach(function(d){if(document.getElementById("sl-liv-"+d))onLivBand(d);});
+  livUnitText();
+  if(window._currentLat!=null&&document.getElementById("clim-card").style.display==="block")showClimCard(window._currentLat,window._currentLon);
 }
 function initUnit(){
   var unit=localStorage.getItem("comfort_unit")||detectUnitFromLocale();
@@ -1608,12 +1675,42 @@ function renderChips(temp,effDP,rh,wind,fc){
     }
   }
   window._sunMoonData={srTime:srChip,ssTime:ssChip,moon:moon,tidesHtml:"<span style='color:var(--text-muted)'>Loading tides\u2026</span>"};
+  var deg=function(c){return String(toDisp(c).toFixed(1)).replace("-","\u2212")+unitSym();};
+  var hiLo="";
+  if(fc&&fc.daily&&fc.daily.time){
+    var hlDay=new Intl.DateTimeFormat("en-CA",{timeZone:fc.timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()),hlI=fc.daily.time.indexOf(hlDay);
+    var hx=hlI>=0&&fc.daily.temperature_2m_max?fc.daily.temperature_2m_max[hlI]:null,hn=hlI>=0&&fc.daily.temperature_2m_min?fc.daily.temperature_2m_min[hlI]:null;
+    if(hx!=null&&hn!=null)hiLo="high "+String(Math.round(toDisp(hx))).replace("-","\u2212")+"\u00B0 \u00B7 low "+String(Math.round(toDisp(hn))).replace("-","\u2212")+"\u00B0";
+  }
+  // Sun tile leads with whichever of sunrise/sunset comes next
+  var sunLbl="Sunrise",sunVal="\u2014",sunSub="";
+  if(fc&&fc.daily&&fc.daily.sunrise&&fc.daily.time){
+    var sTz=fc.timezone,sOff=getTZOffsetMin(sTz),sI=fc.daily.time.indexOf(new Intl.DateTimeFormat("en-CA",{timeZone:sTz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()));
+    var fmtS=function(x){return x?new Intl.DateTimeFormat("en-AU",{timeZone:sTz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(toEpoch(x,sOff))).toLowerCase().replace(" ",""):"";};
+    var srS=sI>=0?fc.daily.sunrise[sI]:null,ssS=sI>=0?fc.daily.sunset[sI]:null,nxS=sI>=0?fc.daily.sunrise[sI+1]:null,nowS=Date.now();
+    if(srS&&ssS){
+      if(nowS<toEpoch(srS,sOff)){sunLbl="Sunrise";sunVal=fmtS(srS);sunSub="sunset "+fmtS(ssS);}
+      else if(nowS<toEpoch(ssS,sOff)){sunLbl="Sunset";sunVal=fmtS(ssS);sunSub=nxS?"sunrise "+fmtS(nxS):"";}
+      else{sunLbl="Sunrise";sunVal=nxS?fmtS(nxS):"\u2014";sunSub="sunset was "+fmtS(ssS);}
+    }
+  }
+  var uvNow=null;
+  if(fc&&fc.hourly&&fc.hourly.uv_index){
+    var uvTz=fc.timezone,uvH=localHourInTZ(uvTz),uvDay=new Intl.DateTimeFormat("en-CA",{timeZone:uvTz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    for(var ui=0;ui<fc.hourly.time.length;ui++){if(fc.hourly.time[ui].slice(0,10)===uvDay&&parseInt(fc.hourly.time[ui].slice(11,13))===uvH){uvNow=fc.hourly.uv_index[ui];break;}}
+  }
+  var uvLbl=uvNow==null?"":uvNow<3?"Low":uvNow<6?"Moderate":uvNow<8?"High":uvNow<11?"Very high":"Extreme";
+  var gust=window._LW&&window._LW.gust;
+  var bft=beaufort(wind).n;
+  var plain=function(h){return h?h.replace(/<[^>]+>/g,"").replace(/^\S+\s/,""):"";};
+  var tile=function(lbl,val,sub,tap){return"<div class='cond-tile"+(tap?" tap":"")+"'"+(tap?" onclick='"+tap+"'":"")+"><div class='cond-lbl'>"+lbl+"</div><div class='cond-val'>"+val+"</div><div class='cond-sub'>"+sub+"</div></div>";};
   document.getElementById("live-chips").innerHTML=
-    "<span class='chip'>"+toDisp(temp).toFixed(1)+unitSym()+"</span>"
-   +"<span class='chip'>"+rh+"% RH</span>"
-   +"<span class='chip'>DP "+toDisp(effDP).toFixed(1)+unitSym()+"</span>"
-   +"<span class='chip'>Wind "+Math.round(wind)+" km/h</span>"
-   +"<span class='chip' style='cursor:pointer' onclick='showSunMoonPop()'>\uD83C\uDF05\uD83C\uDF19\uD83C\uDF0A</span>";
+    tile("Temperature",deg(temp),hiLo)
+   +tile("Dew point",deg(effDP),rh+"% humidity")
+   +tile("Wind",Math.round(wind)+"<span style='font-size:11px'> km/h</span>",(gust!=null&&gust>GUST_SHOW)?"gusts to "+Math.round(gust):bft.charAt(0).toUpperCase()+bft.slice(1))
+   +tile("UV index",uvNow==null?"\u2014":String(Math.round(uvNow)),uvLbl||"no data")
+   +tile(sunLbl,sunVal,sunSub)
+   +tile("Moon &amp; tides \u203A",moon.emoji,moon.name,"showSunMoonPop()");
   fetchTides();
 }
 function showSunMoonPop(){
@@ -1859,25 +1956,20 @@ function coldPill(t,wind){
     +(tier===2?"\uD83D\uDEA8 Extremely dangerous cold":"\uD83E\uDD76 Dangerously cold")+"</span>";
 }
 function showColdPop(t,wind,backDi){
-  var wc=windChill(t,wind),tier=coldTier(t,wind);
-  var neg=function(x){return String(x).replace("-","\u2212");};
-  var wcTxt=neg(Math.round(toDisp(wc)))+unitSym();
+  var wc=windChill(t,wind),tier=coldTier(t,wind),v=wind||0;
   var freeze=wc<=-55?"in under 2 minutes":wc<=-48?"in 2 to 5 minutes":wc<=-40?"in 5 to 10 minutes":"in 10 to 30 minutes";
-  showPop((tier===2?"Extremely dangerous cold":"Dangerously cold")+" \u2014 wind chill "+wcTxt,
-    "Wind chill is how cold it feels on bare skin once the wind is taken into account. "
-    +"Right now it is "+wcTxt+" ("+neg(toDisp(t).toFixed(1))+unitSym()+" air, "+Math.round(wind||0)+" km/h wind).\n\n"
-    +"At this wind chill, exposed skin can freeze "+freeze+"."+(wind>50?" In winds over 50 km/h it can happen faster still.":"")+"\n\n"
-    +(tier===2
-      ?"Limit time outdoors as much as possible. Cover every patch of skin, including face and hands, wear insulated layers with a windproof outer shell, and watch for numb, white or waxy skin. Don't travel without warm clothing and supplies in case you're stranded."
-      :"Cover exposed skin — face, ears, hands — and wear insulated layers under a windproof outer shell. Keep time outdoors short, stay dry, and watch for numbness or pale skin, the first signs of frostbite.")
-    +"\n\nFollow advice from your local weather service and health authority.");
-  if(backDi!==undefined&&backDi!==null){
-    var bk=document.createElement("div");
-    bk.style.cssText="margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;white-space:normal";
-    bk.textContent="\u2190 Back";
-    bk.onclick=function(){show7DaySlot(backDi);};
-    document.getElementById("pop-body").appendChild(bk);
-  }
+  hazardPop({
+    title:tier===2?"Extremely dangerous cold":"Dangerously cold",
+    col:tier===2?"rgba(110,80,230,1)":"rgba(20,130,210,1)",
+    headline:(tier===2?"🚨 ":"🥶 ")+"Wind chill "+hzDeg(wc,0),
+    sub:hzDeg(t)+" air · "+windPhrase(v)+" ("+Math.round(v)+" km/h)",
+    lead:"Exposed skin can freeze "+freeze+"."+(v>50?" In winds over 50 km/h it can happen faster still.":""),
+    advice:tier===2
+      ?"Limit time outdoors as much as possible. Cover every patch of skin, including face and hands, and wear insulated layers under a windproof outer shell. Don’t travel without warm clothing and supplies in case you’re stranded."
+      :"Cover exposed skin — face, ears, hands — and wear insulated layers under a windproof outer shell. Keep time outdoors short and stay dry; wet clothing loses its warmth fast.",
+    signs:"<b>Watch for frostbite</b> — numbness, then white, grey or waxy skin, often on fingers, toes, ears and nose. Warm it gently; don’t rub. <b>Hypothermia</b> — uncontrolled shivering, clumsiness, confusion — needs urgent medical help.",
+    foot:"Wind chill is how cold it feels on bare skin once wind is taken into account (North American wind chill index, used in Canada and the US). Warnings follow Environment Canada’s frostbite risk table: "+hzDeg(WC_DANGER,0)+" and below, and "+hzDeg(WC_EXTREME,0)+" and below for extreme cold. Follow advice from your local weather service and health authority.",
+    backDi:backDi});
 }
 // Lowest wind chill across a day's forecast slots ({temp,wind,utcMs}); futureOnly skips hours already past
 function dayMinWindChill(slots,futureOnly){
@@ -1919,19 +2011,16 @@ function hypoPill(t,wind,code,mm){
   return"<span class='ann ann-hypo' onclick='showHypoPop("+t+","+wind+")'>\uD83C\uDF27\uFE0F Hypothermia risk</span>";
 }
 function showHypoPop(t,wind,backDi,hours){
-  var tTxt=String(toDisp(t).toFixed(1)).replace("-","\u2212")+unitSym();
-  showPop("Hypothermia risk",
-    "Cold rain and wind together are the most common cause of hypothermia in mild climates. Wet clothing loses most of its insulation, and wind strips heat from it far faster than still air \u2014 so a few degrees above zero in rain and wind can chill you faster than a dry, still frost.\n\n"
-    +(hours?"Expected for about "+hours+" hour"+(hours>1?"s":"")+", at worst ":"Right now: ")+tTxt+" with rain and "+windPhrase(wind)+" ("+Math.round(wind)+" km/h).\n\n"
-    +"If you're outdoors \u2014 walking, cycling, working \u2014 wear a waterproof, windproof outer shell over wool or synthetic layers (not cotton), carry a spare dry layer, and keep moving or get under cover. Watch for uncontrolled shivering, clumsiness, slurred speech or confusion in yourself and others. Newly shorn sheep and young livestock are especially vulnerable in these conditions.\n\n"
-    +"Follow advice from your local weather service and health authority.");
-  if(backDi!==undefined&&backDi!==null){
-    var bk=document.createElement("div");
-    bk.style.cssText="margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;white-space:normal";
-    bk.textContent="\u2190 Back";
-    bk.onclick=function(){show7DaySlot(backDi);};
-    document.getElementById("pop-body").appendChild(bk);
-  }
+  hazardPop({
+    title:"Hypothermia risk",
+    col:"rgba(40,120,150,1)",
+    headline:"🌧️ Cold, wet and windy",
+    sub:(hours?"About "+hours+" hour"+(hours>1?"s":"")+" · at worst ":"Now · ")+hzDeg(t)+", rain, "+windPhrase(wind)+" ("+Math.round(wind)+" km/h)",
+    lead:"Rain soaks clothing and wind strips its warmth — a few degrees above zero in these conditions can chill you faster than a dry, still frost.",
+    advice:"If you’re outdoors — walking, cycling, working — wear a waterproof, windproof outer shell over wool or synthetic layers (not cotton), carry a spare dry layer, and keep moving or get under cover. Newly shorn sheep and young livestock are especially vulnerable in these conditions.",
+    signs:"<b>Watch for hypothermia</b> in yourself and others — uncontrolled shivering, clumsiness, slurred speech, confusion or unusual tiredness. Get the person somewhere dry and sheltered, replace wet clothing, warm them gradually, and call your local emergency number if they don’t improve.",
+    foot:"Shown when it is "+hzDeg(HYPO_T,0)+" or colder, the wind averages "+HYPO_WIND+" km/h or more, and it is raining. In the forecast, a day is flagged when at least "+HYPO_HOURS+" such hours are expected. It stays quiet when a frostbite warning is already showing. Follow advice from your local weather service and health authority.",
+    backDi:backDi});
 }
 // Qualifying hours in a day's slots ({temp,wind,rain,idx,utcMs}); codes = fc.hourly.weather_code
 function dayHypo(slots,codes,futureOnly){
@@ -1968,23 +2057,50 @@ function wbTileTag(slots,futureOnly){
   var ext=pk.w>=WB_EXTREME;
   return"<div class='fc-wb"+(ext?" fc-wb-x":"")+"'>"+(ext?"\uD83D\uDEA8 Extreme":"\uD83E\uDD75 Dangerous")+"</div>";
 }
+// ── Hazard popups ──────────────────────────────────────────────────────────
+// Shared layout for the hazard explanations, matching the heatwave/coldwave popups:
+// tinted headline band → key message → advice → method footnote → back link.
+function hzRgba(col,a){
+  if(/^#/.test(col)){var h=col.slice(1);if(h.length===3)h=h.replace(/./g,"$&$&");
+    return"rgba("+parseInt(h.slice(0,2),16)+","+parseInt(h.slice(2,4),16)+","+parseInt(h.slice(4,6),16)+","+a+")";}
+  return col.replace(/rgba?\(([^,]+),([^,]+),([^,)]+)(,[^)]*)?\)/,"rgba($1,$2,$3,"+a+")");
+}
+function hazardPop(o){
+  var rule="<div style='height:1px;background:var(--divider);margin:11px 0 10px'></div>";
+  var back=(o.backDi!==undefined&&o.backDi!==null)?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+o.backDi+")'>← Back</div>":"";
+  var body="<div class='washing-reason'>"
+    +"<div style='padding:8px 10px;border-radius:8px;background:"+hzRgba(o.col,0.14)+";border:1px solid "+hzRgba(o.col,0.45)+"'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+o.col+";line-height:1.3'>"+o.headline+"</div>"
+    +(o.sub?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:2px'>"+o.sub+"</div>":"")
+    +"</div>"
+    +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5;margin-top:10px'>"+o.lead+"</div>"
+    +rule
+    +"<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65'>"+o.advice+"</div>"
+    +(o.signs?"<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65;margin-top:8px'>"+o.signs+"</div>":"")
+    +rule
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>"+o.foot+"</div>"
+    +back+"</div>";
+  document.getElementById("pop-ttl").textContent=o.title;
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
+}
+function hzDeg(c,dp){return String(toDisp(c).toFixed(dp==null?1:dp)).replace("-","−")+unitSym();}
 function showWetBulbPop(t,dp,backDi){
   var w=wetBulb(t,dp),ext=w>=WB_EXTREME;
-  var wTxt=toDisp(w).toFixed(1)+unitSym();
-  showPop((ext?"Extremely dangerous heat":"Dangerously hot")+" \u2014 wet bulb "+wTxt,
-    "Wet-bulb temperature combines heat and humidity: it is the lowest temperature your sweat can cool you to. "
-    +"Right now it is "+wTxt+" ("+toDisp(t).toFixed(1)+unitSym()+" air, "+toDisp(dp).toFixed(1)+unitSym()+" dew point).\n\n"
-    +(ext
-      ?"Above about 31\u00B0C wet bulb, even fit, healthy people resting in the shade struggle to shed heat. Avoid exertion entirely, stay somewhere cooled, drink water steadily, and check on anyone elderly, very young or unwell."
-      :"Above about 28\u00B0C wet bulb, sweating stops cooling you effectively and heat illness can set in quickly with any exertion. Avoid strenuous activity, rest in shade or air-conditioning, and drink water regularly.")
-    +"\n\nFollow advice from your local weather service and health authority.");
-  if(backDi!==undefined&&backDi!==null){
-    var bk=document.createElement("div");
-    bk.style.cssText="margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;white-space:normal";
-    bk.textContent="\u2190 Back";
-    bk.onclick=function(){show7DaySlot(backDi);};
-    document.getElementById("pop-body").appendChild(bk);
-  }
+  hazardPop({
+    title:ext?"Extremely dangerous heat":"Dangerously hot",
+    col:ext?"rgba(220,30,80,1)":"rgba(230,105,0,1)",
+    headline:(ext?"🚨 ":"🥵 ")+"Wet bulb "+hzDeg(w),
+    sub:hzDeg(t)+" air · "+hzDeg(dp)+" dew point",
+    lead:ext
+      ?"Even fit, healthy people resting in the shade struggle to shed heat at this level."
+      :"Sweating can no longer cool you properly — heat illness can set in quickly with any exertion.",
+    advice:ext
+      ?"Avoid exertion entirely. Stay somewhere cooled — air-conditioning if you have it, or a library, shopping centre or public cooling centre if you don’t. Drink water steadily, and check on anyone elderly, very young, pregnant or unwell."
+      :"Avoid strenuous activity and move any you can’t avoid to the coolest part of the day. Rest in shade or air-conditioning, drink water regularly without waiting to feel thirsty, and check on anyone vulnerable.",
+    signs:"<b>Watch for heat exhaustion</b> — heavy sweating, dizziness, headache, nausea, cramps. <b>Heat stroke</b> — confusion, slurred speech, hot skin, collapse — is a medical emergency: call your local emergency number.",
+    foot:"Wet-bulb temperature combines heat and humidity into one number: the lowest temperature sweat can cool you to. This app warns at "+hzDeg(WB_DANGER,0)+" and above, and "+hzDeg(WB_EXTREME,0)+" and above for extreme heat, calculated from air temperature and dew point (Stull, 2011). Follow advice from your local weather service and health authority.",
+    backDi:backDi});
 }
 function scoreInfo(s){
   if(s>90)return{label:"Excellent",emoji:"\uD83D\uDE0A",col:"#1a7a3a"};
@@ -2073,13 +2189,13 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
       :ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>"
       :"<span class='ann "+ann.c+"'>"+ann.t+"</span>";
   }
-  var annHtml="";
+  var annHtml="",alertHtml="";
   for(var i=0;i<condAnns.length;i++)annHtml+=annSpan(condAnns[i]);
   if(areaId==="live-score-area"&&window._LW)annHtml+=gustPill(window._LW.gust);
-  // Heat-stress pill — from current temperature and dew point, so it needs no forecast
-  annHtml+=wetBulbPill(temp,effDP);
-  annHtml+=coldPill(temp,wind);
-  annHtml+=hypoPill(temp,wind,wxCode,null);
+  // Hazards go in the alert strip above the ring; everything else stays a pill
+  alertHtml+=wetBulbPill(temp,effDP);
+  alertHtml+=coldPill(temp,wind);
+  alertHtml+=hypoPill(temp,wind,wxCode,null);
   // Hazard pills: UV, AQI, Fire — inserted between conditions and verdict
   if(areaId==="live-score-area"&&window._FC){
     // UV — always shown during daylight, even when low
@@ -2116,8 +2232,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
       var maxFI=ffdiInfo(fd.todayMaxFFDI);
       if(curFI||maxFI){
         var showFI=curFI||maxFI;
-        var fireLabel="🔥 "+showFI.label+(maxFI&&curFI&&fd.todayMaxFFDI>fd.currentFFDI?" · peak: "+maxFI.label:"");
-        annHtml+="<span class='ann ann-fire' style='color:"+showFI.col+";border-color:"+showFI.col.replace("1)","0.4)")+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"+fireLabel+"</span>";
+        var fireAlert=Math.max(fd.todayMaxFFDI||0,fd.currentFFDI||0)>=24;
+        var fireLabel="🔥 "+(fireAlert?"Fire danger: ":"")+showFI.label+(maxFI&&curFI&&fd.todayMaxFFDI>fd.currentFFDI?" · peak: "+maxFI.label:"");
+        if(fireAlert)alertHtml+="<span class='ann ann-fire' style='color:"+showFI.col+";border-color:"+showFI.col.replace("1)","0.4)")+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"+fireLabel+"</span>";
+        else annHtml+="<span class='ann ann-fire' style='color:"+showFI.col+";border-color:"+showFI.col.replace("1)","0.4)")+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showFireDangerPop("+(fd.currentFFDI!==null?fd.currentFFDI:"null")+","+fd.todayMaxFFDI+","+fd.df+")'>"+fireLabel+"</span>";
       }
     }
     // Heatwave pill — fires for today OR tomorrow so there is a day of lead time.
@@ -2135,8 +2253,8 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
           var hw=(hA&&hB)?(hB.sev>hA.sev?hB:hA):(hA||hB);
           if(hw){
             window._HWPILLDATE=hw.date;
-            annHtml+="<span class='ann ann-heat' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showHeatwavePop(\""+hw.date+"\",null)'>"
-              +"\uD83C\uDF21\uFE0F Heatwave</span>";
+            alertHtml+="<span class='ann ann-heat"+(hw.band===1?" quiet":"")+"' onclick='document.getElementById(\"pop-ttl\").textContent=\"\";document.getElementById(\"pop-body\").innerHTML=\"\";showHeatwavePop(\""+hw.date+"\",null)'>"
+              +"<span>\uD83C\uDF21\uFE0F "+hw.label+(hw.date!==hwToday?" from tomorrow":"")+" \u00B7 "+hw.scale+"/10</span></span>";
           }
         }
       }
@@ -2155,8 +2273,9 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
           var cw=(cA&&cB)?(cB.sev>cA.sev?cB:cA):(cA||cB);
           if(cw){
             window._CWPILLDATE=cw.date;
-            annHtml+="<span class='ann "+(cw.band>=2?"ann-cwave":"ann-csnap")+"' onclick='showColdwavePop(\""+cw.date+"\",null)'>"
-              +"\u2744\uFE0F "+(cw.band>=2?"Coldwave":"Cold snap")+"</span>";
+            var cwIsTomorrow=cw.date!==cwFmt.format(cwD0);
+            alertHtml+="<span class='ann "+(cw.band>=2?"ann-cwave":"ann-csnap quiet")+"' onclick='showColdwavePop(\""+cw.date+"\",null)'>"
+              +"<span>\u2744\uFE0F "+cw.label+(cwIsTomorrow?" from tomorrow":"")+" \u00B7 "+cw.scale+"/10</span></span>";
           }
         }
       }
@@ -2164,17 +2283,25 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   }
   for(var i=0;i<verdictAnns.length;i++)annHtml+=annSpan(verdictAnns[i]);
   document.getElementById(areaId).innerHTML=
-    "<div class='score-area'>"
-    +"<div class='vol-bar' id='"+gaugeId+"'></div>"
-    +"<div class='score-bottom'>"
-    +"<div class='score-identity'>"
-    +"<span class='score-num' style='color:"+si.col+";text-shadow:0 2px 8px "+si.col+"55,0 1px 2px "+si.col+"33'>"+score+"</span>"
-    +"<div class='score-lbl-row'><span class='score-lbl' style='color:"+si.col+"'>"+si.label+"</span><span class='score-emoji'>"+si.emoji+"</span><button class='score-info-btn' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")'>&#9432;</button></div>"
-    +"</div>"
+    (alertHtml?"<div class='alert-strip'>"+alertHtml+"</div>":"")
+    +"<div class='score-hero'>"
+    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")' title='Score breakdown'>"+scoreRing(score)
+    +"<div class='ring-centre'>"
+    +"<span class='ring-num' style='color:"+si.col+"'>"+score+"</span>"
+    +"<span class='ring-lbl' style='color:"+si.col+"'>"+si.label+" "+si.emoji+"</span>"
+    +"<span class='ring-info'>breakdown &#9432;</span>"
+    +"</div></div>"
     +"<div class='annotations'>"+annHtml+"</div>"
-    +"</div>"
     +"</div>";
-  drawGauge(gaugeId,score);
+}
+// 270° ring, open at the bottom, filled to the score in its band colour
+function scoreRing(score){
+  var v=Math.min(100,Math.max(0,score)),R=52,C=2*Math.PI*R,arc=C*0.75;
+  var col=SBANDS[bandForScore(v)].col.replace("0.92","1");
+  return "<svg viewBox='0 0 120 120' aria-hidden='true'>"
+    +"<circle class='ring-track' cx='60' cy='60' r='"+R+"' fill='none' stroke-width='10' stroke-linecap='round' stroke-dasharray='"+arc.toFixed(1)+" "+C.toFixed(1)+"' transform='rotate(135 60 60)'/>"
+    +(v>0?"<circle cx='60' cy='60' r='"+R+"' fill='none' stroke='"+col+"' stroke-width='10' stroke-linecap='round' stroke-dasharray='"+(arc*v/100).toFixed(1)+" "+C.toFixed(1)+"' transform='rotate(135 60 60)' style='filter:drop-shadow(0 0 4px "+col.replace(",1)",",0.45)")+")'/>":"")
+    +"</svg>";
 }
 
 // ── Forecast + history ─────────────────────────────────────────────────────
@@ -2282,7 +2409,8 @@ function reRenderManual(){if(document.getElementById("manual-result").style.disp
 function reRenderAll(){reRenderLive();reRenderManual();if(window._FC)renderForecast(window._FC);}
 
 // ── UI ─────────────────────────────────────────────────────────────────────
-function switchTab(tab){document.getElementById("tab-live").classList.toggle("active",tab==="live");document.getElementById("tab-manual").classList.toggle("active",tab==="manual");document.getElementById("page-live").classList.toggle("active",tab==="live");document.getElementById("page-manual").classList.toggle("active",tab==="manual");}
+function switchTab(tab){document.getElementById("page-live").classList.toggle("active",tab==="live");document.getElementById("page-manual").classList.toggle("active",tab==="manual");document.body.classList.toggle("manual-mode",tab==="manual");var mb=document.getElementById("manual-btn");if(mb){mb.classList.toggle("active",tab==="manual");mb.title=tab==="manual"?"Back to live weather":"Manual input";}}
+function toggleManual(){switchTab(document.getElementById("page-manual").classList.contains("active")?"live":"manual");window.scrollTo({top:0,behavior:"smooth"});}
 function toggleMode(){var m=document.getElementById("m-mode").value;document.getElementById("m-dp-row").style.display=(m==="dp")?"flex":"none";document.getElementById("m-rh-row").style.display=(m==="rh")?"flex":"none";}
 function calcManual(){
   var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
@@ -2396,11 +2524,54 @@ function syncSlidersFromAdv(){var keys=["heat","cold","hum","wind"];for(var i=0;
 function revGeo(lat,lon){return fetch("https://nominatim.openstreetmap.org/reverse?lat="+lat+"&lon="+lon+"&format=json&zoom=10",{headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}}).then(function(r){return r.json();}).then(function(d){if(d&&d.address){var a=d.address;var parts=[a.suburb||a.town||a.village||a.city_district||a.city||"",a.city||a.municipality||"",a.state||""].filter(Boolean);var u=parts.filter(function(v,i,arr){return arr.indexOf(v)===i;});return u.slice(0,3).join(", ")||d.display_name.split(",").slice(0,2).join(",").trim();}return null;}).catch(function(){return null;});}
 function nomLabel(p){var a=p.address||{};var name=a.suburb||a.town||a.village||a.city_district||a.city||a.municipality||a.county||p.display_name.split(",")[0].trim();return[name,a.state||"",a.country||""].filter(Boolean).join(", ");}
 function nomSub(p){var a=p.address||{},parts=[];if(a.suburb&&(a.city||a.municipality))parts.push(a.city||a.municipality);if(a.state)parts.push(a.state);if(a.country)parts.push(a.country);return parts.filter(Boolean).join(", ")||(p.type||"");}
-function detectLocation(){document.getElementById("live-status").textContent="Detecting location...";if(!navigator.geolocation){document.getElementById("live-status").textContent="Location not available — search a city instead.";return;}navigator.geolocation.getCurrentPosition(function(pos){var lat=pos.coords.latitude,lon=pos.coords.longitude;document.getElementById("live-status").textContent="Looking up location...";revGeo(lat,lon).then(function(name){fetchWeather(lat,lon,name||(lat.toFixed(2)+"\u00B0, "+lon.toFixed(2)+"\u00B0"));});},function(){document.getElementById("live-status").textContent="Location access denied. Try searching a city.";});}
-function searchCity(){var city=document.getElementById("city-input").value.trim();if(!city)return;document.getElementById("live-status").textContent="Searching...";document.getElementById("results-list").style.display="none";fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(city)+"&format=json&limit=10&addressdetails=1",{headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}}).then(function(r){return r.json();}).then(function(d){if(!d||!d.length){document.getElementById("live-status").textContent="No results found. Try adding a country name.";return;}if(d.length===1){fetchWeather(parseFloat(d[0].lat),parseFloat(d[0].lon),nomLabel(d[0]));return;}document.getElementById("live-status").textContent="Multiple results — tap one:";var list=document.getElementById("results-list"),html="";for(var i=0;i<d.length;i++){html+="<div class='result-item' onclick='selectResult("+i+")'><div>"+nomLabel(d[i])+"</div><div class='result-sub'>"+nomSub(d[i])+"</div></div>";}list.innerHTML=html;list.style.display="block";window._SR=d;}).catch(function(e){document.getElementById("live-status").textContent="Search failed: "+e.message;});}
-function selectResult(i){document.getElementById("results-list").style.display="none";document.getElementById("live-status").textContent="";var p=window._SR[i];fetchWeather(parseFloat(p.lat),parseFloat(p.lon),nomLabel(p));}
+// ── Search popup ───────────────────────────────────────────────────────────
+function openSearch(msg){
+  document.getElementById("search-status").textContent=msg||"";
+  document.getElementById("search-ov").classList.add("open");
+  setTimeout(function(){var i=document.getElementById("city-input");i.focus();i.select();},60);
+}
+function closeSearch(){document.getElementById("search-ov").classList.remove("open");}
+function searchMsg(t){document.getElementById("search-status").textContent=t;}
+// Loading a place switches back to live weather if manual input was showing
+function goLive(){if(document.getElementById("page-manual").classList.contains("active"))switchTab("live");}
+function detectLocation(){
+  var fromPop=document.getElementById("search-ov").classList.contains("open");
+  if(!navigator.geolocation){if(fromPop)searchMsg("Location isn\u2019t available on this device \u2014 search for a place instead.");else{document.getElementById("live-status").textContent="";openSearch("Location isn\u2019t available on this device \u2014 search for a place instead.");}return;}
+  if(fromPop)searchMsg("Finding your location\u2026");else document.getElementById("live-status").textContent="Detecting your location...";
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude,lon=pos.coords.longitude;
+    closeSearch();goLive();
+    document.getElementById("live-status").textContent="Looking up location...";
+    revGeo(lat,lon).then(function(name){fetchWeather(lat,lon,name||(lat.toFixed(2)+"\u00B0, "+lon.toFixed(2)+"\u00B0"));});
+  },function(){
+    document.getElementById("live-status").textContent="";
+    openSearch("Location access is turned off \u2014 search for a place instead.");
+  });
+}
+function searchCity(){
+  var city=document.getElementById("city-input").value.trim();if(!city)return;
+  searchMsg("Searching\u2026");document.getElementById("results-list").style.display="none";
+  fetch("https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(city)+"&format=json&limit=10&addressdetails=1",{headers:{"Accept-Language":"en","User-Agent":"ComfortScoreApp/1.0"}})
+  .then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.length){searchMsg("No results found. Try adding a state or country.");return;}
+    window._SR=d;
+    if(d.length===1){selectResult(0);return;}
+    searchMsg("Multiple results \u2014 tap one:");
+    var list=document.getElementById("results-list"),html="";
+    for(var i=0;i<d.length;i++){html+="<div class='result-item' onclick='selectResult("+i+")'><div>"+nomLabel(d[i])+"</div><div class='result-sub'>"+nomSub(d[i])+"</div></div>";}
+    list.innerHTML=html;list.style.display="block";
+  }).catch(function(e){searchMsg("Search failed: "+e.message);});
+}
+function selectResult(i){
+  var p=window._SR[i];if(!p)return;
+  document.getElementById("results-list").style.display="none";searchMsg("");
+  document.getElementById("city-input").value="";
+  closeSearch();goLive();
+  fetchWeather(parseFloat(p.lat),parseFloat(p.lon),nomLabel(p));
+}
 function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
+  goLive();
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
   var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
@@ -3362,6 +3533,20 @@ function fc7Scroll(dir){
   strip.scrollBy({left:dir*220,behavior:"smooth"});
 }
 
+// Tile body: high/low temperature, comfort range with the best hour, rain and peak wind.
+// Daily figures are located by date, never by a fixed offset.
+function fcTileBody(fc,dateStr,hi,hiCol,hiTime,lo,loCol){
+  var d=fc.daily||{},i=d.time?d.time.indexOf(dateStr):-1;
+  var g=function(a){return(i>=0&&a&&a[i]!=null)?a[i]:null;};
+  var tx=g(d.temperature_2m_max),tn=g(d.temperature_2m_min),rn=g(d.precipitation_sum),sn=g(d.snowfall_sum),wx=g(d.wind_speed_10m_max);
+  var t=function(c){return String(Math.round(toDisp(c))).replace("-","\u2212")+"\u00B0";};
+  var rain=sn!=null&&sn>=0.5?"\u2744\uFE0F "+sn.toFixed(1)+"cm":rn!=null&&rn>=0.2?"\uD83C\uDF27\uFE0F "+(rn<10?rn.toFixed(1):Math.round(rn))+"mm":"No rain";
+  return(tx!=null&&tn!=null?"<div class='fc-temps'><span class='fc-tmax'>"+t(tx)+"</span><span class='fc-tmin'>"+t(tn)+"</span></div>":"")
+    +"<div class='fc-scores'><span style='color:"+hiCol+"'>\u2191"+hi+"</span><span style='color:"+loCol+"'>\u2193"+lo+"</span></div>"
+    +"<div class='fc-hitime'>best "+hiTime+"</div>"
+    +"<div class='fc-meta'>"+rain+"</div>"
+    +(wx!=null?"<div class='fc-meta'>\uD83D\uDCA8 "+Math.round(wx)+" km/h</div>":"");
+}
 function render7Day(fc){
   var times=fc.hourly.time,temps=fc.hourly.temperature_2m,dps=fc.hourly.dew_point_2m,winds=fc.hourly.wind_speed_10m,uvs=fc.hourly.uv_index||[],precips=fc.hourly.precipitation||[];
   var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
@@ -3397,12 +3582,8 @@ function render7Day(fc){
       var tWst=wxStyle(tWxCode);
       todayHtml="<div class='fc-slot-7' style='"+(tWst.bg?"background:"+tWst.bg+";":"")+"' onclick='show7DaySlot(0)'>"
         +"<div class='fc-day'>Today"+(tWst.emoji?" "+tWst.emoji:"")+"</div>"
-        +"<div class='fc-hilo'>"
-        +"<div class='fc-hi' style='color:"+tmxNc+"'>\u2191"+tmx+"</div>"
-        +"<div class='fc-hitime'>"+tmxTime+"</div>"
-        +"<div class='fc-lo' style='color:"+tmnNc+"'>\u2193"+tmn+"</div>"
-        +"<div class='fc-hitime'>"+tmnTime+"</div>"
-        +"</div>"+waveTileTags(fc,todayStr)+wbTileTag(useSlots,true)+wcTileTag(useSlots,true)+hypoTileTag(useSlots,fc.hourly.weather_code,true)+"</div>"
+        +fcTileBody(fc,todayStr,tmx,tmxNc,tmxTime,tmn,tmnNc)
+        +waveTileTags(fc,todayStr)+wbTileTag(useSlots,true)+wcTileTag(useSlots,true)+hypoTileTag(useSlots,fc.hourly.weather_code,true)+"</div>"
         +"<div style='width:2px;background:var(--card-border);border-radius:2px;margin:4px 6px;align-self:stretch'></div>";
     }
   }
@@ -3424,12 +3605,8 @@ function render7Day(fc){
     var dWst=wxStyle(dWxCode);
     html+="<div class='fc-slot-7' style='"+(dWst.bg?"background:"+dWst.bg+";":"")+"' onclick='show7DaySlot("+(di+1)+")'>"
       +"<div class='fc-day'>"+dayLabel+(dWst.emoji?" "+dWst.emoji:"")+"</div>"
-      +"<div class='fc-hilo'>"
-      +"<div class='fc-hi' style='color:"+maxNc+"'>\u2191"+maxScore+"</div>"
-      +"<div class='fc-hitime'>"+maxTime+"</div>"
-      +"<div class='fc-lo' style='color:"+minNc+"'>\u2193"+minScore+"</div>"
-      +"<div class='fc-hitime'>"+minTime+"</div>"
-      +"</div>"+waveTileTags(fc,key)+wbTileTag(slots,false)+wcTileTag(slots,false)+hypoTileTag(slots,fc.hourly.weather_code,false)+"</div>";
+      +fcTileBody(fc,key,maxScore,maxNc,maxTime,minScore,minNc)
+      +waveTileTags(fc,key)+wbTileTag(slots,false)+wcTileTag(slots,false)+hypoTileTag(slots,fc.hourly.weather_code,false)+"</div>";
   }
   document.getElementById("forecast-row-7").innerHTML=html;
   window._7dayData=days;
@@ -3985,22 +4162,31 @@ function renderHomeCompare(entry){
   window._climCur=entry||null;
   var el=document.getElementById("clim-home-cmp");
   if(!el)return;
+  var ep=entry?simProfile(entry):null;
+  if(!ep){el.style.display="none";el.innerHTML="";return;}
   var home=getHome(),hp=home?simProfile(home.entry):null;
-  if(!entry||!hp){el.style.display="none";el.innerHTML="";return;}
-  if(entry===home.entry){
-    // Viewing home itself: list the most similar places a long way away
-    var list=[];
-    for(var i=0;i<CLIM_CACHE.length;i++){
-      var e=CLIM_CACHE[i];
-      var km=haversineKm(home.entry.lat,home.entry.lon,e.lat,e.lon);
-      if(km<HOME_TWIN_MIN_KM)continue;
-      var p=simProfile(e);
-      if(!p)continue;
-      list.push({i:i,s:simScore(simDiffs(hp,p)),km:km});
-    }
-    list.sort(function(a,b){return b.s-a.s;});
-    if(!list.length){el.style.display="none";el.innerHTML="";return;}
-    var html="<div style='font-weight:800;color:var(--text-head);margin-bottom:4px'>\uD83C\uDF0D Places most like home</div>";
+  var isHome=!!(hp&&entry===home.entry),html="";
+  // Away from home: one line on how this climate compares with home
+  if(hp&&!isHome){
+    var d=simDiffs(hp,ep),s=simScore(d),det=simDetail(hp,ep,d);
+    html+="<div><span style='font-weight:800;color:var(--text-head)'>"+simBand(s)+"</span> "+(s<20?"from":"to")
+      +" your home climate ("+home.label+")"+(det.length?" \u2014 "+det.join(", "):" \u2014 hard to tell apart")+"</div>";
+  }
+  // Every location: the most similar climates a long way away, in a dropdown
+  var list=[];
+  for(var i=0;i<CLIM_CACHE.length;i++){
+    var e=CLIM_CACHE[i];
+    if(e===entry)continue;
+    var km=haversineKm(entry.lat,entry.lon,e.lat,e.lon);
+    if(km<HOME_TWIN_MIN_KM)continue;
+    var p=simProfile(e);
+    if(!p)continue;
+    list.push({i:i,s:simScore(simDiffs(ep,p)),km:km});
+  }
+  list.sort(function(a,b){return b.s-a.s;});
+  if(list.length){
+    html+="<details class='hiw-sec sim-dd'"+(window._simOpen?" open":"")+" ontoggle='window._simOpen=this.open'>"
+      +"<summary>\uD83C\uDF0D "+(isHome?"Places most like home":"Similar locations")+"</summary><div style='padding-bottom:4px'>";
     list.slice(0,HOME_TWIN_COUNT).forEach(function(t){
       var e=CLIM_CACHE[t.i];
       html+="<div onclick='homeTwinLoad("+t.i+")' style='cursor:pointer;display:flex;gap:8px;align-items:baseline;padding:3px 0'>"
@@ -4008,15 +4194,10 @@ function renderHomeCompare(entry){
         +"<span style='flex:1;color:var(--text)'>"+e.name+(e.ter?", "+e.ter:"")+"</span>"
         +"<span style='font-size:10px;color:var(--text-muted)'>"+Math.round(t.km/100)*100+" km</span></div>";
     });
-    el.innerHTML=html;el.style.display="block";
-    return;
+    html+="</div></details>";
   }
-  var op=simProfile(entry);
-  if(!op){el.style.display="none";el.innerHTML="";return;}
-  var d=simDiffs(hp,op),s=simScore(d),det=simDetail(hp,op,d);
-  el.innerHTML="<span style='font-weight:800;color:var(--text-head)'>"+simBand(s)+"</span> "+(s<20?"from":"to")
-    +" your home climate ("+home.label+")"+(det.length?" \u2014 "+det.join(", "):" \u2014 hard to tell apart");
-  el.style.display="block";
+  if(!html){el.style.display="none";el.innerHTML="";return;}
+  el.innerHTML=html;el.style.display="block";
 }
 function homeTwinLoad(i){
   var e=CLIM_CACHE[i];
@@ -4037,6 +4218,8 @@ function toggleClim(){
 }
 var CLIM_SBANDS=[{max:35,col:"rgba(190,50,50,1)"},{max:55,col:"rgba(210,120,20,1)"},{max:75,col:"rgba(190,185,20,1)"},{max:90,col:"rgba(100,180,50,1)"},{max:100,col:"rgba(25,140,65,1)"}];
 function climScoreCol(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<CLIM_SBANDS.length;i++)if(v<=CLIM_SBANDS[i].max)return CLIM_SBANDS[i].col;return CLIM_SBANDS[CLIM_SBANDS.length-1].col;}
+// Climate figures are stored in °C; convert at display time so the unit toggle applies
+function climT(v){return(v!==null&&v!==undefined&&!isNaN(v))?String(toDisp(v).toFixed(1)).replace("-","\u2212"):"\u2014";}
 function showClimCard(lat,lon){
   var card=document.getElementById("clim-card");
   card.style.display="block";
@@ -4075,9 +4258,9 @@ function showClimCard(lat,lon){
     var col=climScoreCol(calc(m.T,m.dp,0).score);
     tbodyHtml+="<tr style='border-left:3px solid "+col+"'>"
       +"<td style='font-weight:800;color:"+col+"'>"+m.month+"</td>"
-      +"<td>"+fN(m.T,1)+"&deg;</td>"
-      +"<td style='color:var(--text-muted)'>"+fN(m.tmin,1)+"&deg;</td>"
-      +"<td style='color:var(--text-muted)'>"+fN(m.dp,1)+"&deg;</td>"
+      +"<td>"+climT(m.T)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+climT(m.tmin)+"&deg;</td>"
+      +"<td style='color:var(--text-muted)'>"+climT(m.dp)+"&deg;</td>"
       +"<td style='color:var(--text-muted)'>"+fN(m.rain,0)+"</td>"
       +"<td style='color:var(--text-muted)'>"+(m.snow>0.05?fN(m.snow,1):"—")+"</td>"
       +"</tr>";
@@ -4169,11 +4352,31 @@ function toggleLivPref(){
   panel.style.display=open?"block":"none";
   tog.querySelector("svg path").setAttribute("d",open?"M2 3l4 4 4-3":"M4 2l4 4-4 4");
 }
+// Temperature band labels are built from the band's °C value in the chosen unit
+function livDeg(c){return String(Math.round(toDisp(c))).replace("-","\u2212")+unitSym();}
+function livBandLabel(dim,b,last){
+  if(dim==="heat")return"Up to "+livDeg(b.max)+(last?"+":"");
+  if(dim==="cold")return b.min<=-99?"Any cold":"Down to "+livDeg(b.min);
+  if(dim==="dp")return b.max>=99?"Any humidity":b.label.split(" (")[0]+" (\u2264"+livDeg(b.max)+")";
+  return b.label;
+}
+function livUnitText(){
+  [["heat",LIV_HEAT_BANDS],["cold",LIV_COLD_BANDS]].forEach(function(x){
+    var sl=document.getElementById("sl-liv-"+x[0]),ends=sl&&sl.nextElementSibling;
+    if(!ends||!ends.classList.contains("slider-ends")||ends.children.length<2)return;
+    var bb=x[1];
+    ends.children[0].textContent=livBandLabel(x[0],bb[0],false);
+    ends.children[1].textContent=livBandLabel(x[0],bb[bb.length-1],true);
+  });
+  var lw=document.querySelector("label[for=req-summer-warm]"),lc=document.querySelector("label[for=req-winter-cool]");
+  if(lw)lw.textContent="Summer must be warm (warmest month \u2265"+livDeg(18)+" avg max)";
+  if(lc)lc.textContent="Winter must be cool (coldest month <"+livDeg(18)+" avg max)";
+}
 function onLivBand(dim){
   var bands={heat:LIV_HEAT_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
   var b=bands[dim];
   var v=parseInt(document.getElementById("sl-liv-"+dim).value);
-  document.getElementById("liv-"+dim+"-val").textContent=b[v].label;
+  document.getElementById("liv-"+dim+"-val").textContent=livBandLabel(dim,b[v],v===b.length-1);
   document.getElementById("liv-"+dim+"-sub").textContent=b[v].sub;
   saveLivPrefs();
   renderLivScore();
@@ -4231,6 +4434,7 @@ function loadLivPrefs(){
   sc("req-winter-cool",p.reqWinterCool||false);
   ["heat","cold","dp","rain","sun","snow"].forEach(function(d){onLivBand(d);});
   ["tsens","hsens","lsens"].forEach(function(s){onLivSens(s);});
+  livUnitText();
 }
 function getLivPrefs(){
   return{
@@ -4926,12 +5130,12 @@ function showClimMonthPop(i){
   function sc(v,dp){if(v===null||v===undefined||isNaN(v))return null;return calc(v,dp,0).score;}
   function chip(s){if(s===null)return "<span style='color:var(--text-muted)'>—</span>";var c=climScoreCol(s);return "<span style='display:inline-block;padding:1px 7px;border-radius:12px;font-size:11px;font-weight:800;background:"+c.replace(",1)",",.15)")+"22;color:"+c+"'>"+s+"</span>";}
   var body="<table style='width:100%;border-collapse:collapse'>"
-    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Warmest day avg</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.tmaxMax,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tmaxMax,m.dp))+"</td></tr>"
-    +"<tr><td style='color:var(--text);font-size:12px;padding:5px 0'>Average high</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.T,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.T,m.dp))+"</td></tr>"
-    +"<tr><td style='color:var(--text);font-size:12px;padding:5px 0'>Average low</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.tmin,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tmin,m.dp))+"</td></tr>"
-    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Coldest night avg</td><td style='text-align:right;font-weight:800;font-size:13px'>"+fN(m.tminMin,1)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tminMin,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Warmest day avg</td><td style='text-align:right;font-weight:800;font-size:13px'>"+climT(m.tmaxMax)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tmaxMax,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text);font-size:12px;padding:5px 0'>Average high</td><td style='text-align:right;font-weight:800;font-size:13px'>"+climT(m.T)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.T,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text);font-size:12px;padding:5px 0'>Average low</td><td style='text-align:right;font-weight:800;font-size:13px'>"+climT(m.tmin)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tmin,m.dp))+"</td></tr>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Coldest night avg</td><td style='text-align:right;font-weight:800;font-size:13px'>"+climT(m.tminMin)+"°</td><td style='text-align:right;padding-left:8px'>"+chip(sc(m.tminMin,m.dp))+"</td></tr>"
     +"<tr><td colspan='3' style='padding:3px 0'><div style='height:1px;background:var(--divider)'></div></td></tr>"
-    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Avg dew point</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+fN(m.dp,1)+"°</td></tr>"
+    +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Avg dew point</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+climT(m.dp)+"°</td></tr>"
     +"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Rainfall</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+fN(m.rain,0)+" mm</td></tr>"
     +(m.snow>0.05?"<tr><td style='color:var(--text-muted);font-size:12px;padding:5px 0'>Snowfall</td><td style='text-align:right;font-weight:800;font-size:13px' colspan='2'>"+fN(m.snow,1)+" cm</td></tr>":"")
     +"</table>"
