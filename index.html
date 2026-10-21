@@ -370,6 +370,10 @@ body.manual-mode #clim-card{display:none!important}
 .alert-strip .ann{display:flex;justify-content:space-between;align-items:center;width:100%;border-radius:10px;padding:8px 11px;font-size:13.5px;font-weight:800;cursor:pointer}
 .alert-strip .ann::after{content:"\203A";font-size:19px;line-height:1;opacity:0.7;margin-left:8px}
 .alert-strip .ann.quiet{font-size:12.5px;font-weight:700;padding:6px 11px}
+/* Tappable things get a slightly bolder edge in a stronger shade of their own colour */
+.ann[onclick],a.ann{border-width:1.5px;border-color:color-mix(in srgb,currentColor 50%,transparent);cursor:pointer}
+.cond-tile[onclick],.fc-slot-7,.fc-slot{border-width:1.5px;border-color:color-mix(in srgb,var(--text-sec) 45%,transparent)}
+.ann[onclick]:active,a.ann:active,.cond-tile[onclick]:active,.fc-slot-7:active{transform:scale(0.97)}
 .topbar .unit-btn{padding:8px 9px}
 .top-status{text-align:center;margin:-4px 0 8px}
 .top-status:empty{display:none}
@@ -1680,7 +1684,7 @@ function renderChips(temp,effDP,rh,wind,fc){
   if(fc&&fc.daily&&fc.daily.time){
     var hlDay=new Intl.DateTimeFormat("en-CA",{timeZone:fc.timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()),hlI=fc.daily.time.indexOf(hlDay);
     var hx=hlI>=0&&fc.daily.temperature_2m_max?fc.daily.temperature_2m_max[hlI]:null,hn=hlI>=0&&fc.daily.temperature_2m_min?fc.daily.temperature_2m_min[hlI]:null;
-    if(hx!=null&&hn!=null)hiLo="high "+String(Math.round(toDisp(hx))).replace("-","\u2212")+"\u00B0 \u00B7 low "+String(Math.round(toDisp(hn))).replace("-","\u2212")+"\u00B0";
+    if(hx!=null&&hn!=null)hiLo="\u2191"+String(Math.round(toDisp(hx))).replace("-","\u2212")+"\u00B0 \u2193"+String(Math.round(toDisp(hn))).replace("-","\u2212")+"\u00B0 today";
   }
   // Sun tile leads with whichever of sunrise/sunset comes next
   var sunLbl="Sunrise",sunVal="\u2014",sunSub="";
@@ -1708,7 +1712,7 @@ function renderChips(temp,effDP,rh,wind,fc){
     tile("Temperature",deg(temp),hiLo)
    +tile("Dew point",deg(effDP),rh+"% humidity")
    +tile("Wind",Math.round(wind)+"<span style='font-size:11px'> km/h</span>",(gust!=null&&gust>GUST_SHOW)?"gusts to "+Math.round(gust):bft.charAt(0).toUpperCase()+bft.slice(1))
-   +tile("UV index",uvNow==null?"\u2014":String(Math.round(uvNow)),uvLbl||"no data")
+   +tile("UV index \u203A",uvNow==null?"\u2014":String(Math.round(uvNow)),uvLbl||"no data","showUVPop()")
    +tile(sunLbl,sunVal,sunSub)
    +tile("Moon &amp; tides \u203A",moon.emoji,moon.name,"showSunMoonPop()");
   fetchTides();
@@ -2229,7 +2233,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
     }
     var isDaytime=isCurrentlyDaytime(window._FC);
     var uvAnn=isDaytime?uvAnnotationDaytime(curUV):uvAnnotation(curUV);
-    if(uvAnn)annHtml+="<span class='ann "+uvAnn.c+"'>"+uvAnn.t+"</span>";
+    if(uvAnn)annHtml+="<span class='ann "+uvAnn.c+"' style='cursor:pointer' onclick='showUVPop()'>"+uvAnn.t+"</span>";
     // AQI pill
     if(window._AQ&&window._AQ.hourly){
       var aqiNowIdx=null;
@@ -2367,6 +2371,69 @@ function showForecastSlot(idx){
 }
 
 // ── Share ──────────────────────────────────────────────────────────────────
+// ── UV popup ───────────────────────────────────────────────────────────────
+// WHO UV index categories; protection advised from 3. Text colours are darkened
+// versions of the standard UV colours so they stay readable.
+function uvBand(u){
+  if(u<3)return{label:"Low",col:"#2e8b2e"};
+  if(u<6)return{label:"Moderate",col:"#b08f00"};
+  if(u<8)return{label:"High",col:"#e06000"};
+  if(u<11)return{label:"Very high",col:"#c8001a"};
+  return{label:"Extreme",col:"#6b49c8"};
+}
+// Peak UV and the sun-protection window (UV 3 or more) for one day of the forecast
+function uvDayStats(fc,dateStr){
+  if(!fc||!fc.hourly||!fc.hourly.uv_index)return null;
+  var t=fc.hourly.time,u=fc.hourly.uv_index,pk=-1,pkI=-1,from=-1,to=-1;
+  for(var i=0;i<t.length;i++){
+    if(t[i].slice(0,10)!==dateStr||u[i]==null)continue;
+    if(u[i]>pk){pk=u[i];pkI=i;}
+    if(u[i]>=3){if(from<0)from=i;to=i;}
+  }
+  if(pkI<0)return null;
+  var off=getTZOffsetMin(fc.timezone);
+  var hr=function(i,add){return new Intl.DateTimeFormat("en-AU",{timeZone:fc.timezone,hour:"numeric",hour12:true}).format(new Date(toEpoch(t[i],off)+(add||0))).toLowerCase().replace(" ","");};
+  return{peak:pk,peakAt:hr(pkI),from:from>=0?hr(from):null,to:to>=0?hr(to,3600000):null};
+}
+function showUVPop(dateStr,uvVal,backDi){
+  var fc=window._FC,tz=fc?fc.timezone:"UTC";
+  var today=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  dateStr=dateStr||today;
+  var isToday=dateStr===today;
+  // Live screen: use the current hour's UV when no value is given
+  if(uvVal==null&&isToday&&backDi==null&&fc&&fc.hourly&&fc.hourly.uv_index){
+    var h=localHourInTZ(tz);
+    for(var i=0;i<fc.hourly.time.length;i++)if(fc.hourly.time[i].slice(0,10)===today&&parseInt(fc.hourly.time[i].slice(11,13))===h){uvVal=fc.hourly.uv_index[i];break;}
+  }
+  var st=uvDayStats(fc,dateStr);
+  var show=uvVal!=null?uvVal:(st?st.peak:0),b=uvBand(show),r=Math.round(show);
+  var when=isToday?"today":new Date(dateStr+"T12:00").toLocaleDateString(undefined,{weekday:"long"});
+  var sub=[];
+  if(st)sub.push(uvVal!=null?"Peak "+Math.round(st.peak)+" ("+uvBand(st.peak).label.toLowerCase()+") around "+st.peakAt:"Around "+st.peakAt);
+  sub.push(st&&st.from?"Protection needed "+st.from+" \u2013 "+st.to:"No protection window "+when);
+  var leads={
+    Low:"Little risk for most people. Protection is still worth it near snow, water or sand, which reflect UV, or if you\u2019re out for hours.",
+    Moderate:"Protection needed. Unprotected skin can start to burn after around half an hour for many people.",
+    High:"Protection essential. Skin can burn in under 30 minutes \u2014 seek shade around the middle of the day.",
+    "Very high":"Protection essential. Skin can burn in as little as 15 minutes, so keep midday time in the sun short.",
+    Extreme:"Unprotected skin can burn in minutes. Avoid the midday sun where you can, and use every protection measure."
+  };
+  hazardPop({
+    title:"UV index \u2600\uFE0F",
+    col:b.col,
+    headline:(uvVal!=null?(isToday&&backDi==null?"UV now ":"UV ")+r:"Peak UV "+r)+" \u2014 "+b.label,
+    sub:sub.join(" \u00B7 "),
+    lead:leads[b.label],
+    advice:"<b>When UV is 3 or above:</b><br>"
+      +"\uD83D\uDC55 <b>Cover up</b> \u2014 clothing that covers as much skin as possible, tightly woven.<br>"
+      +"\uD83E\uDDF4 <b>Sunscreen</b> \u2014 SPF 30 or higher, broad-spectrum and water-resistant. Apply 20 minutes before going out and every 2 hours, or after swimming or sweating.<br>"
+      +"\uD83D\uDC52 <b>Hat</b> \u2014 a broad-brimmed, legionnaire or bucket hat that shades face, ears and neck.<br>"
+      +"\uD83C\uDF33 <b>Shade</b> \u2014 especially in the middle of the day, when UV is strongest.<br>"
+      +"\uD83D\uDD76\uFE0F <b>Sunglasses</b> \u2014 close-fitting, wraparound, meeting sun-protection standards.",
+    signs:"UV isn\u2019t heat: you can burn on a cool, windy or cloudy day, and temperature tells you nothing about it. Babies under 12 months should be kept out of direct sun when UV is 3 or above.",
+    foot:"The UV index follows the World Health Organization scale: 1\u20132 low, 3\u20135 moderate, 6\u20137 high, 8\u201310 very high, 11+ extreme. Sun protection is recommended whenever it reaches 3. Forecast values include cloud cover and can change through the day. Follow your local health authority\u2019s sun-protection advice.",
+    backDi:backDi});
+}
 function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind){
   var lw=window._LW||{};
   if(temp==null)temp=lw.temp;if(dp==null)dp=lw.effDP;if(wind==null)wind=lw.wind;
@@ -3568,7 +3635,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
         +(dispLayers===0&&(hasRain||hasWindRain)?"":outerLine)
     +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
         +(tooHot||justGetWet||w.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
-    +(uvSunW?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSunW+"</div>":"")
+    +(uvSunW?"<div onclick='showUVPop()' style='cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSunW+" \u203A</div>":"")
     +"</div>";
   document.getElementById("pop-ttl").innerHTML="What to wear?";
   document.getElementById("pop-body").innerHTML=body;
@@ -3757,7 +3824,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
       +"<div style='font-size:28px;font-weight:800;color:"+wearNc+";line-height:1'>"+dispLayers+"</div>"
       +"<div style='font-size:14px;font-weight:700;color:"+wearNc+"'>"+layerWord+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div></div>")
     +(tooHot||justGetWet||ww.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
-    +(uvSun?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSun+"</div>":"")
+    +(uvSun?"<div onclick='showUVPop(\""+fc.hourly.time[idx].slice(0,10)+"\","+uvVal+","+di+")' style='cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSun+" \u203A</div>":"")
     +"</div>"
     +"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+di+")'>← Back</div>"
     +"</div>";
@@ -4044,7 +4111,7 @@ function show7DaySlot(di){
       +"<div>"+rainLine+"</div>"
       +(windLine?"<div>💨 "+windLine+"</div>":"")
       +fireLine
-      +(uvDayLine?"<div>\u2600\uFE0F "+uvDayLine+"</div>":"")
+      +(uvDayLine?"<div style='cursor:pointer' onclick='showUVPop(\""+dateKey+"\",null,"+di+")'>\u2600\uFE0F "+uvDayLine+" \u203A</div>":"")
       +"</div>";
   }
   // 2-hourly table — even local hours only
