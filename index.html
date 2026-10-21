@@ -961,15 +961,44 @@ function wxStyle(code,isNight){
 }
 
 // ── Beaufort wind ──────────────────────────────────────────────────────────
+// WMO Beaufort scale on the hourly mean wind at 10 m (km/h lower bounds).
+// n = name for pills, p = phrase for sentences, e = pill emoji.
+var BEAUFORT=[
+  {f:12,min:118,n:"hurricane force",p:"hurricane-force winds",e:"\uD83C\uDF2A\uFE0F"},
+  {f:11,min:103,n:"violent storm",p:"violent storm-force winds",e:"\uD83C\uDF2A\uFE0F"},
+  {f:10,min:89,n:"storm",p:"storm-force winds",e:"\uD83C\uDF2A\uFE0F"},
+  {f:9,min:75,n:"strong gale",p:"strong gales",e:"\uD83C\uDF2A\uFE0F"},
+  {f:8,min:62,n:"gale",p:"gales",e:"\uD83C\uDF00"},
+  {f:7,min:50,n:"near gale",p:"near-gale winds",e:"\uD83C\uDF00"},
+  {f:6,min:39,n:"strong breeze",p:"a strong breeze",e:"\uD83D\uDCA8"},
+  {f:5,min:29,n:"fresh breeze",p:"a fresh breeze",e:"\uD83D\uDCA8"},
+  {f:4,min:20,n:"moderate breeze",p:"a moderate breeze",e:"\uD83C\uDF2C\uFE0F"},
+  {f:3,min:12,n:"gentle breeze",p:"a gentle breeze",e:"\uD83C\uDF43"},
+  {f:2,min:6,n:"light breeze",p:"a light breeze",e:"\uD83C\uDF43"},
+  {f:1,min:1,n:"light air",p:"light air",e:""},
+  {f:0,min:-1,n:"calm",p:"calm air",e:""}
+];
+function beaufort(kmh){
+  var v=(kmh==null||isNaN(kmh))?0:kmh;
+  for(var i=0;i<BEAUFORT.length;i++)if(v>=BEAUFORT[i].min)return BEAUFORT[i];
+  return BEAUFORT[BEAUFORT.length-1];
+}
+function windPhrase(kmh){return beaufort(kmh).p;}
+// Pill from a gentle breeze up. Within your pleasant-wind range near your ideal
+// temperature, breezes (up to a strong breeze) read as "nice".
 function windBeaufort(wind,temp,s){
-  if(wind<20)return null;
-  if(wind>=s.pwlo&&wind<=s.pwhi)return null;
-  if(wind<29)return{c:"ann-wind",t:"moderate breeze \uD83C\uDF2C\uFE0F"};
-  if(wind<39)return{c:"ann-wind",t:"fresh breeze \uD83D\uDCA8"};
-  if(wind<50)return{c:"ann-wind",t:"strong breeze \uD83D\uDCA8"};
-  if(wind<62)return{c:"ann-wind",t:"near gale \uD83C\uDF00"};
-  if(wind<75)return{c:"ann-wind",t:"gale \uD83C\uDF00"};
-  return{c:"ann-wind",t:"storm force \uD83C\uDF2A\uFE0F"};
+  if(wind==null||isNaN(wind)||wind<6)return null;
+  var b=beaufort(wind);
+  var nice=b.f<=6&&wind>=s.pwlo&&wind<=s.pwhi&&temp>=s.tlo&&Math.abs(temp-(s.tlo+s.thi)/2)<6;
+  if(nice)return{c:"ann-breeze",t:"nice "+b.n+" \uD83C\uDF43"};
+  if(b.f<3)return null;
+  return{c:b.f===3?"ann-breeze":"ann-wind",t:b.n+" "+b.e};
+}
+// Gusts are shown separately once they pass GUST_SHOW km/h
+var GUST_SHOW=50;
+function gustPill(g){
+  if(g==null||isNaN(g)||g<=GUST_SHOW)return"";
+  return"<span class='ann ann-wind'>gusts to "+Math.round(g)+" km/h \uD83D\uDCA8</span>";
 }
 
 // ── UV Index ───────────────────────────────────────────────────────────────
@@ -1197,13 +1226,14 @@ function getMaxFFDIForDay(fc,dateStr){
   if(!fc||!fc.hourly||!fc.hourly.relative_humidity_2m)return null;
   var dailyRain=fc.daily&&fc.daily.precipitation_sum?fc.daily.precipitation_sum:[];
   var dailyDates=fc.daily&&fc.daily.time?fc.daily.time:[];
-  // Find how many forecast days precede dateStr and include their rain in drought factor
-  var datesUpToDate=dailyDates.slice(0,20);
-  var rainUpToDate=dailyRain.slice(0,20); // past 20 days always included
-  for(var d=0;d<dailyDates.length;d++){
-    if(dailyDates[d]>=dateStr)break; // stop before the target date
-    if(d>=20){rainUpToDate.push(dailyRain[d]||0);datesUpToDate.push(dailyDates[d]);}
-  }
+  // Drought factor uses the 20 days immediately BEFORE dateStr, located by date
+  // (calcDroughtFactor only reads 20 entries, so a fixed slice(0,20) went stale
+  // once past_days=32 was added)
+  var tIdx=dailyDates.indexOf(dateStr);
+  if(tIdx<0)tIdx=dailyDates.length;
+  var dFrom=Math.max(0,tIdx-20);
+  var datesUpToDate=dailyDates.slice(dFrom,tIdx);
+  var rainUpToDate=dailyRain.slice(dFrom,tIdx);
   var evap=getDailyTmaxRhMin(fc,datesUpToDate);
   var df=calcDroughtFactor(rainUpToDate,evap.tmax,evap.rhmin);
   var times=fc.hourly.time,rhs=fc.hourly.relative_humidity_2m,temps=fc.hourly.temperature_2m,winds=fc.hourly.wind_speed_10m;
@@ -1658,7 +1688,7 @@ var SETTINGS=[
   {id:"s-cws",label:"Cold wind sensitivity (x)",val:1.5,step:0.1,title:"Wind chill intensity",info:"How aggressively wind amplifies cold discomfort below the threshold."},
   {id:"s-pwlo",label:"Pleasant wind low (km/h)",val:10,step:1,title:"Comfortable breeze — lower end",info:"The minimum wind speed that starts to feel like a pleasant breeze. Within this range a small score bonus applies near ideal temperatures."},
   {id:"s-pwhi",label:"Pleasant wind high (km/h)",val:20,step:1,title:"Comfortable breeze — upper end",info:"The maximum wind speed that still feels pleasant. Above this, wind starts becoming a nuisance."},
-  {id:"s-swt",label:"Strong wind threshold (km/h)",val:35,step:1,title:"Strong wind threshold",info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."}
+  {id:"s-swt",label:"Wind discomfort threshold (km/h)",val:35,step:1,title:"Wind discomfort threshold",info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."}
 ];
 function showPop(title,text){document.getElementById("pop-ttl").textContent=title;document.getElementById("pop-body").textContent=text;document.getElementById("pop-ov").classList.add("open");}
 function closePop(){document.getElementById("pop-ov").classList.remove("open");}
@@ -1685,6 +1715,8 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>A score from 0–100 representing how comfortable it is to be outside, personalised to your preferences. 100 is perfect. Penalties are applied for heat, cold, humidity, and wind based on your comfort range settings — so two people in the same place can get different scores.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Why dew point, not humidity?</div>"
     +"<div style='margin-bottom:12px'>Relative humidity tells you how full the air is compared to its capacity — but capacity changes with temperature. A 70% humidity day at 10°C feels crisp; at 30°C it's oppressive. Dew point measures the actual moisture in the air regardless of temperature, making it a far better indicator of how sticky or clammy conditions feel. Once it is hotter than your comfort ceiling, the score also uses wet-bulb temperature, which combines heat and humidity into the lowest temperature sweat can cool you to — so the same humidity costs more the hotter it gets. When wet bulb reaches 28°C a “Dangerously hot” warning appears, and at 31°C “Extremely dangerous heat”.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Wind 💨</div>"
+    +"<div style='margin-bottom:12px'>Wind is described on the Beaufort scale, using the average wind speed at 10 m — the measure the scale is defined on. Pills name everything from a gentle breeze (12 km/h) up to hurricane force (118 km/h and above); when the wind sits within your pleasant-wind range close to your ideal temperature, it reads as a “nice” breeze. Day summaries mention wind from a fresh breeze (29 km/h) up. Gusts are brief bursts well above the average, so they’re shown separately once they pass 50 km/h.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Clothing recommendation</div>"
     +"<div style='margin-bottom:12px'>Layers are calculated from your comfort floor and ceiling, adjusted for wind chill. The outer layer accounts for rain and wind independently — a rain jacket replaces rather than adds to the insulating layer recommendation.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
@@ -1889,8 +1921,8 @@ function hypoPill(t,wind,code,mm){
 function showHypoPop(t,wind,backDi,hours){
   var tTxt=String(toDisp(t).toFixed(1)).replace("-","\u2212")+unitSym();
   showPop("Hypothermia risk",
-    "Cold rain and strong wind together are the most common cause of hypothermia in mild climates. Wet clothing loses most of its insulation, and wind strips heat from it far faster than still air \u2014 so a few degrees above zero in rain and wind can chill you faster than a dry, still frost.\n\n"
-    +(hours?"Expected for about "+hours+" hour"+(hours>1?"s":"")+", at worst ":"Right now: ")+tTxt+" with rain and "+Math.round(wind)+" km/h wind.\n\n"
+    "Cold rain and wind together are the most common cause of hypothermia in mild climates. Wet clothing loses most of its insulation, and wind strips heat from it far faster than still air \u2014 so a few degrees above zero in rain and wind can chill you faster than a dry, still frost.\n\n"
+    +(hours?"Expected for about "+hours+" hour"+(hours>1?"s":"")+", at worst ":"Right now: ")+tTxt+" with rain and "+windPhrase(wind)+" ("+Math.round(wind)+" km/h).\n\n"
     +"If you're outdoors \u2014 walking, cycling, working \u2014 wear a waterproof, windproof outer shell over wool or synthetic layers (not cotton), carry a spare dry layer, and keep moving or get under cover. Watch for uncontrolled shivering, clumsiness, slurred speech or confusion in yourself and others. Newly shorn sheep and young livestock are especially vulnerable in these conditions.\n\n"
     +"Follow advice from your local weather service and health authority.");
   if(backDi!==undefined&&backDi!==null){
@@ -1994,10 +2026,7 @@ if(temp>=0){
     if(firesVdry)a.push({c:"ann-vdry",t:"very dry air \uD83C\uDFDC\uFE0F"});
     else if(firesDry)a.push({c:"ann-dry",t:"dry air \uD83C\uDF35"});
   }
- if(temp<0&&wind>=15){a.push({c:"ann-chill",t:"wind chill \uD83C\uDF2C\uFE0F"});}
-  else if(wind>=s.pwlo&&wind<=s.pwhi&&temp>=s.tlo&&Math.abs(temp-(s.tlo+s.thi)/2)<6){a.push({c:"ann-breeze",t:"nice breeze \uD83C\uDF43"});}
-  else if(wind>=12&&wind<20){a.push({c:"ann-breeze",t:"gentle breeze \uD83C\uDF43"});}
-  else{var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);}
+  var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);
   if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
   var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
   if(inIdeal||score>90)a.push({c:"ann-great",t:"feels great \u2728"});
@@ -2046,6 +2075,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   }
   var annHtml="";
   for(var i=0;i<condAnns.length;i++)annHtml+=annSpan(condAnns[i]);
+  if(areaId==="live-score-area"&&window._LW)annHtml+=gustPill(window._LW.gust);
   // Heat-stress pill — from current temperature and dew point, so it needs no forecast
   annHtml+=wetBulbPill(temp,effDP);
   annHtml+=coldPill(temp,wind);
@@ -2373,18 +2403,18 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,windwind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
-    var weatherPromise=fetch(url).then(function(r){if(!r.ok)throw apiError(r.status);return r.json();});
+var weatherPromise=fetch(url).then(function(r){if(!r.ok)return r.json().catch(function(){return{};}).then(function(j){var e=apiError(r.status);if(j&&j.reason&&r.status!==429)e.message+=" \u2014 "+j.reason;throw e;});return r.json();});
   var aqPromise=fetch(aqUrl).then(function(r){return r.json();}).catch(function(){return null;});
   Promise.all([weatherPromise,aqPromise]).then(function(results){
     var d=results[0],aq=results[1];
     window._AQ=aq;
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var res=calc(temp,effDP,wind);
-    window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,res:res,wxCode:wxCode};
+    window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,gust:cur.wind_gusts_10m,res:res,wxCode:wxCode};
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
@@ -2420,7 +2450,7 @@ function fetchWU(stationId,apiKey,label,cb){
     if(!d.observations||!d.observations.length)throw new Error("No data returned");
     var obs=d.observations[0],m=obs.metric,temp=m.temp,rh=obs.humidity,wind=m.windSpeed,dew=m.dewpt;
     var res=calc(temp,dew,wind);
-    window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,res:res,wxCode:null};
+    window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,gust:m.windGust,res:res,wxCode:null};
     window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;
     window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
     document.getElementById("live-status").textContent="";
@@ -2440,7 +2470,7 @@ function fetchWU(stationId,apiKey,label,cb){
 }
 function fetchForecastOnly(lat,lon){
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
-  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
+  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   window._AQ=null;
     var fcPromise=fetch(fcUrl).then(function(r){if(!r.ok)throw new Error("API error "+r.status);return r.json();});
   var aqPromise=fetch(aqUrl).then(function(r){return r.json();}).catch(function(){return null;});
@@ -2758,7 +2788,7 @@ function checkWashingManual(){
   else if(vpd<0.3)rsns.push("the air is quite humid");
   else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");
-  else if(wind>=20)rsns.push("a good breeze");
+  else if(wind>=20)rsns.push(windPhrase(wind));
   if(temp>25)rsns.push("warm temperature");
   else if(temp<12)rsns.push("cool temperature");
   var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
@@ -3096,7 +3126,7 @@ function checkWashing(){
   else if(vpd<0.3)rsns.push("the air is quite humid");
   else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");
-  else if(wind>=20)rsns.push("a good breeze");
+  else if(wind>=20)rsns.push(windPhrase(wind));
   if(temp>25)rsns.push("warm temperature");
   else if(temp<12)rsns.push("cool temperature");
   var rsn=rsns.length?(rsns[0].charAt(0).toUpperCase()+rsns[0].slice(1)+(rsns.length>1?" and "+rsns.slice(1).join(", "):"")+"."):
@@ -3459,6 +3489,7 @@ function show7DayHourSlot(idx,di,timeStr){
   var annHtml="";
   for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
   annHtml+=wetBulbPill(t,dp);
+  annHtml+=gustPill((fc.hourly.wind_gusts_10m||[])[idx]);
   annHtml+=coldPill(t,w);
   annHtml+=hypoPill(t,w,wxCode,precips[idx]);
     var ww=whatToWear(t,w,wxCode,s,dp);
@@ -3506,15 +3537,11 @@ var NARR_WORDS=[{min:95,w:"glorious"},{min:91,w:"beautiful"},{min:81,w:"comforta
 function narrCap(t){return t.charAt(0).toUpperCase()+t.slice(1);}
 function narrArticle(w){return /^[aeiou]/i.test(w)?"an":"a";}
 function narrLabelList(a){return a.length>1?a.slice(0,-1).join(", ")+" and "+a[a.length-1]:a[0];}
-// Peak-wind wording for a single period. Thresholds key off the user's own wind
-// settings: pwhi is where the score starts penalising, swt where it ramps hard.
+// Peak-wind wording for a single period, in Beaufort terms. Only a fresh breeze
+// (29 km/h) or more is worth a mention; lighter winds are left to the pills.
 function narrWindWord(mx,s){
-  if(mx===null||mx===undefined||mx<0)return"";
-    if(mx>=s.swt+25)return"severely windy";
-  if(mx>=s.swt+15)return"very windy";
-  if(mx>=s.swt)return"windy";
-  if(mx>=s.pwhi+10)return"breezy";
-  return"";
+  if(mx===null||mx===undefined||mx<29)return"";
+  return windPhrase(mx);
 }
 function narrWxClass(code){
   if(code===null||code===undefined)return{r:2,adj:"partly cloudy",nadj:"partly cloudy",p:false};
@@ -3593,8 +3620,7 @@ function dayNarrative(slots,tz,hcodes,precips,isToday){
   else if(mt<s.tlo&&gap<3)hw="damp";
   else if(md<=0)hw="very dry";
   else if(md<=5)hw="dry";
-  var ww=mw>=45?"very windy":mw>=30?"windy":mw>=20?"breezy":"";
-  var parts=[tw];if(hw)parts.push(hw);if(ww)parts.push(ww);
+  var parts=[tw];if(hw)parts.push(hw);
   var s2=narrCap(parts.length===1?parts[0]:parts.slice(0,-1).join(", ")+" and "+parts[parts.length-1])+".";
     // 3 — how the weather moves through the day, with noteworthy wind folded in
   var runs=[];
@@ -3610,8 +3636,6 @@ function dayNarrative(slots,tz,hcodes,precips,isToday){
     if(!wmap[pw]){wmap[pw]={word:pw,labels:[],idx:[]};wgroups.push(wmap[pw]);}
     wmap[pw].labels.push(ps[i].label);wmap[pw].idx.push(i);
   }
-  // Drop it entirely when it would only echo the daily-average wind already in s2
-  if(wgroups.length===1&&wgroups[0].idx.length===ps.length&&wgroups[0].word===ww)wgroups=[];
   // A wind group whose periods exactly match a weather run folds into that run's
   // adjective; anything else trails the sentence as its own clause.
   var wclauses=[];
@@ -3624,22 +3648,23 @@ function dayNarrative(slots,tz,hcodes,precips,isToday){
       wclauses.push(g.word+(contig?" through the ":" in the ")+narrLabelList(g.labels));
     }
   }
-  function rAdj(rn){var a=rn.allNight?rn.cls.nadj:rn.cls.adj;return rn.wind?a+" and "+rn.wind:a;}
+  function rAdj(rn){return rn.allNight?rn.cls.nadj:rn.cls.adj;}
+  function rW(rn){return rn.wind?" with "+rn.wind:"";}
   function rLbl(rn){return narrLabelList(rn.labels);}
   var s3;
   if(runs.length===1){
-    s3=ps.length>=3?narrCap(rAdj(runs[0]))+" all day.":narrCap(rAdj(runs[0]))+" through the "+rLbl(runs[0])+".";
+    s3=ps.length>=3?narrCap(rAdj(runs[0]))+rW(runs[0])+" all day.":narrCap(rAdj(runs[0]))+" through the "+rLbl(runs[0])+rW(runs[0])+".";
   }else if(runs.length===2){
-    var a1=rAdj(runs[0]),a2=rAdj(runs[1]);
-    if(runs[1].r<runs[0].r)s3=narrCap(narrArticle(a1)+" "+a1+" "+rLbl(runs[0]))+(runs[1].cls.p?" easing to ":" clearing to ")+narrArticle(a2)+" "+a2+" "+rLbl(runs[1])+".";
-    else s3=narrCap(narrArticle(a1)+" "+a1+" "+rLbl(runs[0]))+" turning "+a2+" in the "+rLbl(runs[1])+".";
+    var a1=rAdj(runs[0]),a2=rAdj(runs[1]),c1=rW(runs[0])?",":"";
+    if(runs[1].r<runs[0].r)s3=narrCap(narrArticle(a1)+" "+a1+" "+rLbl(runs[0]))+rW(runs[0])+c1+(runs[1].cls.p?" easing to ":" clearing to ")+narrArticle(a2)+" "+a2+" "+rLbl(runs[1])+rW(runs[1])+".";
+    else s3=narrCap(narrArticle(a1)+" "+a1+" "+rLbl(runs[0]))+rW(runs[0])+c1+" turning "+a2+" in the "+rLbl(runs[1])+rW(runs[1])+".";
   }else{
-    s3=narrCap(narrArticle(rAdj(runs[0]))+" "+rAdj(runs[0])+" "+rLbl(runs[0]))+", "+rAdj(runs[1])+" by the "+rLbl(runs[1])+", then "+rAdj(runs[2])+" for the "+rLbl(runs[2])+".";
+    s3=narrCap(narrArticle(rAdj(runs[0]))+" "+rAdj(runs[0])+" "+rLbl(runs[0]))+rW(runs[0])+", "+rAdj(runs[1])+" by the "+rLbl(runs[1])+rW(runs[1])+", then "+rAdj(runs[2])+" for the "+rLbl(runs[2])+rW(runs[2])+".";
   }
   if(wclauses.length){
     var wj=wclauses.join(" and ");
-    for(i=0;i<wclauses.length;i++)if(wclauses[i].indexOf(" and ")>-1){wj=wclauses.join(", ");break;}
-    s3=s3.replace(/\.$/,"")+", "+wj+".";
+    for(i=0;i<wclauses.length;i++)if(wclauses[i].indexOf(" and ")>-1){wj=wclauses.slice(0,-1).join(", ")+", and "+wclauses[wclauses.length-1];break;}
+    s3=s3.replace(/\.$/,"")+", with "+wj+".";
   }
   return{s1:s1,s2:s2,s3:s3,mean:mean};
 }
@@ -3698,7 +3723,9 @@ function show7DaySlot(di){
       rainLine="No rain expected";
     }
     var rangeLine=(tMax!==null&&tMin!==null)?(tMin+unitSym()+" – "+tMax+unitSym()):"";
-    var windLine=windMax!==null?("Peak wind "+windMax+" km/h"):"";
+    var dayGust=null,gArr=fc.hourly&&fc.hourly.wind_gusts_10m?fc.hourly.wind_gusts_10m:[];
+    for(var gi=0;gi<slots.length;gi++){var gv=gArr[slots[gi].idx];if(gv!=null&&(dayGust===null||gv>dayGust))dayGust=gv;}
+    var windLine=windMax!==null?("Peak wind "+windMax+" km/h ("+beaufort(windMax).n+")"+(dayGust!==null&&dayGust>GUST_SHOW?", gusts to "+Math.round(dayGust)+" km/h":"")):"";
     var fireLine="";
     var dayMaxFFDI=getMaxFFDIForDay(fc,dateKey);
     var dayFI=dayMaxFFDI!==null?ffdiInfo(dayMaxFFDI):null;
@@ -4017,7 +4044,8 @@ function showClimCard(lat,lon){
     renderHomeCompare(null);
     return;
   }
-  var kopHtml=entry.koppen?"<span onclick='showKoppenPop("+JSON.stringify(entry.koppen)+")' style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec);cursor:pointer'>"+entry.koppen+" ↗</span>":"";
+  var kopKey=entry.koppen?koppenKey(entry.koppen):"";
+  var kopHtml=kopKey?"<span onclick='showKoppenPop(\""+kopKey+"\")' style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec);cursor:pointer'>"+koppenSwatch(kopKey,9)+kopKey+" ↗</span>":"";
   var kop2Html=entry.koppen2?"<div style='font-size:11px;font-weight:600;color:var(--text-muted);margin-top:3px'>"+entry.koppen2+"</div>":"";
   lbl.innerHTML="<div>"+entry.name+(entry.ter?", "+entry.ter:"")+" · "+entry.elev+"m"+kopHtml+"</div>"+kop2Html;
   window._climMonthly=entry.monthly;
@@ -4647,71 +4675,230 @@ function livMapLoad(lat,lon,label){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
+// ── Köppen explainers ──────────────────────────────────────────────────────
+// Criteria follow Peel et al. (2007), as used for this app's climate profiles: monthly
+// MEAN temperatures, 0°C between C and D. Colours are the Beck et al. (2018) map legend
+// used on Wikipedia. Every example has been checked against its own Wikipedia article.
+var KOPPEN_COL={Af:"0,0,255",Am:"0,120,255",Aw:"70,170,250",As:"70,170,250",
+  BWh:"255,0,0",BWk:"255,150,150",BWn:"255,150,150",BSh:"245,165,0",BSk:"255,220,100",
+  Csa:"255,255,0",Csb:"200,200,0",Csc:"150,150,0",Cwa:"150,255,150",Cwb:"100,200,100",Cwc:"50,150,50",
+  Cfa:"200,255,80",Cfb:"100,255,80",Cfc:"50,200,0",Dsa:"255,0,255",Dsb:"200,0,200",Dsc:"150,50,150",Dsd:"150,100,150",
+  Dwa:"170,175,255",Dwb:"90,120,220",Dwc:"75,80,180",Dwd:"50,0,135",Dfa:"0,255,255",Dfb:"55,200,255",Dfc:"0,125,125",Dfd:"0,70,95",
+  ET:"178,178,178",EF:"102,102,102"};
+var KOP_C="The coldest month averages above 0°C but below 18°C, and at least one month averages above 10°C.";
+var KOP_D="The coldest month averages 0°C or below, and at least one month averages above 10°C.";
+var KOP_S=" Dry summer (s): the driest summer month gets under 40 mm and less than a third of the wettest winter month.";
+var KOP_W=" Dry winter (w): the driest winter month gets less than a tenth of the wettest summer month.";
+var KOP_F=" No dry season (f): rain falls in every season, meeting neither the dry-summer nor the dry-winter test.";
+var KOP_A=" Hot summer (a): the warmest month averages 22°C or more.";
+var KOP_B=" Warm summer (b): the warmest month averages below 22°C, with at least four months above 10°C.";
+var KOP_CC=" Cold summer (c): only one to three months average above 10°C.";
+var KOP_DD=" Very cold winter (d): the coldest month averages below −38°C.";
+var KOP_DRY="Annual rainfall is below a dryness threshold of 20 × the mean annual temperature, plus 280 mm when most rain falls in the warm half of the year or 140 mm when it is spread evenly.";
 var KOPPEN_DATA={
   // A — Tropical
-  "Af":{name:"Tropical Rainforest",calc:"All months above 18°C mean, driest month ≥ 60mm rainfall.",features:"No dry season, high humidity year-round, dense rainforest vegetation, minimal temperature variation between seasons.",examples:[["Singapore",1.35,103.82],["Belém, Brazil",-1.45,-48.50],["Kisangani, DRC",0.52,25.19]]},
-  "Am":{name:"Tropical Monsoon",calc:"All months above 18°C, short dry season offset by heavy monsoon rains.",features:"Intense wet season, brief dry season, high annual rainfall, lush vegetation recovering quickly between monsoons.",examples:[["Mumbai",19.08,72.88],["Yangon",16.87,96.19],["Ho Chi Minh City",10.82,106.63]]},
-  "Aw":{name:"Tropical Savanna",calc:"All months above 18°C mean, driest month below 60mm.",features:"Distinct wet and dry seasons, grassland and open woodland, high temperatures year-round with dramatic seasonal rainfall contrast.",examples:[["Darwin, NT",-12.46,130.84],["Bangkok",13.75,100.52],["Nairobi",-1.29,36.82]]},
-  "As":{name:"Tropical Savanna (Dry Summer)",calc:"All months average above 18°C; same rainfall pattern as Aw but the dry season falls in the warmer half of the year instead of winter — an unusual and fairly rare timing.",features:"Hot year-round with a sharp dry season timed to summer rather than winter, grassland and savanna vegetation, found mainly on tropical coasts where seasonal currents reverse the usual wet/dry pattern.",examples:[["Recife, Brazil",-8.05,-34.90],["Trincomalee, Sri Lanka",8.59,81.22],["Mombasa, Kenya",-4.04,39.67]]},
+  "Af":{name:"Tropical Rainforest",sum:"Hot and wet all year, with no dry season.",
+    features:"Temperatures barely change through the year, afternoon storms are frequent and humidity stays high. Dense evergreen rainforest is the natural cover.",
+    calc:"Every month averages 18°C or more, and even the driest month gets at least 60 mm of rain.",
+    examples:[["Singapore",1.35,103.82],["Belém, Brazil",-1.46,-48.49],["Innisfail, QLD",-17.52,146.03]]},
+  "Am":{name:"Tropical Monsoon",sum:"Hot all year, with a very wet monsoon and a short dry season.",
+    features:"A long wet season brings rain heavy enough to carry the land through a brief dry season. Forest stays green year-round, though some trees drop their leaves in the dry months.",
+    calc:"Every month averages 18°C or more. The driest month gets under 60 mm, but at least 100 mm minus 1/25 of the annual rainfall — so the wetter the year, the drier the dry season can be.",
+    examples:[["Cairns, QLD",-16.92,145.77],["Yangon, Myanmar",16.87,96.19]]},
+  "Aw":{name:"Tropical Savanna",sum:"Hot all year, with a wet summer and a long dry winter.",
+    features:"The year divides into a humid wet season of storms and a dry season of clear skies and lower humidity. Grassland with scattered trees is typical, and fire is common late in the dry season.",
+    calc:"Every month averages 18°C or more, the driest month is too dry for a monsoon climate (under 100 mm minus 1/25 of the annual rainfall), and the dry season falls in the cooler, low-sun half of the year.",
+    examples:[["Darwin, NT",-12.46,130.84],["Bangkok, Thailand",13.75,100.52],["Ho Chi Minh City, Vietnam",10.82,106.63]]},
+  "As":{name:"Tropical Savanna (Dry Summer)",sum:"Hot all year, with the dry season in summer instead of winter.",
+    features:"The wet-and-dry rhythm of a tropical savanna in reverse: most rain comes in the cooler months, often from onshore winds or a retreating monsoon. Uncommon, found mainly on a few tropical coasts.",
+    calc:"As for tropical savanna, but the dry season falls in the warmer, high-sun half of the year.",
+    examples:[["Chennai, India",13.08,80.27],["Trincomalee, Sri Lanka",8.59,81.22]]},
   // B — Arid
-  "BWh":{name:"Hot Desert",calc:"Rainfall is minimal and unreliable — too little, even given the heat, to support more than scattered desert vegetation. Mean annual temperature above 18°C.",features:"Extreme heat, very low and erratic rainfall, sparse or absent vegetation, large diurnal temperature range.",examples:[["Dubai",25.20,55.27],["Phoenix, AZ",33.45,-112.07],["Riyadh",24.69,46.72]]},
-  "BWk":{name:"Cold Desert",calc:"Rainfall is minimal and unreliable, much like a hot desert, but with cooler annual temperatures (below 18°C) — hot summers paired with cold winters, and at most sparse scrub vegetation.",features:"Hot summers, cold winters, very low rainfall, sparse scrub vegetation, wide seasonal temperature swings.",examples:[["Ulaanbaatar",47.89,106.91],["Reno, NV",39.53,-119.81],["Almaty",43.24,76.89]]},
-  "BSh":{name:"Hot Semi-Arid (Steppe)",calc:"Rainfall is low but enough to support grass and scrub — more than a true desert, though still not enough for reliable agriculture without irrigation. Mean annual temperature above 18°C.",features:"Warm to hot year-round, low but slightly higher rainfall than desert, grassland and scrub, distinct wet season.",examples:[["Marrakech",31.63,-8.01],["Hyderabad, India",17.37,78.48],["Broken Hill, NSW",-31.95,141.45]]},
-  "BSk":{name:"Cold Semi-Arid (Steppe)",calc:"Annual rainfall is low but not desert-level — enough to support grass and scrub, but not enough for reliable agriculture without irrigation. Mean annual temperature below 18°C, with hot summers and cold winters.",features:"Hot summers, cold winters, moderate low rainfall, grassland steppe, continental seasonal extremes.",examples:[["Denver, CO",39.74,-104.98],["Madrid",40.42,-3.70],["Ankara",39.92,32.85]]},
+  "BWh":{name:"Hot Desert",sum:"Very hot, very dry, and sunny almost every day.",
+    features:"Rain is scarce and unreliable. Summer days are extremely hot, while clear skies let nights cool sharply. Vegetation is sparse or absent.",
+    calc:KOP_DRY+" Desert (W): less than half the threshold. Hot (h): the mean annual temperature is 18°C or more.",
+    examples:[["Alice Springs, NT",-23.70,133.88],["Dubai, UAE",25.20,55.27],["Phoenix, USA",33.45,-112.07]]},
+  "BWk":{name:"Cold Desert",sum:"Very dry, with warm to hot summers and cold winters.",
+    features:"Rain is scarce, often because mountains block moist air or the land sits high or far inland. Summers can be hot, winters freeze, and the daily temperature swing is large.",
+    calc:KOP_DRY+" Desert (W): less than half the threshold. Cold (k): the mean annual temperature is below 18°C.",
+    examples:[["Kashgar, China",39.47,75.99],["Leh, India",34.16,77.58],["Mendoza, Argentina",-32.89,-68.83]]},
+  "BWn":{name:"Fog Desert",sum:"A cool coastal desert where fog, not rain, brings most of the moisture.",
+    features:"Cold ocean currents chill the air offshore, so rain almost never falls but low cloud and fog are frequent, and temperatures stay mild for a desert. Found on the coasts of Peru and northern Chile, Namibia and the western Sahara.",
+    calc:KOP_DRY+" Desert (W): less than half the threshold. Fog (n, from the German Nebel): frequent fog. Peel et al. (2007) don’t use the n suffix; it is an older extension still seen in some references.",
+    examples:[]},
+  "BSh":{name:"Hot Semi-Arid (Steppe)",sum:"Hot and dry, with a short, unreliable rainy season.",
+    features:"Wetter than a desert — enough rain for grassland and scrub — but too dry and erratic for reliable farming without irrigation. Droughts are common.",
+    calc:KOP_DRY+" Steppe (S): between half and all of the threshold. Hot (h): the mean annual temperature is 18°C or more.",
+    examples:[["Longreach, QLD",-23.44,144.25],["Marrakesh, Morocco",31.63,-8.01],["Niamey, Niger",13.51,2.11]]},
+  "BSk":{name:"Cold Semi-Arid (Steppe)",sum:"Dry, with warm summers and cold winters.",
+    features:"Grassland and scrub country, often in the rain shadow of mountains or deep inland. Large swings between seasons and between day and night; winters bring frost and some snow.",
+    calc:KOP_DRY+" Steppe (S): between half and all of the threshold. Cold (k): the mean annual temperature is below 18°C.",
+    examples:[["Denver, USA",39.74,-104.99],["Zaragoza, Spain",41.65,-0.89],["Lanzhou, China",36.06,103.83]]},
   // C — Temperate
-  "Csa":{name:"Hot-Summer Mediterranean",calc:"Warmest month above 22°C, driest summer month less than 1/3 of wettest winter month rainfall.",features:"Hot dry summers, mild wet winters, low humidity in summer, reliable winter rainfall, fire-adapted shrubland (maquis/chaparral).",examples:[["Adelaide, SA",-34.93,138.60],["Athens",37.98,23.73],["Los Angeles",34.05,-118.24]]},
-  "Csb":{name:"Warm-Summer Mediterranean",calc:"Warmest month below 22°C, driest summer month less than 1/3 of wettest winter month.",features:"Warm dry summers, mild wet winters, lower summer heat than Csa, more moderate humidity, open woodland and heath.",examples:[["Paracombe, SA",-34.72,138.82],["San Francisco",37.77,-122.42],["Cape Town",-33.93,18.42]]},
-  "Csc":{name:"Cool-Summer Mediterranean",calc:"Fewer than 4 months above 10°C mean, dry summer, coldest month above 0°C.",features:"Short cool summers, long mild wet winters, montane or coastal settings, often foggy, limited growing season.",examples:[["Juneau, AK",58.30,-134.42],["Ålesund, Norway",62.47,6.15],["Kodiak, AK",57.79,-152.41]]},
-  "Cfa":{name:"Humid Subtropical",calc:"Warmest month above 22°C, no dry season, all months above 0°C.",features:"Hot humid summers, mild winters, rainfall year-round, subtropical forest, high summer discomfort from heat and humidity.",examples:[["Brisbane, QLD",-27.47,153.02],["Shanghai",31.23,121.47],["New Orleans",29.95,-90.07]]},
-  "Cfb":{name:"Oceanic / Marine West Coast",calc:"Warmest month below 22°C, no dry season, coldest month above 0°C.",features:"Mild cool temperatures year-round, persistent cloud and rainfall, low seasonal extremes, green lush landscape.",examples:[["Canberra, ACT",-35.28,149.13],["London",51.51,-0.13],["Melbourne, VIC",-37.81,144.96]]},
-  "Cfc":{name:"Subpolar Oceanic",calc:"Fewer than 4 months above 10°C mean, no dry season, coldest month above 0°C.",features:"Short cool summers, long mild winters, persistent wind and cloud, tundra-edge vegetation, rare frosts.",examples:[["Reykjavik",64.14,-21.90],["Faroe Islands",61.89,-6.91],["Inverness",57.48,-4.22]]},
-  "Cwa":{name:"Monsoon-Influenced Humid Subtropical",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest winter month.",features:"Hot wet summers, dry mild winters, strong monsoon signal, subtropical vegetation with marked seasonal rhythm.",examples:[["Hong Kong",22.32,114.17],["New Delhi",28.61,77.21],["Mackay, QLD",-21.15,149.19]]},
-  "Cwb":{name:"Subtropical Highland",calc:"Warmest month below 22°C, dry winter, wettest month at least 10× driest.",features:"Mild year-round temperatures moderated by altitude, wet summer, dry winter, highland savanna and cloud forest.",examples:[["Addis Ababa",9.03,38.74],["Mexico City",19.43,-99.13],["Kunming",25.05,102.71]]},
+  "Csa":{name:"Hot-Summer Mediterranean",sum:"Hot, dry summers and mild, wet winters.",
+    features:"Long, sunny summers with little rain, and most of the year’s rain in the cooler months. Frost is rare at low levels. Native vegetation is drought- and fire-adapted shrubland and open woodland.",
+    calc:KOP_C+KOP_S+KOP_A,
+    examples:[["Adelaide, SA",-34.93,138.60],["Athens, Greece",37.98,23.73],["Rome, Italy",41.90,12.50]]},
+  "Csb":{name:"Warm-Summer Mediterranean",sum:"Warm, dry summers and mild, wet winters.",
+    features:"The Mediterranean pattern with gentler summers, usually from altitude or a cool coast. Sea breezes and summer fog are common on the coast.",
+    calc:KOP_C+KOP_S+KOP_B,
+    examples:[["Paracombe, SA",-34.72,138.82],["San Francisco, USA",37.77,-122.42],["Porto, Portugal",41.15,-8.61]]},
+  "Csc":{name:"Cold-Summer Mediterranean",sum:"Short, cool, dry summers and mild, wet winters.",
+    features:"Very rare. Found mostly high on mountains in otherwise Mediterranean regions, such as the Cascades and Sierra Nevada, and occasionally on cool, exposed coasts. The growing season is short.",
+    calc:KOP_C+KOP_S+KOP_CC,
+    examples:[["Haleakalā summit, Hawaii",20.71,-156.25]]},
+  "Cwa":{name:"Monsoon-Influenced Humid Subtropical",sum:"Hot, wet summers and mild, dry winters.",
+    features:"The summer monsoon brings heat, humidity and heavy rain; winters are sunny, dry and mild to cool. Common across northern India, southern China and the higher parts of southern Africa.",
+    calc:KOP_C+KOP_W+KOP_A,
+    examples:[["Hong Kong",22.32,114.17],["Delhi, India",28.61,77.21],["Lusaka, Zambia",-15.42,28.28]]},
+  "Cwb":{name:"Subtropical Highland",sum:"Mild all year, with a wet summer and a dry winter.",
+    features:"Altitude tempers what would otherwise be a tropical climate: days are warm rather than hot, nights are cool, and the seasons change mainly in rainfall rather than temperature.",
+    calc:KOP_C+KOP_W+KOP_B,
+    examples:[["Nairobi, Kenya",-1.29,36.82],["Mexico City, Mexico",19.43,-99.13],["Kunming, China",25.04,102.71]]},
+  "Cwc":{name:"Cold Subtropical Highland",sum:"Cool all year at high altitude, with a wet summer.",
+    features:"Found only at very high elevations in the tropics and subtropics, such as the Bolivian altiplano. Days are mild, nights often freeze, and the dry season brings clear skies.",
+    calc:KOP_C+KOP_W+KOP_CC,
+    examples:[["El Alto, Bolivia",-16.50,-68.16]]},
+  "Cfa":{name:"Humid Subtropical",sum:"Hot, humid summers and mild winters, with rain all year.",
+    features:"Summers are sticky with thunderstorms; winters are mild with occasional frost. Rain falls in every season, often peaking in summer. Common on the east coasts of continents.",
+    calc:KOP_C+KOP_F+KOP_A,
+    examples:[["Brisbane, QLD",-27.47,153.02],["Shanghai, China",31.23,121.47],["New Orleans, USA",29.95,-90.07]]},
+  "Cfb":{name:"Oceanic",sum:"Mild all year, with rain spread through every season.",
+    features:"Neither summers nor winters are extreme, cloud is frequent, and rain comes often but rarely heavily. Common on mid-latitude west coasts and in temperate highlands.",
+    calc:KOP_C+KOP_F+KOP_B,
+    examples:[["Canberra, ACT",-35.28,149.13],["Melbourne, VIC",-37.81,144.96],["London, UK",51.51,-0.13]]},
+  "Cfc":{name:"Subpolar Oceanic",sum:"Cool summers and mild winters, with frequent wind and rain.",
+    features:"The cold-summer edge of the oceanic climate: short, cool summers, winters that hover around freezing without deep cold, and persistent cloud. Trees struggle in the most exposed places.",
+    calc:KOP_C+KOP_F+KOP_CC,
+    examples:[["Tórshavn, Faroe Islands",62.01,-6.77],["Reykjavík, Iceland",64.14,-21.94]]},
   // D — Continental
-  "Dfa":{name:"Hot-Summer Humid Continental",calc:"Warmest month above 22°C, no dry season, coldest month below 0°C.",features:"Hot humid summers, cold winters, year-round rainfall, deciduous forest, large seasonal temperature range.",examples:[["Chicago",41.88,-87.63],["Budapest",47.50,19.04],["Omaha, NE",41.26,-95.94]]},
-  "Dfb":{name:"Warm-Summer Humid Continental",calc:"Warmest month below 22°C, no dry season, coldest month below 0°C.",features:"Warm summers, cold snowy winters, year-round precipitation, mixed forest, moderate seasonal extremes.",examples:[["Helsinki",60.17,24.94],["Warsaw",52.23,21.01],["Toronto",43.65,-79.38]]},
-  "Dfc":{name:"Subarctic (Boreal)",calc:"1–3 months above 10°C, no dry season, coldest month below 0°C.",features:"Very short cool summers, extremely cold long winters, sparse boreal (taiga) forest, permafrost possible.",examples:[["Fairbanks, AK",64.84,-147.72],["Yellowknife, NT",62.45,-114.37],["Norilsk",69.35,88.19]]},
-  "Dfd":{name:"Extreme Subarctic",calc:"No dry season, coldest month below −38°C — the most extreme cold-winter variant of the subarctic climate.",features:"Among the coldest inhabited places on Earth, with winter lows regularly below −50°C, brief mild summers, and extreme diurnal and seasonal swings. Confined to a small part of eastern Siberia.",examples:[["Oymyakon, Russia",63.46,142.79]]},
-  "Dwa":{name:"Monsoon Hot-Summer Continental",calc:"Warmest month above 22°C, dry winter, wettest summer month at least 10× driest.",features:"Hot wet summers, very cold dry winters, strong Asian monsoon influence, deciduous and mixed forest.",examples:[["Beijing",39.91,116.39],["Seoul",37.57,126.98],["Shenyang",41.80,123.43]]},
-  "Dwb":{name:"Monsoon Warm-Summer Continental",calc:"Warmest month below 22°C, dry winter, wettest summer month at least 10× driest.",features:"Warm wet summers, cold dry winters, boreal and mixed forest, northeastern Asia.",examples:[["Harbin",45.75,126.65],["Vladivostok",43.11,131.87],["Ulan-Ude",51.83,107.60]]},
-  "Dsa":{name:"Mediterranean-Influenced Continental (Hot Summer)",calc:"Coldest month below 0°C, warmest month above 22°C, with a Mediterranean-style dry summer rather than a dry winter or no dry season at all.",features:"Hot dry summers paired with cold snowy winters — a Mediterranean rainfall pattern pushed inland or upslope into continental temperature territory. Rare, found only at higher elevations adjacent to hot-summer Mediterranean (Csa) regions.",examples:[["Saqqez, Iran",36.24,46.27],["Cambridge, ID",44.57,-116.68]]},
-  "Dsb":{name:"Mediterranean-Influenced Continental (Warm Summer)",calc:"Coldest month below 0°C, warmest month below 22°C, with a Mediterranean-style dry summer rather than a dry winter or no dry season at all.",features:"Warm (not hot) dry summers and cold snowy winters — the cooler, higher-altitude or higher-latitude counterpart to Dsa. Found in mountainous areas adjacent to Mediterranean climates, particularly eastern Anatolia and the interior US Pacific Northwest.",examples:[["Qotur, Iran",38.47,44.41],["Chemult, OR",43.22,-121.79]]},
+  "Dsa":{name:"Mediterranean-Influenced Hot-Summer Continental",sum:"Hot, dry summers and cold, snowy winters.",
+    features:"A Mediterranean rainfall pattern at continental temperatures, usually on high plateaus beside Mediterranean regions. Rare; found in eastern Turkey, north-western Iran and parts of the American Intermountain West.",
+    calc:KOP_D+KOP_S+KOP_A,
+    examples:[["Saqqez, Iran",36.24,46.27]]},
+  "Dsb":{name:"Mediterranean-Influenced Warm-Summer Continental",sum:"Warm, dry summers and cold, snowy winters.",
+    features:"Mostly mountain valleys and plateaus beside Mediterranean climates, such as the Sierra Nevada. Heavy winter snow gives way to sunny, dry summers.",
+    calc:KOP_D+KOP_S+KOP_B,
+    examples:[["Truckee, USA",39.36,-120.19],["Mammoth Lakes, USA",37.63,-118.99]]},
+  "Dsc":{name:"Mediterranean-Influenced Subarctic",sum:"Short, cool, dry summers and long, cold winters.",
+    features:"A rare subarctic type where summer is the drier season. Found at high elevations in western North America and Central Asia, and in a few northern places such as north Iceland.",
+    calc:KOP_D+KOP_S+KOP_CC,
+    examples:[["Atlin, Canada",59.58,-133.72],["Akureyri, Iceland",65.68,-18.10]]},
+  "Dsd":{name:"Mediterranean-Influenced Extreme Subarctic",sum:"Brief, dry summers and extremely cold winters.",
+    features:"One of the rarest climates on Earth, limited to small, remote areas of the Russian Far East. No well-known towns have it.",
+    calc:KOP_D+KOP_S+KOP_DD,
+    examples:[]},
+  "Dwa":{name:"Monsoon-Influenced Hot-Summer Continental",sum:"Hot, humid summers and very cold, dry winters.",
+    features:"Siberian air rules winter, bringing clear, bitterly cold and dry weather; the summer monsoon brings heat and most of the year’s rain. Typical of northern China and Korea.",
+    calc:KOP_D+KOP_W+KOP_A,
+    examples:[["Beijing, China",39.90,116.40],["Seoul, South Korea",37.57,126.98],["Shenyang, China",41.80,123.43]]},
+  "Dwb":{name:"Monsoon-Influenced Warm-Summer Continental",sum:"Warm, wet summers and cold, dry winters.",
+    features:"Like the hot-summer version but cooler in summer, from latitude, a cool sea or altitude. Found in the Russian Far East, northern Korea and the high country of south-western China.",
+    calc:KOP_D+KOP_W+KOP_B,
+    examples:[["Vladivostok, Russia",43.12,131.89],["Shangri-La, China",27.83,99.71]]},
+  "Dwc":{name:"Monsoon-Influenced Subarctic",sum:"Short, mild, wet summers and long, very cold, dry winters.",
+    features:"Boreal forest country in north-eastern Asia and the high Himalaya, with most of the year’s precipitation in summer and little snow despite the cold.",
+    calc:KOP_D+KOP_W+KOP_CC,
+    examples:[["Mohe, China",52.97,122.54]]},
+  "Dwd":{name:"Monsoon-Influenced Extreme Subarctic",sum:"Brief summers and extremely cold, very dry winters.",
+    features:"Confined to north-eastern Siberia. Winters are among the coldest on Earth, with little snowfall, while summer days can be surprisingly warm.",
+    calc:KOP_D+KOP_W+KOP_DD,
+    examples:[["Ust-Nera, Russia",64.58,143.25]]},
+  "Dfa":{name:"Hot-Summer Humid Continental",sum:"Hot, humid summers and cold, snowy winters.",
+    features:"Large seasonal swings, with precipitation in every season and thunderstorms in summer. Deciduous forest and prairie are typical.",
+    calc:KOP_D+KOP_F+KOP_A,
+    examples:[["Chicago, USA",41.88,-87.63],["Omaha, USA",41.26,-95.94],["Almaty, Kazakhstan",43.24,76.89]]},
+  "Dfb":{name:"Warm-Summer Humid Continental",sum:"Warm summers and long, cold, snowy winters.",
+    features:"Precipitation in every season, a reliable winter snow cover, and mixed forest. Widespread across eastern Europe, southern Canada and the northern United States.",
+    calc:KOP_D+KOP_F+KOP_B,
+    examples:[["Helsinki, Finland",60.17,24.94],["Moscow, Russia",55.76,37.62]]},
+  "Dfc":{name:"Subarctic",sum:"Short, cool summers and long, severe winters.",
+    features:"Boreal (taiga) forest dominates, the growing season is brief, and permafrost is common further north.",
+    calc:KOP_D+KOP_F+KOP_CC,
+    examples:[["Yellowknife, Canada",62.45,-114.37],["Murmansk, Russia",68.97,33.07],["Norilsk, Russia",69.35,88.20]]},
+  "Dfd":{name:"Extreme Subarctic",sum:"Brief, warm summers and the harshest winters outside Antarctica.",
+    features:"Winter lows fall below −60°C, yet summer days can pass 30°C — the largest annual temperature range on Earth. Confined to eastern Siberia.",
+    calc:KOP_D+KOP_F+KOP_DD,
+    examples:[["Verkhoyansk, Russia",67.55,133.39],["Oymyakon, Russia",63.46,142.79]]},
   // E — Polar
-  "ET":{name:"Tundra",calc:"Warmest month between 0°C and 10°C.",features:"No true summer, permafrost, mosses and low shrubs only, very short frost-free season, exposed and windswept.",examples:[["Barrow (Utqiaġvik), AK",71.29,-156.79],["Nuuk, Greenland",64.18,-51.74],["Longyearbyen",78.22,15.63]]},
-  "EF":{name:"Ice Cap",calc:"All months below 0°C mean temperature.",features:"Permanent ice and snow, no vegetation, extreme cold, only found on polar ice sheets and high mountain summits.",examples:[["Vostok Station, Antarctica",-78.46,106.83],["Summit Station, Greenland",72.58,-38.46]]}
+  "ET":{name:"Tundra",sum:"No true summer — the warmest month stays below 10°C.",
+    features:"Too cold for trees: mosses, lichens, grasses and low shrubs grow in a short thaw above permafrost. Found on Arctic coasts, sub-Antarctic islands and mountains above the tree line.",
+    calc:"The warmest month averages above 0°C but below 10°C.",
+    examples:[["Nuuk, Greenland",64.18,-51.72],["Longyearbyen, Svalbard",78.22,15.65],["Utqiaġvik, Alaska",71.29,-156.79]]},
+  "EF":{name:"Ice Cap",sum:"Below freezing in every month of the year.",
+    features:"Permanent ice and snow with no vegetation. Covers most of Antarctica and the interior of Greenland.",
+    calc:"Every month averages 0°C or below.",
+    examples:[["Vostok Station, Antarctica",-78.46,106.84],["Summit Station, Greenland",72.58,-38.46]]}
 };
-
+// Codes in the climate data sometimes arrive mis-cased (Bsk, bwh, Et); fix the case before lookup
+function koppenKey(code){
+  var c=String(code||"").trim();
+  if(!c)return"";
+  var g=c.charAt(0).toUpperCase();
+  if(g==="B")return"B"+c.charAt(1).toUpperCase()+c.slice(2).toLowerCase();
+  if(g==="E")return"E"+c.slice(1).toUpperCase();
+  return g+c.slice(1).toLowerCase();
+}
+// What each letter of a code means, e.g. Csb → Temperate · dry summer · warm summer
+function koppenLetters(code){
+  var g=code.charAt(0),a=code.charAt(1),b=code.charAt(2);
+  var G={A:"Tropical",B:"Arid",C:"Temperate",D:"Continental",E:"Polar"};
+  var S=g==="A"?{f:"rainforest",m:"monsoon",w:"dry winter",s:"dry summer"}
+    :g==="B"?{W:"desert",S:"steppe"}:g==="E"?{T:"tundra",F:"ice cap"}
+    :{s:"dry summer",w:"dry winter",f:"no dry season"};
+  var T=g==="B"?{h:"hot",k:"cold",n:"fog"}:{a:"hot summer",b:"warm summer",c:"cold summer",d:"very cold winter"};
+  var out=[];
+  if(G[g])out.push("<b>"+g+"</b> "+G[g].toLowerCase());
+  if(a&&S[a])out.push("<b>"+a+"</b> "+S[a]);
+  if(b&&T[b])out.push("<b>"+b+"</b> "+T[b]);
+  return out.join(" · ");
+}
+function koppenSwatch(code,size){
+  var rgb=KOPPEN_COL[koppenKey(code)];
+  if(!rgb)return"";
+  return"<span style='display:inline-block;width:"+size+"px;height:"+size+"px;border-radius:3px;background:rgb("+rgb+");border:1px solid rgba(0,0,0,0.25);vertical-align:-1px;margin-right:5px'></span>";
+}
 function showKoppenPop(code){
-  var k=KOPPEN_DATA[code];
+  var key=koppenKey(code),k=KOPPEN_DATA[key];
+  var ttl=document.getElementById("pop-ttl"),bd=document.getElementById("pop-body");
   if(!k){
-    document.getElementById("pop-ttl").textContent=code;
-    document.getElementById("pop-body").innerHTML="<p style='color:var(--text-muted);font-size:13px'>No explainer available for this climate type yet.</p>";
+    ttl.textContent=key||"Climate type";
+    bd.innerHTML="<div class='washing-reason'>No explainer is available for the climate code “"+key+"”.</div>";
     document.getElementById("pop-ov").classList.add("open");
     return;
   }
-  var exHtml="";
-  if(k.examples&&k.examples.length){
-    exHtml="<div style='margin-top:10px'><div style='font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px'>Example locations</div><div style='display:flex;flex-wrap:wrap;gap:6px'>";
+  var rgb=KOPPEN_COL[key]||"128,128,128";
+  var rule="<div style='height:1px;background:var(--divider);margin:11px 0 10px'></div>";
+  var band="<div style='padding:8px 10px;border-radius:8px;background:rgba("+rgb+",0.22);border:1px solid rgba("+rgb+",0.6);display:flex;align-items:center;gap:10px'>"
+    +"<span style='flex-shrink:0;width:22px;height:22px;border-radius:5px;background:rgb("+rgb+");border:1px solid rgba(0,0,0,0.25)'></span>"
+    +"<div><div style='font-size:15px;font-weight:800;color:var(--text);line-height:1.2'>"+key+"</div>"
+    +"<div style='font-size:11.5px;font-weight:600;color:var(--text);opacity:0.8;line-height:1.4'>"+koppenLetters(key)+"</div></div></div>";
+  var ex="";
+  if(k.examples.length){
+    ex=rule+"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px'>Places with this climate — tap to load</div><div style='display:flex;flex-wrap:wrap;gap:6px'>";
     for(var i=0;i<k.examples.length;i++){
-      var ex=k.examples[i];
-      exHtml+="<button onclick='loadKoppenExample("+JSON.stringify(ex[0])+","+ex[1]+","+ex[2]+")' style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--text-sec);cursor:pointer'>"+ex[0]+"</button>";
+      ex+="<span class='ann' onclick='loadKoppenExample(\""+key+"\","+i+")' style='cursor:pointer;color:var(--text);background:rgba("+rgb+",0.16);border-color:rgba("+rgb+",0.55)'>"+k.examples[i][0]+"</span>";
     }
-    exHtml+="</div></div>";
+    ex+="</div>";
   }
-  var body="<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px'>"+code+"</div>"
-    +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px'>How it's classified</div>"
-    +"<div style='font-size:13px;color:var(--text);line-height:1.55;margin-bottom:10px'>"+k.calc+"</div>"
-    +"<div style='font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px'>Characteristics</div>"
-    +"<div style='font-size:13px;color:var(--text);line-height:1.55'>"+k.features+"</div>"
-    +exHtml;
-  document.getElementById("pop-ttl").textContent=k.name;
-  document.getElementById("pop-body").innerHTML=body;
+  bd.innerHTML="<div class='washing-reason'>"+band
+    +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5;margin-top:10px'>"+k.sum+"</div>"
+    +"<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65;margin-top:4px'>"+k.features+"</div>"
+    +ex+rule
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>How it’s classified: "+k.calc
+    +" Temperatures are monthly means of day and night, following Peel et al. (2007)"
+    +(/^[CD]/.test(key)?", which puts the temperate–continental boundary at 0°C (some sources use −3°C)":"")
+    +". Places near a boundary can change type between climate periods.</div>"
+    +"</div>";
+  ttl.textContent=k.name;
   document.getElementById("pop-ov").classList.add("open");
 }
 
-function loadKoppenExample(name,lat,lon){
+function loadKoppenExample(code,i){
+  var ex=KOPPEN_DATA[code]&&KOPPEN_DATA[code].examples[i];
+  if(!ex)return;
   closePop();
-  fetchWeather(lat,lon,name);
+  fetchWeather(ex[1],ex[2],ex[0]);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
