@@ -1714,14 +1714,34 @@ function renderChips(temp,effDP,rh,wind,fc){
   fetchTides();
 }
 function showSunMoonPop(){
-  var d=window._sunMoonData||{};
-  var rows=[];
-  if(d.srTime)rows.push("<b>\uD83C\uDF05 Sunrise</b>&ensp;"+d.srTime.replace(/<[^>]+>/g,"").replace("\uD83C\uDF05 ",""));
-  if(d.ssTime)rows.push("<b>\uD83C\uDF07 Sunset</b>&ensp;"+d.ssTime.replace(/<[^>]+>/g,"").replace("\uD83C\uDF07 ",""));
-  if(d.moon)rows.push("<b>"+d.moon.emoji+" Moon</b>&ensp;"+d.moon.name);
-  var body=rows.join("<br>");
-  if(d.tidesHtml)body+="<br><br><b>\uD83C\uDF0A Tides</b><br>"+d.tidesHtml;
-  document.getElementById("pop-ttl").textContent="Sun, Moon & Tides";
+  var d=window._sunMoonData||{},fc=window._FC;
+  var tile=function(lbl,val,sub){return"<div class='cond-tile'><div class='cond-lbl'>"+lbl+"</div><div class='cond-val'>"+val+"</div><div class='cond-sub'>"+(sub||"&nbsp;")+"</div></div>";};
+  var sr="—",ss="—",len="";
+  if(fc&&fc.daily&&fc.daily.sunrise&&fc.daily.time){
+    var tz=fc.timezone,off=getTZOffsetMin(tz),i=fc.daily.time.indexOf(new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()));
+    var fmt=function(x){return new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(toEpoch(x,off))).toLowerCase().replace(" ","");};
+    if(i>=0&&fc.daily.sunrise[i]&&fc.daily.sunset[i]){
+      sr=fmt(fc.daily.sunrise[i]);ss=fmt(fc.daily.sunset[i]);
+      var mins=Math.round((toEpoch(fc.daily.sunset[i],off)-toEpoch(fc.daily.sunrise[i],off))/60000);
+      len=Math.floor(mins/60)+"h "+(mins%60)+"m of daylight";
+    }
+  }
+  var age=((Date.now()-Date.UTC(2000,0,6,18,14,0))/86400000)%29.53059;if(age<0)age+=29.53059;
+  var illum=Math.round(50*(1-Math.cos(2*Math.PI*age/29.53059)));
+  var m=d.moon||moonPhase();
+  var body="<div class='washing-reason'>"
+    +"<div class='cond-grid' style='grid-template-columns:repeat(2,minmax(0,1fr))'>"
+    +tile("🌅 Sunrise",sr,len)
+    +tile("🌇 Sunset",ss,"")
+    +tile("Moon",m.emoji,m.name)
+    +tile("Illuminated",illum+"%",age<14.77?"waxing":"waning")
+    +"</div>"
+    +"<div style='height:1px;background:var(--divider);margin:11px 0 9px'></div>"
+    +"<div style='font-size:12px;font-weight:800;color:var(--text-muted);margin-bottom:4px'>🌊 Tides today</div>"
+    +"<div style='font-size:13px;font-weight:700;color:var(--text);line-height:1.8'>"+(d.tidesHtml||"<span style='color:var(--text-muted)'>Loading tides…</span>")+"</div>"
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:8px'>Tides are modelled sea-level heights from the nearest ocean grid point, not port predictions — inland they may be far away or missing. Use official tide tables for boating and fishing.</div>"
+    +"</div>";
+  document.getElementById("pop-ttl").textContent="Sun, moon & tides";
   document.getElementById("pop-body").innerHTML=body;
   document.getElementById("pop-ov").classList.add("open");
 }
@@ -2285,7 +2305,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   document.getElementById(areaId).innerHTML=
     (alertHtml?"<div class='alert-strip'>"+alertHtml+"</div>":"")
     +"<div class='score-hero'>"
-    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+")' title='Score breakdown'>"+scoreRing(score)
+    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+","+temp+","+effDP+","+wind+")' title='Score breakdown'>"+scoreRing(score)
     +"<div class='ring-centre'>"
     +"<span class='ring-num' style='color:"+si.col+"'>"+score+"</span>"
     +"<span class='ring-lbl' style='color:"+si.col+"'>"+si.label+" "+si.emoji+"</span>"
@@ -2347,36 +2367,66 @@ function showForecastSlot(idx){
 }
 
 // ── Share ──────────────────────────────────────────────────────────────────
-function showBreakdown(tP,hP,iP,wP,score){
-  if(score===100){
-    document.getElementById("pop-ttl").textContent="Score breakdown";
-    document.getElementById("pop-body").innerHTML="<div style='text-align:center;padding:8px 0;font-size:15px;font-weight:700;color:var(--text)'>Perfect weather! \u2600\uFE0F<br><span style='font-size:13px;color:var(--text-muted);font-weight:600'>No penalties at all.</span></div>";
-    document.getElementById("pop-ov").classList.add("open");
-    return;
+function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind){
+  var lw=window._LW||{};
+  if(temp==null)temp=lw.temp;if(dp==null)dp=lw.effDP;if(wind==null)wind=lw.wind;
+  var s=gs(),si=scoreInfo(score),col=SBANDS[bandForScore(score)].col.replace("0.92","1");
+  var deg=function(c){return String(toDisp(c).toFixed(1)).replace("-","−")+unitSym();};
+  var gap=function(d){return(useFahrenheit?d*1.8:d).toFixed(1)+"°";};
+  var hasT=temp!=null&&!isNaN(temp),hasD=dp!=null&&!isNaN(dp),hasW=wind!=null&&!isNaN(wind);
+  var bft=hasW?beaufort(wind).n:"",wb=(hasT&&hasD)?wetBulb(temp,dp):null;
+  var rows=[],lead="";
+  function row(icon,name,sub,pts,bonus){
+    var p=Math.round(Math.abs(pts)),ok=p===0;
+    var tag=ok?"<span style='color:#1a7a3a'>✓</span>":bonus?"<span style='color:#1a7a3a'>+"+p+"</span>":"<span>−"+p+"</span>";
+    rows.push("<div style='padding:7px 0;border-bottom:1px solid var(--divider)'>"
+      +"<div style='display:flex;justify-content:space-between;align-items:baseline;gap:8px'>"
+      +"<span style='font-size:13.5px;font-weight:800;color:var(--text)'>"+icon+" "+name+"</span>"
+      +"<span style='font-size:14px;font-weight:800;color:var(--text);white-space:nowrap'>"+tag+(ok?"":" <span style='font-size:10px;color:var(--text-muted)'>pts</span>")+"</span></div>"
+      +"<div style='font-size:11.5px;font-weight:600;color:var(--text-muted);margin-top:1px'>"+sub+"</div>"
+      +(ok?"":"<div style='height:5px;border-radius:3px;background:var(--range-bg);margin-top:5px;overflow:hidden'><div style='height:100%;width:"+Math.max(3,Math.min(100,p))+"%;border-radius:3px;background:"+(bonus?"#3a9a2a":col)+"'></div></div>")
+      +"</div>");
   }
-  var lines=[];
-  if(Math.round(tP)>0){
-    var tLbl=(window._LW&&window._LW.temp>(gs().thi||22))?"Too warm":"Too cold";
-    lines.push({l:tLbl,pts:-Math.round(tP),bonus:false});
-  }
-  if(Math.round(hP)>0)lines.push({l:"Humid air",pts:-Math.round(hP),bonus:false});
-  if(Math.round(iP)>0)lines.push({l:"Heat stress (wet bulb)",pts:-Math.round(iP),bonus:false});
-  if(Math.round(wP)<0)lines.push({l:"Wind bonus",pts:"+"+Math.round(-wP),bonus:true});
-  else if(Math.round(wP)>0)lines.push({l:"Windy",pts:-Math.round(wP),bonus:false});
-  var rows="";
-  for(var i=0;i<lines.length;i++){
-    var col=lines[i].bonus?"#1a7a3a":"var(--text)";
-    rows+="<div style='display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--divider)'>"
-      +"<span style='font-weight:700;color:var(--text)'>"+lines[i].l+"</span>"
-      +"<span style='font-weight:800;color:"+col+"'>"+lines[i].pts+" pts</span>"
-      +"</div>";
-  }
-  var html=rows.length?rows+"<div style='display:flex;justify-content:space-between;align-items:center;padding-top:8px'>"
-    +"<span style='font-weight:800;color:var(--text-head)'>Score</span>"
-    +"<span style='font-weight:800;font-size:18px;color:var(--text-head)'>"+score+"</span>"
-    +"</div>":"<div style='text-align:center;padding:8px 0;color:var(--text-muted);font-weight:600'>No penalties \u2014 perfect conditions!</div>";
+  // Temperature
+  if(Math.round(tP)>0&&hasT){
+    var warm=temp>s.thi;
+    row(warm?"🌡️":"🧥",warm?"Too warm":"Too cold",
+      (warm?gap(temp-s.thi)+" above the "+deg(s.thi)+" you start to feel hot at":gap(s.tlo-temp)+" below the "+deg(s.tlo)+" you start to feel cold at"),tP);
+  }else row("🌡️","Temperature",hasT?deg(temp)+" — inside your "+deg(s.tlo)+" to "+deg(s.thi)+" range":"no penalty",0);
+  // Humidity
+  if(Math.round(hP)>0)row("💧","Humid air",(hasD?"Dew point "+deg(dp)+" — ":"")+"you notice humidity above "+deg(s.dp),hP);
+  else row("💧","Humidity",hasD?(hasT&&temp<s.tlo?"Dew point "+deg(dp)+" — humidity doesn’t count when it’s cool":"Dew point "+deg(dp)+" — comfortable"):"no penalty",0);
+  // Heat stress (only relevant above the comfort ceiling)
+  if(Math.round(iP)>0)row("🥵","Heat stress",(wb!=null?"Wet bulb "+deg(wb)+" — ":"")+"builds from "+deg(s.wb0)+" once it’s hot",iP);
+  else if(hasT&&temp>s.thi)row("🥵","Heat stress",wb!=null?"Wet bulb "+deg(wb)+" — below "+deg(s.wb0):"no penalty",0);
+  // Wind
+  if(Math.round(wP)<0)row("🍃","Breeze bonus","A "+(bft||"pleasant breeze")+" near your ideal temperature",wP,true);
+  else if(Math.round(wP)>0)row("💨","Windy",(bft?bft.charAt(0).toUpperCase()+bft.slice(1)+(hasW?" ("+Math.round(wind)+" km/h)":""):"Wind")+(hasT&&temp<s.wchill_thresh&&wind>0?" — wind chill adds to the cold":""),wP);
+  else row("💨","Wind",hasW?(wind<1?"Calm":bft.charAt(0).toUpperCase()+bft.slice(1)+" ("+Math.round(wind)+" km/h)"):"no penalty",0);
+  // Headline: the biggest factor
+  var f=[["the heat",hasT&&temp>s.thi?tP:0],["the cold",hasT&&temp<=s.thi?tP:0],["the humidity",hP],["heat stress",iP],["the wind",Math.max(0,wP)]];
+  f.sort(function(a,b){return b[1]-a[1];});
+  var tot=tP+hP+iP+Math.max(0,wP);
+  if(Math.round(f[0][1])<1)lead=Math.round(wP)<0?"Every reading is inside your comfort ranges, and a pleasant breeze lifts it further.":"Every reading is inside your comfort ranges — nothing to take off.";
+  else lead=(f[0][1]>=tot*0.6?"Mostly ":"Led by ")+f[0][0]+(Math.round(f[1][1])>=1?", then "+f[1][0]:"")+".";
+  var over=100-tot+Math.max(0,-wP)<0;
+  var cond=[hasT?deg(temp):"",hasD?"dew point "+deg(dp):"",hasW?Math.round(wind)+" km/h wind":""].filter(Boolean).join(" · ");
+  var body="<div class='washing-reason'>"
+    +"<div style='padding:8px 10px;border-radius:8px;background:"+hzRgba(col,0.14)+";border:1px solid "+hzRgba(col,0.45)+"'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+col+";line-height:1.3'>"+score+" — "+si.label+" "+si.emoji+"</div>"
+    +(cond?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:2px'>"+cond+"</div>":"")
+    +"</div>"
+    +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5;margin-top:10px'>"+lead+"</div>"
+    +"<div style='margin-top:6px'>"+rows.join("")+"</div>"
+    +"<div style='display:flex;justify-content:space-between;align-items:baseline;padding-top:8px'>"
+    +"<span style='font-size:13px;font-weight:800;color:var(--text-head)'>Score</span>"
+    +"<span style='font-size:13px;font-weight:700;color:var(--text-muted)'>100"+(Math.round(tot)>0?" − "+Math.round(tot):"")+(Math.round(wP)<0?" + "+Math.round(-wP):"")+" = <span style='font-size:18px;font-weight:800;color:"+col+"'>"+score+"</span></span></div>"
+    +(over?"<div style='font-size:11px;color:var(--text-muted);margin-top:2px'>Penalties add up to more than 100, so the score stops at 0.</div>":"")
+    +"<div style='height:1px;background:var(--divider);margin:10px 0 9px'></div>"
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Each penalty comes from your Preferences: where you start to feel hot and cold, and how sensitive you are to heat, cold, humidity and wind. Points are rounded, so the lines can differ from the total by one.</div>"
+    +"</div>";
   document.getElementById("pop-ttl").textContent="Score breakdown";
-  document.getElementById("pop-body").innerHTML=html;
+  document.getElementById("pop-body").innerHTML=body;
   document.getElementById("pop-ov").classList.add("open");
 }
 function shareScore(){
@@ -2954,8 +3004,8 @@ function checkWashingManual(){
 
 // Reason string
   var rsns=[];
-  if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
-  else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  if(effDP>20)rsns.push("very high dew point ("+toDisp(effDP).toFixed(1)+unitSym()+")");
+  else if(effDP>16)rsns.push("high dew point ("+toDisp(effDP).toFixed(1)+unitSym()+")");
   else if(vpd<0.3)rsns.push("the air is quite humid");
   else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");
@@ -2978,9 +3028,9 @@ function checkWashingManual(){
 
 if(dryHours===999){
     var badRsns=[];
-    if(effDP>24)badRsns.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 the air is almost fully saturated");
-    else if(effDP>20)badRsns.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 too humid for drying");
-    else if(effDP>16)badRsns.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 humidity will prevent drying");
+    if(effDP>24)badRsns.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 the air is almost fully saturated");
+    else if(effDP>20)badRsns.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 too humid for drying");
+    else if(effDP>16)badRsns.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 humidity will prevent drying");
     else if(vpd<0.3)badRsns.push("air is too humid for evaporation");
     if(temp<10)badRsns.push(temp<=0?"freezing temperature":"too cold for effective drying");
     if(effDP<=16&&wind<=5)badRsns.push("not enough wind");
@@ -3292,8 +3342,8 @@ function checkWashing(){
   else{dryHours=999;dryLabel=null;}
   // Reason string
   var rsns=[];
-  if(effDP>20)rsns.push("very high dew point ("+effDP.toFixed(1)+"\u00B0C)");
-  else if(effDP>16)rsns.push("high dew point ("+effDP.toFixed(1)+"\u00B0C)");
+  if(effDP>20)rsns.push("very high dew point ("+toDisp(effDP).toFixed(1)+unitSym()+")");
+  else if(effDP>16)rsns.push("high dew point ("+toDisp(effDP).toFixed(1)+unitSym()+")");
   else if(vpd<0.3)rsns.push("the air is quite humid");
   else if(vpd>1.2&&effDP<=16)rsns.push("low humidity");
   if(wind<5)rsns.push("not much wind");
@@ -3308,16 +3358,16 @@ function checkWashing(){
   if((vpd<0.6||effDP>16)&&dryHours>=3&&!dpAlreadyMentioned){
     humCaveat=" High humidity will slow things down \u2014 check the forecast and bring it in if the weather turns.";
   } else if(effDP>18&&dryHours<3){
-    humCaveat=" Note: dew point is high ("+effDP.toFixed(1)+"\u00B0C) \u2014 washing may feel damp longer than expected.";
+    humCaveat=" Note: dew point is high ("+toDisp(effDP).toFixed(1)+unitSym()+") \u2014 washing may feel damp longer than expected.";
   }
   if(effDP>18&&dryHours<=5){dryHours=5;dryLabel="4\u20136 hours (possibly longer in high humidity)";}
 // Rain now
   if(rainingNow){
     var rainIntro=wxNow>=95?"Thunderstorm outside.":wxNow>=80?"Showers outside.":wxNow>=61?"Rain outside.":"Drizzle outside.";
     var rainReasons=[];
-if(effDP>24)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 the air is almost fully saturated");
-    else if(effDP>20)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 very humid air will prevent drying even if the rain clears");
-    else if(effDP>16)rainReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 high humidity will slow drying significantly");
+if(effDP>24)rainReasons.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 the air is almost fully saturated");
+    else if(effDP>20)rainReasons.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 very humid air will prevent drying even if the rain clears");
+    else if(effDP>16)rainReasons.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 high humidity will slow drying significantly");
     if(effDP<=20&&wind<5)rainReasons.push("almost no wind to help evaporation");
     if(effDP<=20&&temp>32)rainReasons.push("heat and humidity together mean the air can\u2019t absorb much moisture");
     else if(temp<10)rainReasons.push("cool temperature will slow drying");
@@ -3389,9 +3439,9 @@ if(dryHours===999){
     var title=bwMsg?"Not right now \u23F3":"Probably not today \u274C";
     var colour=bwMsg?"#b06010":"#c03020";
     var badReasons=[];
-    if(effDP>24)badReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 the air is almost fully saturated");
-    else if(effDP>20)badReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 too humid for drying");
-    else if(effDP>16)badReasons.push("dew point is "+effDP.toFixed(1)+"\u00B0C \u2014 humidity will prevent drying");
+    if(effDP>24)badReasons.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 the air is almost fully saturated");
+    else if(effDP>20)badReasons.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 too humid for drying");
+    else if(effDP>16)badReasons.push("dew point is "+toDisp(effDP).toFixed(1)+unitSym()+" \u2014 humidity will prevent drying");
     else if(vpd<0.3)badReasons.push("air is too humid for evaporation");
     if(temp<10)badReasons.push(temp<=0?"freezing temperature":"too cold for effective drying");
     if(effDP<=16&&wind<=5)badReasons.push("not enough wind");
@@ -3432,8 +3482,14 @@ if(dryHours===999){
   return washingPop("Should dry in about "+dryLabel+" "+emoji,(hoursLeft>dryHours+1?"Plenty of daylight left. ":"")+rsn+humCaveat+(freezeCaveat||fcDegradeCaveat||sunsetCaveat),col);
 }
 function washingPop(title,reason,colour){
-  document.getElementById("pop-ttl").innerHTML="<span style='color:"+colour+"'>"+title+"</span>";
-  document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"+reason+"</div>";
+  document.getElementById("pop-ttl").textContent="Will washing dry? 🧺";
+  document.getElementById("pop-body").innerHTML="<div class='washing-reason'>"
+    +"<div style='padding:8px 10px;border-radius:8px;background:"+hzRgba(colour,0.12)+";border:1px solid "+hzRgba(colour,0.45)+"'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+colour+";line-height:1.35'>"+title+"</div></div>"
+    +"<div style='font-size:13.5px;font-weight:600;color:var(--text);line-height:1.6;margin-top:10px'>"+reason+"</div>"
+    +"<div style='height:1px;background:var(--divider);margin:11px 0 9px'></div>"
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Drying time is estimated from how thirsty the air is (vapour pressure deficit), wind and temperature. When a forecast is available, the next few hours are also checked for rain, sunset and overnight frost.</div>"
+    +"</div>";
   document.getElementById("pop-ov").classList.add("open");
 }
 
