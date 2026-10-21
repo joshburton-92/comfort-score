@@ -2403,7 +2403,7 @@ function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
 function fetchWeatherWithCb(lat,lon,label,cb){
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,windwind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
@@ -3870,8 +3870,17 @@ function show7DaySlot(di){
   }
   var wearSection="";
   if(dayMaxL>=0){
-            var layerRange=dayMaxL===0?"No layers required":dayMinL===0?"No layers to "+dayMaxL+" "+(dayMaxL===1?"layer":"layers"):dayMinL===dayMaxL?dayMaxL+" "+(dayMaxL===1?"layer":"layers"):(dayMinL+"\u2013"+dayMaxL+" layers");
-    var outerDesc=dayNeedWind?"Wind/rainproof jacket":dayNeedRain?"Rain jacket":dayJustWet?"Honestly, just get wet \uD83C\uDF27\uFE0F":"";
+    // Layer counts exclude the jacket. With no layers needed, the jacket itself is the
+    // headline, so the card never says "No layers required" above a rain jacket.
+    var lyr=function(n){return n+" "+(n===1?"layer":"layers");};
+    var jacket=dayNeedWind?"wind/rainproof jacket":dayNeedRain?"rain jacket":"";
+    var layerRange,outerDesc="";
+    if(dayMaxL===0)layerRange=jacket?narrCap(jacket)+" recommended":"No layers required";
+    else{
+      layerRange=dayMinL===dayMaxL?lyr(dayMaxL):dayMinL===0?"Up to "+lyr(dayMaxL):(dayMinL+"\u2013"+dayMaxL+" layers");
+      if(jacket)outerDesc="+ 1 "+jacket;
+    }
+    if(!jacket&&dayJustWet)outerDesc="Honestly, just get wet \uD83C\uDF27\uFE0F";
         var wearDetail="<div style='font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px'>"+layerRange+"</div>"
             +(outerDesc?"<div style='font-size:13px;font-weight:700;color:var(--text-muted)'>"+outerDesc+"</div>":"")
       +"<div style='font-size:11px;color:var(--text-muted);margin-top:6px'>Tap any hourly row to expand</div>";
