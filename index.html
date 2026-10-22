@@ -1514,7 +1514,7 @@ function showColdwavePop(dateStr,backDi){
 // Heat- and cold-wave readings for the 7-day tiles, worked out once per forecast
 function waveDaysFor(fc){
   if(window._WAVEFC===fc&&window._WAVEDAYS)return window._WAVEDAYS;
-  var ent=(fc&&typeof findClimEntry==="function")?findClimEntry(fc.latitude,fc.longitude):null;
+  var ent=(fc&&typeof findClimEntry==="function")?findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM):null;
   var hc=ent?hwClimatology(ent):null,cc=ent?cwClimatology(ent):null;
   window._WAVEFC=fc;
   window._WAVEDAYS={hw:hc?heatwaveDays(fc,hc):null,cw:cc?coldwaveDays(fc,cc):null};
@@ -1823,7 +1823,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Where in the world?</div>"
     +"<div style='margin-bottom:12px'>Compares current conditions against nearly 200 cities worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings, including rain if you've switched it on — so the ranking reflects your personal comfort profile, not a universal standard. A 🌧️ marks cities where it's raining. Tap any city to load its full Comfort Score.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate Explorer</div>"
-    +"<div style='margin-bottom:12px'>The Climate Explorer card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Beneath that, the Liveability Score rates how well the location's year-round climate matches your liveability preferences, and the climate map shows how every location in the database scores for you — tap any marker to load it. Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
+    +"<div style='margin-bottom:12px'>The Climate Explorer card appears below your live result and shows monthly climate averages for the most relevant climate profile within about 100 km, chosen on distance and height (100 m of height counts as 10 km). When that profile is more than 20 km away the card names it, and when it is more than 100 m higher or lower its temperatures are adjusted for the height difference — about 0.65°C per 100 m. Rain, snow, sunshine and wind aren't adjusted. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Beneath that, the Liveability Score rates how well the location's year-round climate matches your liveability preferences, and the climate map shows how every location in the database scores for you — tap any marker to load it. Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
     +"<div style='margin-bottom:12px'>The standard WHO UV index scale. Only shown when UV reaches 3 (moderate) or above — below that no sun protection is typically needed.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Air Quality 😷</div>"
@@ -1835,7 +1835,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Hypothermia risk 🌧️</div>"
     +"<div style='margin-bottom:12px'>The cold hazard of mild climates: rain soaks clothing and wind strips its warmth, so a few degrees above zero can be more dangerous than a dry frost. The warning appears when it is 8°C or colder, the wind averages 30 km/h or more, and it is raining. In the forecast, a day is flagged when at least two such hours are expected. It stays quiet when a frostbite warning is already showing.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Heatwaves & coldwaves 🌡️❄️</div>"
-    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within 20 km. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Heatwaves rated 1/10 — the faintest, and the most common — aren't shown. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
+    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within about 50 km, adjusted for height the same way. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Heatwaves rated 1/10 — the faintest, and the most common — aren't shown. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
     +"<div>Weather data: Open-Meteo (open-meteo.com) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
@@ -2273,7 +2273,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
     // Cache-derived climatology only; silent where we have none.
     window._HWDAYS=null;window._HWPILLDATE=null;
     if(window._FC&&typeof findClimEntry==="function"){
-      var hwEnt=findClimEntry(window._FC.latitude,window._FC.longitude);
+      var hwEnt=findClimEntry(window._FC.latitude,window._FC.longitude,window._FC.elevation,CLIM_HAZARD_KM);
       var hwClim=hwEnt?hwClimatology(hwEnt):null;
       if(hwClim){
         window._HWDAYS=heatwaveDays(window._FC,hwClim);
@@ -2294,7 +2294,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
     // Low intensity reads as a quieter "Cold snap"; severe and extreme as "Coldwave".
     window._CWDAYS=null;window._CWPILLDATE=null;
     if(window._FC&&typeof findClimEntry==="function"){
-      var cwEnt=findClimEntry(window._FC.latitude,window._FC.longitude);
+      var cwEnt=findClimEntry(window._FC.latitude,window._FC.longitude,window._FC.elevation,CLIM_HAZARD_KM);
       var cwClim=cwEnt?cwClimatology(cwEnt):null;
       if(cwClim){
         window._CWDAYS=coldwaveDays(window._FC,cwClim);
@@ -2687,7 +2687,8 @@ var weatherPromise=fetch(url).then(function(r){if(!r.ok)return r.json().catch(fu
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
     document.getElementById("utility-row").style.display="block";
-    showClimCard(lat,lon);
+    window._currentElev=d.elevation;
+    showClimCard(lat,lon,d.elevation);
     var elevStr=d.elevation!=null?" · "+Math.round(d.elevation)+"m ASL":"";
     document.getElementById("live-obstime").textContent="Observed "+fmtObsTime(cur.time,d.timezone)+elevStr;
     // renderScore's live-screen pills (UV, AQI, fire danger, heatwave) are gated
@@ -2727,7 +2728,8 @@ function fetchWU(stationId,apiKey,label,cb){
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=lbl;
     document.getElementById("utility-row").style.display="block";
-    showClimCard(obs.lat||0,obs.lon||0);
+    window._currentElev=m.elev!=null?m.elev:null;
+    showClimCard(obs.lat||0,obs.lon||0,window._currentElev);
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
     renderChips(temp,dew,rh,wind);
@@ -3978,7 +3980,7 @@ function show7DaySlot(di){
     // Heatwave line — sits at the top of the summary card, not above it
     var hwLine="";
     if(!window._HWDAYS&&fc&&typeof findClimEntry==="function"){
-      var heE=findClimEntry(fc.latitude,fc.longitude),heC=heE?hwClimatology(heE):null;
+      var heE=findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM),heC=heE?hwClimatology(heE):null;
       if(heC)window._HWDAYS=heatwaveDays(fc,heC);
     }
     var hwDay=window._HWDAYS?hwForDate(window._HWDAYS,dateKey):null;
@@ -4027,7 +4029,7 @@ function show7DaySlot(di){
     // Coldwave line — mirrors the heatwave line
     var cwLine="";
     if(!window._CWDAYS&&fc&&typeof findClimEntry==="function"){
-      var ceE=findClimEntry(fc.latitude,fc.longitude),ceC=ceE?cwClimatology(ceE):null;
+      var ceE=findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM),ceC=ceE?cwClimatology(ceE):null;
       if(ceC)window._CWDAYS=coldwaveDays(fc,ceC);
     }
     var cwDay=window._CWDAYS?hwForDate(window._CWDAYS,dateKey):null;
@@ -4148,14 +4150,59 @@ function haversineKm(lat1,lon1,lat2,lon2){
   var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-function findClimEntry(lat,lon){
-  if(typeof CLIM_CACHE==="undefined")return null;
-  var best=null,bestDist=20;
+// ── Nearest relevant climate profile ──────────────────────────────────────
+// Candidates are ranked on distance plus height difference (100 m counts as 10 km), and
+// the best one within maxKm of that combined figure is used. When it sits at a different
+// height, its temperatures are shifted by the standard lapse rate (dew point less), so a
+// profile from the plain is cooled for a hill town and vice versa. Rain, snow, sun and
+// wind are left as they are. Returns a copy with _src (the cached row), _km and _dz
+// (metres higher than the profile; null when the place's height is unknown).
+var CLIM_MAX_KM=100;      // Climate Explorer, Liveability, home comparison
+var CLIM_HAZARD_KM=50;    // heatwave and coldwave thresholds
+var CLIM_EXACT_KM=20,CLIM_EXACT_DZ=100;   // within both: used as is, no "from" note; past 100 m: adjusted and noted
+var CLIM_KM_PER_100M=10;
+var CLIM_LAPSE=0.0065,CLIM_DP_LAPSE=0.002; // °C per metre
+var _climMatchMemo={};
+function findClimEntry(lat,lon,elev,maxKm){
+  if(typeof CLIM_CACHE==="undefined"||lat==null||lon==null)return null;
+  maxKm=maxKm||CLIM_MAX_KM;
+  var hasZ=elev!=null&&!isNaN(elev);
+  var key=lat.toFixed(4)+","+lon.toFixed(4)+","+(hasZ?Math.round(elev):"")+","+maxKm;
+  if(_climMatchMemo.hasOwnProperty(key))return _climMatchMemo[key];
+  var best=null,bestScore=Infinity,bestKm=0,bestDz=null;
   for(var i=0;i<CLIM_CACHE.length;i++){
-    var d=haversineKm(lat,lon,CLIM_CACHE[i].lat,CLIM_CACHE[i].lon);
-    if(d<=bestDist){bestDist=d;best=CLIM_CACHE[i];}
+    var e=CLIM_CACHE[i];
+    var km=haversineKm(lat,lon,e.lat,e.lon);
+    if(km>maxKm)continue;
+    var dz=(hasZ&&e.elev!=null&&!isNaN(e.elev))?elev-e.elev:null;
+    var sc=km+(dz==null?0:Math.abs(dz)/100*CLIM_KM_PER_100M);
+    if(sc<=maxKm&&sc<bestScore){bestScore=sc;best=e;bestKm=km;bestDz=dz;}
   }
-  return best;
+  var out=null;
+  if(best){
+    out={};for(var k in best)out[k]=best[k];
+    out._src=best;out._km=bestKm;out._dz=bestDz;
+    if(bestDz!=null&&Math.abs(bestDz)>CLIM_EXACT_DZ){
+      var sh=-CLIM_LAPSE*bestDz,shd=-CLIM_DP_LAPSE*bestDz,r1=function(v){return v==null?v:Math.round(v*10)/10;};
+      out.monthly=best.monthly.map(function(m){
+        var c={};for(var f in m)c[f]=m[f];
+        ["T","tmin","tmaxMax","tminMin"].forEach(function(f){if(c[f]!=null)c[f]=r1(c[f]+sh);});
+        if(c.dp!=null)c.dp=r1(Math.min(c.dp+shd,c.tmin!=null?c.tmin+2:Infinity));
+        return c;
+      });
+      out._adj=true;
+    }
+  }
+  _climMatchMemo[key]=out;
+  return out;
+}
+function climIsExact(e){return !e||!e._src||(e._km<=CLIM_EXACT_KM&&(e._dz==null||Math.abs(e._dz)<=CLIM_EXACT_DZ));}
+// "Climate from Mount Barker, 23 km away, 120 m lower · temperatures adjusted for height"
+function climFromNote(e){
+  if(climIsExact(e))return"";
+  var bits=[Math.round(e._km)+" km away"];
+  if(e._dz!=null&&Math.abs(e._dz)>=20)bits.push(Math.round(Math.abs(e._dz)/10)*10+" m "+(e._dz>0?"lower":"higher"));
+  return"Climate from "+e.name+(e.ter?", "+e.ter:"")+", "+bits.join(", ")+(e._adj?" \u00B7 temperatures adjusted for height":"");
 }
 // ── Compared with home ─────────────────────────────────────────────────────
 // Neutral climate similarity between the viewed location and the default ("home") location.
@@ -4225,7 +4272,7 @@ function renderHomeCompare(entry){
   var ep=entry?simProfile(entry):null;
   if(!ep){el.style.display="none";el.innerHTML="";return;}
   var home=getHome(),hp=home?simProfile(home.entry):null;
-  var isHome=!!(hp&&entry===home.entry),html="";
+  var isHome=!!(hp&&(entry._src||entry)===(home.entry._src||home.entry)),html="";
   // Away from home: one line on how this climate compares with home
   if(hp&&!isHome){
     var d=simDiffs(hp,ep),s=simScore(d),det=simDetail(hp,ep,d);
@@ -4236,7 +4283,7 @@ function renderHomeCompare(entry){
   var list=[];
   for(var i=0;i<CLIM_CACHE.length;i++){
     var e=CLIM_CACHE[i];
-    if(e===entry)continue;
+    if(e===(entry._src||entry))continue;
     var km=haversineKm(entry.lat,entry.lon,e.lat,e.lon);
     if(km<HOME_TWIN_MIN_KM)continue;
     var p=simProfile(e);
@@ -4280,13 +4327,14 @@ var CLIM_SBANDS=[{max:35,col:"rgba(190,50,50,1)"},{max:55,col:"rgba(210,120,20,1
 function climScoreCol(s){var v=Math.min(100,Math.max(0,s));for(var i=0;i<CLIM_SBANDS.length;i++)if(v<=CLIM_SBANDS[i].max)return CLIM_SBANDS[i].col;return CLIM_SBANDS[CLIM_SBANDS.length-1].col;}
 // Climate figures are stored in °C; convert at display time so the unit toggle applies
 function climT(v){return(v!==null&&v!==undefined&&!isNaN(v))?String(toDisp(v).toFixed(1)).replace("-","\u2212"):"\u2014";}
-function showClimCard(lat,lon){
+function showClimCard(lat,lon,elev){
   var card=document.getElementById("clim-card");
   card.style.display="block";
-  var entry=findClimEntry(lat,lon);
+  if(elev===undefined)elev=window._currentElev;
+  var entry=findClimEntry(lat,lon,elev,CLIM_MAX_KM);
   var lbl=document.getElementById("clim-loc-label");
   if(!entry){
-    lbl.innerHTML="<span style='color:var(--text-muted)'>No climate data available for this location yet.</span>";
+    lbl.innerHTML="<span style='color:var(--text-muted)'>No climate data within "+CLIM_MAX_KM+" km of this location yet.</span>";
     document.getElementById("clim-chart-grid").innerHTML="";
     document.getElementById("clim-month-row").innerHTML="";
     document.getElementById("clim-tbody").innerHTML="";
@@ -4299,7 +4347,9 @@ function showClimCard(lat,lon){
   var kopKey=entry.koppen?koppenKey(entry.koppen):"";
   var kopHtml=kopKey?"<span onclick='showKoppenPop(\""+kopKey+"\")' style='display:inline-block;margin-left:8px;font-size:10px;font-weight:800;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;padding:2px 8px;color:var(--text-sec);cursor:pointer'>"+koppenSwatch(kopKey,9)+kopKey+" ↗</span>":"";
   var kop2Html=entry.koppen2?"<div style='font-size:11px;font-weight:600;color:var(--text-muted);margin-top:3px'>"+entry.koppen2+"</div>":"";
-  lbl.innerHTML="<div>"+entry.name+(entry.ter?", "+entry.ter:"")+" · "+entry.elev+"m"+kopHtml+"</div>"+kop2Html;
+  var fromNote=climFromNote(entry);
+  lbl.innerHTML="<div>"+entry.name+(entry.ter?", "+entry.ter:"")+" · "+entry.elev+"m"+kopHtml+"</div>"+kop2Html
+    +(fromNote?"<div style='font-size:11px;font-weight:700;color:var(--text-sec);margin-top:4px'>\uD83D\uDCCD "+fromNote+"</div>":"");
   window._climMonthly=entry.monthly;
   var chartHtml="",monthHtml="";
   for(var i=0;i<entry.monthly.length;i++){
