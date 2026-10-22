@@ -61,17 +61,9 @@
 html,body{height:100%;overflow-x:hidden}
 body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var(--text)}
 .app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
-.header{padding:16px 0 14px;text-align:center;position:relative}
-.header-icon{width:48px;height:48px;margin:0 auto 8px;background:var(--card);border:1px solid var(--card-border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
-.header h1{font-size:clamp(18px,5.5vw,24px);font-weight:800;color:var(--text-head);letter-spacing:-0.3px}
-.header p{font-size:clamp(11px,3vw,13px);color:var(--text-sec);margin-top:2px;font-weight:600}
 .unit-toggle{position:absolute;top:16px;right:0;display:flex;border-radius:20px;overflow:hidden;border:1px solid var(--card-border);background:var(--toggle-bg)}
 .unit-btn{padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer;color:var(--text-sec);border:none;background:transparent}
 .unit-btn.active{background:var(--toggle-active);color:var(--text-head)}
-.star-btn{position:absolute;top:16px;left:0;width:34px;height:28px;border-radius:20px;border:1px solid var(--card-border);background:var(--toggle-bg);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.tabs{display:flex;gap:6px;margin-bottom:12px}
-.tab{flex:1;padding:10px 8px;font-size:clamp(13px,3.5vw,15px);font-weight:700;cursor:pointer;border:1px solid var(--card-border);border-radius:10px;background:var(--toggle-bg);color:var(--text-sec);text-align:center}
-.tab.active{background:var(--toggle-active);color:var(--text-head)}
 .page{display:none}.page.active{display:block}
 .card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
 .sec-lbl{font-size:11px;font-weight:800;color:var(--text-sec);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
@@ -95,22 +87,12 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .refresh-btn{background:none;border:none;cursor:pointer;color:var(--text-sec);font-size:16px;padding:2px 4px;line-height:1;flex-shrink:0}
 .refresh-btn.spinning{animation:spin 0.8s linear infinite}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
-.chip{font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 10px;background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:20px;color:var(--text-head)}
 .score-outer{min-height:0}
-.score-area{display:flex;flex-direction:column;padding:4px 0 8px;gap:10px}
-canvas{display:none}
 .vol-bar{display:flex;flex-direction:row;gap:3px;width:100%;height:28px}
 .vol-seg{flex:1;border-radius:4px;position:relative;overflow:hidden}
 .vol-seg.lit::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.35) 0%,rgba(255,255,255,0) 60%);border-radius:4px}
 .vol-seg.dim{background:rgba(180,200,210,0.18);border:1px solid rgba(255,255,255,0.22)}
 @media(prefers-color-scheme:dark){.vol-seg.dim{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.1)}}
-.score-bottom{display:flex;align-items:center;gap:10px}
-.score-identity{display:flex;flex-direction:column;align-items:flex-start;gap:1px;flex-shrink:0}
-.score-num{font-size:clamp(42px,12vw,56px);font-weight:300;line-height:1;letter-spacing:-3px}
-.score-lbl-row{display:flex;align-items:center;gap:5px}
-.score-emoji{font-size:clamp(12px,3vw,14px);line-height:1}
-.score-lbl{font-size:clamp(12px,3.2vw,14px);font-weight:700;letter-spacing:0px;color:var(--text-muted)}
 .annotations{display:flex;flex-wrap:wrap;align-items:center;gap:5px;flex:1;justify-content:flex-end}
 .share-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:6px;margin-bottom:6px}
 .share-btn{font-size:12px;font-weight:700;color:var(--text-muted);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 14px;cursor:pointer}
@@ -144,9 +126,6 @@ canvas{display:none}
 .clim-table th{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.06em;text-transform:uppercase;padding:5px 6px 7px;text-align:left;border-bottom:1px solid var(--divider)}
 .clim-table td{padding:6px 6px;border-bottom:1px solid var(--divider);font-weight:600;color:var(--text);vertical-align:middle}
 .clim-table tr:last-child td{border-bottom:none}
-.ann-wear{background:rgba(100,160,100,0.15);border:1px solid rgba(100,160,100,0.35);color:#3a7a3a;cursor:pointer}
-.score-info-btn{font-size:13px;font-weight:800;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0 0 0 8px;line-height:1;vertical-align:middle;opacity:0.6}
-.score-info-btn:active{opacity:1}
 .ann{display:inline-flex;align-items:center;gap:3px;font-size:clamp(12px,3vw,13px);font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid transparent}
 .ann-great{background:rgba(30,140,65,0.15);color:#0d6030;border-color:rgba(30,140,65,0.3)}
 .ann-warm{background:rgba(255,160,20,0.18);color:#8a4a00;border-color:rgba(255,160,20,0.35)}
@@ -164,7 +143,6 @@ canvas{display:none}
 .ann-steamy{background:rgba(200,60,20,0.18);color:#6a1000;border-color:rgba(200,60,20,0.35)}
 .ann-breeze{background:rgba(50,180,130,0.15);color:#0a4a30;border-color:rgba(50,180,130,0.3)}
 .ann-wind{background:rgba(80,120,180,0.18);color:#1a2a5a;border-color:rgba(80,120,180,0.35)}
-.ann-chill{background:rgba(40,100,200,0.2);color:#0a1a5a;border-color:rgba(40,100,200,0.4)}
 .ann-dry{background:rgba(180,130,60,0.15);color:#5a3a00;border-color:rgba(180,130,60,0.3)}
 .ann-vdry{background:rgba(160,100,30,0.18);color:#4a2000;border-color:rgba(160,100,30,0.35)}
 .ann-wx{background:rgba(100,160,200,0.15);color:#1a4060;border-color:rgba(100,160,200,0.3)}
@@ -179,8 +157,6 @@ canvas{display:none}
 .ann-wc{background:rgba(20,130,210,0.18);color:#0a3a70;border-color:rgba(20,130,210,0.55);cursor:pointer;font-weight:800}
 .ann-wcx{background:rgba(60,30,150,0.88);color:#fff;border-color:rgba(60,30,150,1);cursor:pointer;font-weight:800}
 .ann-hypo{background:rgba(40,120,150,0.18);color:#0d4558;border-color:rgba(40,120,150,0.55);cursor:pointer;font-weight:800}
-.ann-divider{width:100%;height:1px;background:var(--divider);margin:10px 0 8px;border:none}
-.utility-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;background:var(--toggle-bg);border-radius:16px;padding:10px 12px;margin-top:2px}
 .ann-info{cursor:pointer}
 @media(prefers-color-scheme:dark){
   .ann-great{background:rgba(30,140,65,0.25);color:#4ae880}
@@ -199,7 +175,6 @@ canvas{display:none}
   .ann-steamy{background:rgba(200,60,20,0.25);color:#e04818}
   .ann-breeze{background:rgba(40,160,110,0.25);color:#40c888}
   .ann-wind{background:rgba(70,110,180,0.25);color:#6090d0}
-  .ann-chill{background:rgba(40,90,200,0.25);color:#5080d0}
   .ann-dry{background:rgba(160,110,40,0.25);color:#c08030}
   .ann-vdry{background:rgba(140,80,20,0.25);color:#b06020}
   .ann-wx{background:rgba(60,120,180,0.25);color:#70b8e0}
@@ -226,13 +201,6 @@ canvas{display:none}
 .forecast-strip::-webkit-scrollbar-track{background:rgba(255,255,255,0.1);border-radius:2px}
 .forecast-strip::-webkit-scrollbar-thumb{background:rgba(42,127,180,0.3);border-radius:2px}
 .forecast-row{display:flex;gap:8px;width:max-content;padding:2px}
-.fc-slot{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:72px;cursor:pointer}
-.fc-slot:active{opacity:0.75}
-.fc-time{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:4px}
-.fc-score{font-size:22px;font-weight:800;line-height:1;margin-bottom:2px}
-.fc-lbl{font-size:10px;font-weight:700;color:var(--text-muted)}
-.fc-temp{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px}
-.fc-wx{font-size:14px;line-height:1;margin-top:5px}
 .fc-slot-7{background:var(--fc-bg);border:1px solid var(--card-border);border-radius:14px;padding:10px 10px 8px;text-align:center;min-width:84px;cursor:pointer}
 .fc-slot-7:active{opacity:0.75}
 .fc-wb{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;background:rgba(220,90,0,0.2);color:#7a2c00;border:1px solid rgba(220,90,0,0.55);white-space:nowrap;display:inline-block}
@@ -251,21 +219,16 @@ canvas{display:none}
 .fc-cs{background:rgba(60,125,175,0.1);color:#21506f;border:1px solid rgba(60,125,175,0.35);font-weight:700}
 @media(prefers-color-scheme:dark){.fc-hw{background:rgba(220,30,50,0.3);color:#ff6070;border-color:rgba(220,60,70,0.6)}.fc-cw{background:rgba(60,120,240,0.3);color:#9cc0ff;border-color:rgba(90,140,250,0.6)}.fc-cs{background:rgba(80,150,200,0.16);color:#a8d0ea;border-color:rgba(90,150,200,0.4)}}
 .fc-day{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:6px}
-.fc-hilo{display:flex;flex-direction:column;gap:3px}
-.fc-hi{font-size:16px;font-weight:800;line-height:1}
-.fc-lo{font-size:14px;font-weight:700;line-height:1;opacity:0.7}
 .fc-hitime{font-size:9px;font-weight:600;color:var(--text-muted);margin-top:1px}
 .irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .irow label{font-size:clamp(13px,3.5vw,14px);color:var(--text-sec);flex:0 0 44%;font-weight:700}
 .irow input,.irow select{flex:1;min-width:0;padding:9px 10px;font-size:clamp(13px,3.5vw,15px);font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
 .unit{font-size:clamp(12px,3vw,13px);color:var(--text-muted);min-width:28px;flex-shrink:0;font-weight:700}
-.slider-card{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);padding:clamp(12px,4vw,18px);margin-bottom:10px}
 .slider-row{margin-bottom:18px}
 .slider-row:last-child{margin-bottom:0}
 .slider-lbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
 .slider-name{font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head)}
 .slider-val{font-size:clamp(11px,3vw,12px);font-weight:700;color:var(--text-sec);background:var(--card-inner);border:1px solid var(--card-border);border-radius:20px;padding:2px 9px}
-.slider-lock-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:10px;gap:6px}
 .slider-lock-btn{font-size:12px;font-weight:700;color:var(--text-sec);background:none;border:1px solid var(--card-border);border-radius:20px;padding:4px 12px;cursor:pointer}
 input[type=range].locked{pointer-events:none;opacity:0.5}
 .slider-ends{display:flex;justify-content:space-between;margin-top:5px}
@@ -312,7 +275,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .pop-body{font-size:clamp(13px,3.2vw,14px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line;overflow-y:auto;flex:1;min-height:0}
 .pop-body-scroll{max-height:none;overflow-y:auto;padding-right:4px}
 .pop-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700;flex-shrink:0}
-.pop-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700}
 .stars-pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%}
 .stars-list{margin-top:8px;max-height:260px;overflow-y:auto}
 .star-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card-inner);border-radius:12px;margin-bottom:6px;cursor:pointer}
@@ -372,7 +334,7 @@ body.manual-mode #clim-card{display:none!important}
 .alert-strip .ann.quiet{font-size:12.5px;font-weight:700;padding:6px 11px}
 /* Tappable things get a slightly bolder edge in a stronger shade of their own colour */
 .ann[onclick],a.ann{border-width:1.5px;border-color:color-mix(in srgb,currentColor 50%,transparent);cursor:pointer}
-.cond-tile[onclick],.fc-slot-7,.fc-slot{border-width:1.5px;border-color:color-mix(in srgb,var(--text-sec) 45%,transparent)}
+.cond-tile[onclick],.fc-slot-7{border-width:1.5px;border-color:color-mix(in srgb,var(--text-sec) 45%,transparent)}
 .ann[onclick]:active,a.ann:active,.cond-tile[onclick]:active,.fc-slot-7:active{transform:scale(0.97)}
 .topbar .unit-btn{padding:8px 9px}
 .top-status{text-align:center;margin:-4px 0 8px}
@@ -987,7 +949,6 @@ var WORLD_CITIES=[
   {name:"Ushuaia",lat:-54.8,lon:-68.3,cc:"AR"}
 ];
 var PINNED_CITIES=["New York","London","Dubai","Tokyo","Sydney"];
-var FC_SLOTS=[0,3,6,9,12,15,18,21];
 var _tlo=18;
 var _thi=22;
 var _coolmax=35;
@@ -1326,6 +1287,7 @@ var HW_K=0.578;       // heatwave threshold sits this far into the local range
 var HW_C=0.47;        // EHF85 ~ HW_C * Range^2
 var HW_LIFT=0.45;     // overnight-minimum lift on an extreme day
 var HW_SEASON=2;      // months either side of the climatological peak
+var HW_MIN_SCALE=2;   // lowest x/10 shown; 1/10 was over a third of all firings
 
 function hwClimatology(entry){
   if(!entry||!entry.monthly||entry.monthly.length<12)return null;
@@ -1383,6 +1345,8 @@ function heatwaveDays(fc,clim){
         map[dates[j]]={sev:sev,d3:d3,d30:d30,winStart:dates[i]};
     }
   }
+  // Below HW_MIN_SCALE isn't shown anywhere (strip, tiles, day card)
+  for(var dk in map)if(hwScale(map[dk].sev)<HW_MIN_SCALE)delete map[dk];
   return{dates:dates,map:map,clim:clim,lastDay:n-3};
 }
 // One day's reading, plus the span of the event it belongs to.
@@ -1689,23 +1653,7 @@ function moonPhase(){
 }
 function renderChips(temp,effDP,rh,wind,fc){
   var moon=moonPhase();
-  var srChip="",ssChip="";
-  if(fc&&fc.daily&&fc.daily.sunrise&&fc.daily.sunset){
-    var tz=fc.timezone,tzOff=getTZOffsetMin(tz);
-    var todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-    var di=fc.daily.time?fc.daily.time.indexOf(todayStr):0;
-    if(di<0)di=0;
-    var srStr=fc.daily.sunrise[di],ssStr=fc.daily.sunset[di];
-    if(srStr){
-      var srP=parseLocalTimeStr(srStr),srUtc=Date.UTC(srP.yr,srP.mo,srP.dy,srP.hr,srP.mn,0)-tzOff*60000;
-      srChip="<span class='chip'>🌅 "+new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(srUtc)).toLowerCase().replace(" ","")+"</span>";
-    }
-    if(ssStr){
-      var ssP=parseLocalTimeStr(ssStr),ssUtc=Date.UTC(ssP.yr,ssP.mo,ssP.dy,ssP.hr,ssP.mn,0)-tzOff*60000;
-      ssChip="<span class='chip'>🌇 "+new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true}).format(new Date(ssUtc)).toLowerCase().replace(" ","")+"</span>";
-    }
-  }
-  window._sunMoonData={srTime:srChip,ssTime:ssChip,moon:moon,tidesHtml:"<span style='color:var(--text-muted)'>Loading tides\u2026</span>"};
+  window._sunMoonData={moon:moon,tidesHtml:"<span style='color:var(--text-muted)'>Loading tides\u2026</span>"};
   var deg=function(c){return String(toDisp(c).toFixed(1)).replace("-","\u2212")+unitSym();};
   var hiLo="";
   if(fc&&fc.daily&&fc.daily.time){
@@ -1733,7 +1681,6 @@ function renderChips(temp,effDP,rh,wind,fc){
   var uvLbl=uvNow==null?"":uvNow<3?"Low":uvNow<6?"Moderate":uvNow<8?"High":uvNow<11?"Very high":"Extreme";
   var gust=window._LW&&window._LW.gust;
   var bft=beaufort(wind).n;
-  var plain=function(h){return h?h.replace(/<[^>]+>/g,"").replace(/^\S+\s/,""):"";};
   var tile=function(lbl,val,sub,tap){return"<div class='cond-tile"+(tap?" tap":"")+"'"+(tap?" onclick='"+tap+"'":"")+"><div class='cond-lbl'>"+lbl+"</div><div class='cond-val'>"+val+"</div><div class='cond-sub'>"+sub+"</div></div>";};
   document.getElementById("live-chips").innerHTML=
     tile("Temperature",deg(temp),hiLo)
@@ -1874,7 +1821,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
     +"<div style='margin-bottom:12px'>A drying index is calculated from vapour pressure deficit, wind, and temperature. This estimates how quickly moisture evaporates from fabric. Forecast slots are scanned to find usable drying windows, accounting for sunset, incoming rain, and overnight freezes.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Where in the world?</div>"
-    +"<div style='margin-bottom:12px'>Compares current conditions against nearly 200 cities worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings — so the ranking reflects your personal comfort profile, not a universal standard. Tap any city to load its full Comfort Score.</div>"
+    +"<div style='margin-bottom:12px'>Compares current conditions against nearly 200 cities worldwide, showing the top and bottom scorers alongside five major reference cities. Scores are calculated using your current preference settings, including rain if you've switched it on — so the ranking reflects your personal comfort profile, not a universal standard. A 🌧️ marks cities where it's raining. Tap any city to load its full Comfort Score.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Climate Explorer</div>"
     +"<div style='margin-bottom:12px'>The Climate Explorer card appears below your live result and shows monthly climate averages for the nearest matched location. It covers average highs and lows, dew point, rainfall, and snowfall across the year, plus annual sunshine hours and wind. Tap any month bar or label for a detailed breakdown. Beneath that, the Liveability Score rates how well the location's year-round climate matches your liveability preferences, and the climate map shows how every location in the database scores for you — tap any marker to load it. Data sourced from national meteorological services and WMO records. Each location uses the closest suitable station or dataset available; where a figure isn't recorded there, it has been estimated from the surrounding terrain and nearby stations. Some values, particularly for remote or data-sparse locations, are therefore approximate — and because the heatwave index is built from these figures, its readings are only as reliable as the climate data behind them.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>UV Index</div>"
@@ -1888,7 +1835,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Hypothermia risk 🌧️</div>"
     +"<div style='margin-bottom:12px'>The cold hazard of mild climates: rain soaks clothing and wind strips its warmth, so a few degrees above zero can be more dangerous than a dry frost. The warning appears when it is 8°C or colder, the wind averages 30 km/h or more, and it is raining. In the forecast, a day is flagged when at least two such hours are expected. It stays quiet when a frostbite warning is already showing.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Heatwaves & coldwaves 🌡️❄️</div>"
-    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within 20 km. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
+    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within 20 km. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Heatwaves rated 1/10 — the faintest, and the most common — aren't shown. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
     +"<div>Weather data: Open-Meteo (open-meteo.com) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
@@ -2006,12 +1953,14 @@ function wetBulb(t,dp){
 }
 // Two-tier heat-stress pill: wet bulb ≥ 28°C dangerous, ≥ 31°C extremely dangerous
 var WB_DANGER=28,WB_EXTREME=31;
-function wetBulbPill(t,dp){
+// Hazard pills take an optional back target for their popup: "h" returns to the open hour
+function hzBackArg(back){return back?",\""+back+"\"":"";}
+function wetBulbPill(t,dp,back){
   if(t==null||dp==null||isNaN(t)||isNaN(dp))return"";
   var w=wetBulb(t,dp);
   if(w<WB_DANGER)return"";
   var ext=w>=WB_EXTREME;
-  return"<span class='ann "+(ext?"ann-wbx":"ann-wb")+"' onclick='showWetBulbPop("+t+","+dp+")'>"
+  return"<span class='ann "+(ext?"ann-wbx":"ann-wb")+"' onclick='showWetBulbPop("+t+","+dp+hzBackArg(back)+")'>"
     +(ext?"\uD83D\uDEA8 Extremely dangerous heat":"\uD83E\uDD75 Dangerously hot")+"</span>";
 }
 // ── Dangerous cold (wind chill) ────────────────────────────────────────────
@@ -2031,10 +1980,10 @@ function coldTier(t,wind){
   var wc=windChill(t,wind);
   return wc==null?0:wc<=WC_EXTREME?2:wc<=WC_DANGER?1:0;
 }
-function coldPill(t,wind){
+function coldPill(t,wind,back){
   var tier=coldTier(t,wind);
   if(!tier)return"";
-  return"<span class='ann "+(tier===2?"ann-wcx":"ann-wc")+"' onclick='showColdPop("+t+","+(wind||0)+")'>"
+  return"<span class='ann "+(tier===2?"ann-wcx":"ann-wc")+"' onclick='showColdPop("+t+","+(wind||0)+hzBackArg(back)+")'>"
     +(tier===2?"\uD83D\uDEA8 Extremely dangerous cold":"\uD83E\uDD76 Dangerously cold")+"</span>";
 }
 function showColdPop(t,wind,backDi){
@@ -2088,9 +2037,9 @@ function hypoHour(t,wind,code,mm){
   if(coldTier(t,wind))return false;              // frostbite warning already covers it
   return t<=HYPO_T&&wind>=HYPO_WIND&&hypoWet(code,mm,t);
 }
-function hypoPill(t,wind,code,mm){
+function hypoPill(t,wind,code,mm,back){
   if(!hypoHour(t,wind,code,mm))return"";
-  return"<span class='ann ann-hypo' onclick='showHypoPop("+t+","+wind+")'>\uD83C\uDF27\uFE0F Hypothermia risk</span>";
+  return"<span class='ann ann-hypo' onclick='showHypoPop("+t+","+wind+hzBackArg(back)+")'>\uD83C\uDF27\uFE0F Hypothermia risk</span>";
 }
 function showHypoPop(t,wind,backDi,hours){
   hazardPop({
@@ -2149,7 +2098,7 @@ function hzRgba(col,a){
 }
 function hazardPop(o){
   var rule="<div style='height:1px;background:var(--divider);margin:11px 0 10px'></div>";
-  var back=(o.backDi!==undefined&&o.backDi!==null)?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+o.backDi+")'>← Back</div>":"";
+  var back=(o.backDi!==undefined&&o.backDi!==null)?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='"+(o.backDi==="h"?"hourBack()":"show7DaySlot("+o.backDi+")")+"'>← Back</div>":"";
   var body="<div class='washing-reason'>"
     +"<div style='padding:8px 10px;border-radius:8px;background:"+hzRgba(o.col,0.14)+";border:1px solid "+hzRgba(o.col,0.45)+"'>"
     +"<div style='font-size:15px;font-weight:800;color:"+o.col+";line-height:1.3'>"+o.headline+"</div>"
@@ -2269,7 +2218,6 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
   }
   function annSpan(ann){
     return ann.url?"<a class='ann "+ann.c+"' href='"+ann.url+"' target='_blank' rel='noopener' style='text-decoration:none'>"+ann.t+"</a>"
-      :ann.info?"<span class='ann "+ann.c+"' onclick='showPop(STEAMY_TITLE,STEAMY_TEXT)'>"+ann.t+"</span>"
       :"<span class='ann "+ann.c+"'>"+ann.t+"</span>";
   }
   var annHtml="",alertHtml="";
@@ -2392,41 +2340,6 @@ function renderForecast(fc){
   window._FC=fc;
   render7Day(fc);
   document.getElementById("forecast-wrap").style.display="block";
-}
-function showForecastSlot(idx){
-  if(!window._FC)return;
-  var fc=window._FC,tz=fc.timezone;
-  var t=fc.hourly.temperature_2m[idx],dp=fc.hourly.dew_point_2m[idx],w=fc.hourly.wind_speed_10m[idx];
-  var r=calc(t,dp,w),si=scoreInfo(r.score),s=gs();
-  var wxCode=(fc.hourly.weather_code||[])[idx];
-  if(wxCode===undefined)wxCode=null;
-  var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
-  var uv=fc.hourly.uv_index?fc.hourly.uv_index[idx]:null;
-  var uvAnn=uvAnnotation(uv);
-  var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
-  var annHtml="";
-  for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
-  if(uvAnn)annHtml+="<span class='ann "+uvAnn.c+"'>"+uvAnn.t+"</span> ";
-  // AQI pill in forecast slot popup
-  if(window._AQ&&window._AQ.hourly){
-    var fcSlotTimeStr=(fc.hourly.time[idx]||"").slice(0,13);
-    var fcAqiIdx=null;
-    for(var ai=0;ai<(window._AQ.hourly.time||[]).length;ai++){
-      if((window._AQ.hourly.time[ai]||"").slice(0,13)===fcSlotTimeStr){fcAqiIdx=ai;break;}
-    }
-    var fcAqiVal=fcAqiIdx!==null?(window._AQ.hourly.us_aqi||[])[fcAqiIdx]:null;
-    var fcAqiAnn=aqiAnnotation(fcAqiVal);
-    if(fcAqiAnn)annHtml+="<span class='ann "+fcAqiAnn.c+"' onclick='showAQIPop("+fcAqiIdx+")'>"+fcAqiAnn.t+"</span> ";
-  }
-  var wearPill="<span class='ann ann-wear' onclick='showWearPop("+t+","+w+","+(wxCode===null?"null":wxCode)+","+dp+")'>what to wear 🧥</span>";
-  var body="<div class='washing-reason'>"
-    +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" &mdash; "+si.label+"</div>"
-    +"<div style='margin-bottom:4px'>🌡️ "+toDisp(t).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💧 DP "+toDisp(dp).toFixed(1)+unitSym()+" &nbsp;·&nbsp; 💨 "+Math.round(w)+" km/h</div>"
-    +"<div style='margin-top:8px'>"+annHtml+wearPill+"</div>"
-    +"</div>";
-  document.getElementById("pop-ttl").textContent=fmtObsTime(fc.hourly.time[idx],tz);
-  document.getElementById("pop-body").innerHTML=body;
-  document.getElementById("pop-ov").classList.add("open");
 }
 
 // ── Share ──────────────────────────────────────────────────────────────────
@@ -2635,7 +2548,7 @@ function toggleSliderLock(){
 }
 function applySliderLock(){
   var btn=document.getElementById("slider-lock-btn");
-  var sliders=document.querySelectorAll(".slider-card input[type=range]");
+  var sliders=document.querySelectorAll("#pref-panel input[type=range]");
   for(var i=0;i<sliders.length;i++){
     sliders[i].classList.toggle("locked",slidersLocked);
   }
@@ -3183,20 +3096,6 @@ if(dryHours===999){
   return washingPop("Should dry in about "+dryLabel+" "+emoji,rsn+humCaveat+" (No forecast data \u2014 rain and sunset not checked.)",col);
 }
 
-function openClimatology(){
-  var lat=window._currentLat,lon=window._currentLon,label=window._currentLabel;
-  if(lat===undefined||lat===null){return;}
-  window.open('comfort-climatology.html?lat='+lat+'&lon='+lon+'&label='+encodeURIComponent(label||''),'_blank');
-}
-function openLiveability(){window.open('liveability.html','_blank');}
-
-// Open-Meteo's free tier is rate-limited per connection (600 calls/min). A 429 gets a
-// plain-English message instead of "API error 429".
-function apiError(status){
-  var e=new Error(status===429?"Weather service is busy \u2014 try again in a minute.":"API error "+status);
-  e.friendly=(status===429);
-  return e;
-}
 // The world check costs ~198 API calls, so its raw conditions are kept for 15 minutes
 // (Open-Meteo's "current" values only update every 15 min anyway). Scores are recalculated
 // from the kept conditions each time, so changed comfort settings still apply.
@@ -3223,7 +3122,7 @@ function fetchWorldScores(){
   var lats=WORLD_CITIES.map(function(c){return c.lat;}).join(",");
   var lons=WORLD_CITIES.map(function(c){return c.lon;}).join(",");
   var url="https://api.open-meteo.com/v1/forecast?latitude="+lats+"&longitude="+lons
-    +"&current=temperature_2m,dew_point_2m,wind_speed_10m"
+    +"&current=temperature_2m,dew_point_2m,wind_speed_10m,precipitation"
     +"&wind_speed_unit=kmh&timezone=auto&forecast_days=1";
   fetch(url).then(function(r){if(!r.ok)throw apiError(r.status);return r.json();}).then(function(data){
     // data is array when multiple locations
@@ -3231,7 +3130,9 @@ function fetchWorldScores(){
     var raw=[];
     for(var i=0;i<results.length;i++){
       var d=results[i];
-      raw.push(d&&d.current?{temp:d.current.temperature_2m,dp:d.current.dew_point_2m,wind:d.current.wind_speed_10m}:null);
+      // "current" rain is the total over the last interval (usually 15 min) — scale to mm per hour
+      var cu=d&&d.current,rr=cu&&cu.precipitation!=null?cu.precipitation*3600/(cu.interval||900):null;
+      raw.push(cu?{temp:cu.temperature_2m,dp:cu.dew_point_2m,wind:cu.wind_speed_10m,rain:rr}:null);
     }
     if(!raw.some(function(x){return x;}))throw new Error("No data returned");
     _worldRaw=raw;_worldRawAt=Date.now();
@@ -3249,7 +3150,8 @@ function scoreWorld(raw){
       idx:i,
       name:WORLD_CITIES[i].name,
       cc:WORLD_CITIES[i].cc,
-      score:calc(c.temp,c.dp,c.wind).score,
+      score:calc(c.temp,c.dp,c.wind,c.rain).score,
+      rain:c.rain,
       temp:c.temp,
       dp:c.dp,
       wind:c.wind
@@ -3291,7 +3193,7 @@ function renderWorldBody(){
     return "<div class='world-row' onclick='worldLoad("+c.idx+")'>"
       +"<div class='world-score' style='color:"+nc+"'>"+c.score+"</div>"
       +"<div class='world-name'>"+c.name+"</div>"
-      +"<div class='world-cc'>"+c.cc+" \u00B7 "+toDisp(c.temp).toFixed(1)+unitSym()+"</div></div>";
+      +"<div class='world-cc'>"+c.cc+" \u00B7 "+(c.rain!=null&&c.rain>=RAIN_MIN?"\uD83C\uDF27\uFE0F ":"")+toDisp(c.temp).toFixed(1)+unitSym()+"</div></div>";
   }
   var shuffleBtn="<button onclick='shuffleWorld()' style='background:none;border:1px solid var(--card-border);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:800;color:var(--text-sec);cursor:pointer;margin-left:6px;vertical-align:middle'>shuffle</button>";
   var html="";
@@ -3806,43 +3708,11 @@ function render7Day(fc){
   if(window._LW){var lw=window._LW;renderChips(lw.temp,lw.effDP,lw.rh,lw.wind,fc);}
 }
 
-function showSlotWearPop(temp,wind,wxCode,dp,backDi,timeStr){
-    var s=gs();
-  var w=whatToWear(temp,wind,wxCode,s,dp);
-  var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
-  var hasRain=!hasWindRain&&!!(w.extra&&w.extra.indexOf("ain jacket")>-1);
-  var tooHot=(dp!==null&&temp>35&&dp>25)||(temp>45);
-  var justGetWet=dp!==null&&dp>25&&(hasRain||hasWindRain||!!(w.extra&&w.extra.indexOf("get wet")>-1));
-  if(justGetWet){hasRain=false;hasWindRain=false;}
-  var nc=w.layers===0?"#c07020":w.layers<=1?"#2a9a60":w.layers<=3?"#2a7fa8":"#5a4aaa";
-  var dispLayers=(hasRain||hasWindRain)&&w.layers>=2?Math.max(1,w.layers-1):w.layers;
-  var layerWord=dispLayers===1?"layer":"layers";
-  var outerLine=justGetWet?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>Honestly, just get wet \uD83C\uDF27\uFE0F</div>"
-    :hasWindRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 wind/rainproof jacket</div>"
-    :hasRain?"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>+ 1 rain jacket</div>":"";
-  var body="<div class='washing-reason'>"
-        +(tooHot
-            ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:6px'>No layers required</div>"
-      +"<div style='font-size:15px;font-weight:700;color:var(--text-muted);margin-top:2px'>Honestly, it's too hot for any clothes at all.</div>"
-      :w.coldTier>=2
-      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Polar conditions \u2014 specialist gear required \uD83E\uDD76</div>"
-      :w.coldTier>=1
-      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>Extreme cold \u2014 full coverage essential \uD83E\uDD76</div>"
-      :dispLayers===0
-      ?"<div style='font-size:22px;font-weight:800;color:"+nc+";margin-bottom:10px'>No layers required</div>"
-      :"<div style='font-size:42px;font-weight:800;color:"+nc+";line-height:1;margin-bottom:2px'>"+dispLayers+"</div>"
-      +"<div style='font-size:16px;font-weight:700;color:"+nc+";margin-bottom:10px'>"+layerWord+"</div>")
-    +outerLine
-    +"<div style='font-size:12px;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--divider)'>"+toDisp(temp).toFixed(1)+unitSym()+" &nbsp;&middot;&nbsp; "+Math.round(wind)+" km/h</div>"
-    +(tooHot||justGetWet||w.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
-    +(backDi!==undefined?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>← Back</div>":"")
-    +"</div>";
-    document.getElementById("pop-ttl").textContent="What to wear"+(timeStr?" \u2014 "+timeStr:"");
-  document.getElementById("pop-body").innerHTML=body;
-  document.getElementById("pop-ov").classList.add("open");
-}
+// Reopens the hour popup a hazard or UV popup was opened from
+function hourBack(){var h=window._hourBack;if(h)show7DayHourSlot(h.idx,h.di,h.t);}
 function show7DayHourSlot(idx,di,timeStr){
   if(!window._FC)return;
+  window._hourBack={idx:idx,di:di,t:timeStr};
   var fc=window._FC,tz=fc.timezone;
   var t=fc.hourly.temperature_2m[idx],dp=fc.hourly.dew_point_2m[idx],w=fc.hourly.wind_speed_10m[idx];
     var precips=fc.hourly.precipitation||[];
@@ -3856,10 +3726,10 @@ function show7DayHourSlot(idx,di,timeStr){
   var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
   var annHtml="";
   for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
-  annHtml+=wetBulbPill(t,dp);
+  annHtml+=wetBulbPill(t,dp,"h");
   annHtml+=gustPill((fc.hourly.wind_gusts_10m||[])[idx]);
-  annHtml+=coldPill(t,w);
-  annHtml+=hypoPill(t,w,wxCode,precips[idx]);
+  annHtml+=coldPill(t,w,"h");
+  annHtml+=hypoPill(t,w,wxCode,precips[idx],"h");
     var ww=whatToWear(t,w,wxCode,s,dp);
   var hasWindRain=!!(ww.extra&&ww.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
@@ -3892,7 +3762,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
       +"<div style='font-size:28px;font-weight:800;color:"+wearNc+";line-height:1'>"+dispLayers+"</div>"
       +"<div style='font-size:14px;font-weight:700;color:"+wearNc+"'>"+layerWord+(outerLine?" &nbsp;\u00B7&nbsp; <span style='color:var(--text-muted)'>"+outerLine+"</span>":"")+"</div></div>")
     +(tooHot||justGetWet||ww.coldTier>=1?"":"<div style='font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic'>\u201CA layer\u201D goes on top of your shirt, dress, or singlet</div>")
-    +(uvSun?"<div onclick='showUVPop(\""+fc.hourly.time[idx].slice(0,10)+"\","+uvVal+","+di+")' style='cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSun+" \u203A</div>":"")
+    +(uvSun?"<div onclick='showUVPop(\""+fc.hourly.time[idx].slice(0,10)+"\","+uvVal+",\"h\")' style='cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--divider)'>\u2600\uFE0F "+uvSun+" \u203A</div>":"")
     +"</div>"
     +"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+di+")'>← Back</div>"
     +"</div>";
@@ -4271,7 +4141,6 @@ function show7DaySlot(di){
   document.getElementById("pop-body").innerHTML=body;
   document.getElementById("pop-ov").classList.add("open");
 }
-function fcScroll(dir){var strip=document.getElementById("forecast-strip");if(!strip)return;strip.scrollBy({left:dir*220,behavior:"smooth"});}
 
 // ── Climatology card ───────────────────────────────────────────────────────
 function haversineKm(lat1,lon1,lat2,lon2){
@@ -4478,16 +4347,18 @@ function showClimCard(lat,lon){
   sumDiv.style.cssText="font-size:12px;font-weight:700;color:var(--text-muted);display:flex;gap:12px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);flex-wrap:wrap";
   sumDiv.innerHTML=summaryParts.map(function(p){return"<span>"+p+"</span>";}).join("");
   document.getElementById("clim-table").after(sumDiv);
-  if(entry.notes){
-    var notesWrap=document.createElement("div");
-    notesWrap.id="clim-notes-wrap";
-    notesWrap.style.cssText="margin-top:8px";
-    notesWrap.innerHTML="<button id='clim-notes-btn' onclick='toggleClimNotes()' style='background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-sec);display:flex;align-items:center;gap:4px;padding:4px 0'>"
+  // "Learn more" (when there are notes) and "Climate classifications" share one row
+  var notesWrap=document.createElement("div");
+  notesWrap.id="clim-notes-wrap";
+  notesWrap.style.cssText="margin-top:8px";
+  var linkCss="background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-sec);display:flex;align-items:center;gap:4px;padding:4px 0";
+  notesWrap.innerHTML="<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>"
+    +(entry.notes?"<button id='clim-notes-btn' onclick='toggleClimNotes()' style='"+linkCss+"'>"
       +"<svg id='clim-notes-arrow' width='10' height='10' viewBox='0 0 10 10' fill='none' style='transition:transform 0.2s'><path d='M2 3l3 3 3-3' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"
-      +"Learn more</button>"
-      +"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'>"+entry.notes+"</div>";
-    sumDiv.after(notesWrap);
-  }
+      +"Learn more</button>":"<span></span>")
+    +"<button onclick='showKoppenTable()' style='"+linkCss+"'>Climate classifications \u203A</button></div>"
+    +(entry.notes?"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'>"+entry.notes+"</div>":"");
+  sumDiv.after(notesWrap);
   renderHomeCompare(entry);
   showLivCard(entry);
 }
@@ -5082,7 +4953,8 @@ function livMapLoad(lat,lon,label){
 // ── Köppen explainers ──────────────────────────────────────────────────────
 // Criteria follow Peel et al. (2007), as used for this app's climate profiles: monthly
 // MEAN temperatures, 0°C between C and D. Colours are the Beck et al. (2018) map legend
-// used on Wikipedia. Every example has been checked against its own Wikipedia article.
+// used on Wikipedia. Examples are places in this app's climate data, at their cached
+// coordinates, so each one loads its own climate profile (types with none have no examples).
 var KOPPEN_COL={Af:"0,0,255",Am:"0,120,255",Aw:"70,170,250",As:"70,170,250",
   BWh:"255,0,0",BWk:"255,150,150",BWn:"255,150,150",BSh:"245,165,0",BSk:"255,220,100",
   Csa:"255,255,0",Csb:"200,200,0",Csc:"150,150,0",Cwa:"150,255,150",Cwb:"100,200,100",Cwc:"50,150,50",
@@ -5104,28 +4976,28 @@ var KOPPEN_DATA={
   "Af":{name:"Tropical Rainforest",sum:"Hot and wet all year, with no dry season.",
     features:"Temperatures barely change through the year, afternoon storms are frequent and humidity stays high. Dense evergreen rainforest is the natural cover.",
     calc:"Every month averages 18°C or more, and even the driest month gets at least 60 mm of rain.",
-    examples:[["Singapore",1.35,103.82],["Belém, Brazil",-1.46,-48.49],["Innisfail, QLD",-17.52,146.03]]},
+    examples:[["Singapore",1.29,103.85],["Belém, Brazil",-1.45,-48.47],["Innisfail, QLD",-17.52,146.03]]},
   "Am":{name:"Tropical Monsoon",sum:"Hot all year, with a very wet monsoon and a short dry season.",
     features:"A long wet season brings rain heavy enough to carry the land through a brief dry season. Forest stays green year-round, though some trees drop their leaves in the dry months.",
     calc:"Every month averages 18°C or more. The driest month gets under 60 mm, but at least 100 mm minus 1/25 of the annual rainfall — so the wetter the year, the drier the dry season can be.",
-    examples:[["Cairns, QLD",-16.92,145.77],["Yangon, Myanmar",16.87,96.19]]},
+    examples:[["Cairns, QLD",-16.92,145.77],["Jakarta, Indonesia",-6.18,106.83],["Miami, USA",25.77,-80.19]]},
   "Aw":{name:"Tropical Savanna",sum:"Hot all year, with a wet summer and a long dry winter.",
     features:"The year divides into a humid wet season of storms and a dry season of clear skies and lower humidity. Grassland with scattered trees is typical, and fire is common late in the dry season.",
     calc:"Every month averages 18°C or more, the driest month is too dry for a monsoon climate (under 100 mm minus 1/25 of the annual rainfall), and the dry season falls in the cooler, low-sun half of the year.",
-    examples:[["Darwin, NT",-12.46,130.84],["Bangkok, Thailand",13.75,100.52],["Ho Chi Minh City, Vietnam",10.82,106.63]]},
+    examples:[["Darwin, NT",-12.46,130.84],["Bangkok, Thailand",13.75,100.49],["Ho Chi Minh City, Vietnam",10.78,106.7]]},
   "As":{name:"Tropical Savanna (Dry Summer)",sum:"Hot all year, with the dry season in summer instead of winter.",
     features:"The wet-and-dry rhythm of a tropical savanna in reverse: most rain comes in the cooler months, often from onshore winds or a retreating monsoon. Uncommon, found mainly on a few tropical coasts.",
     calc:"As for tropical savanna, but the dry season falls in the warmer, high-sun half of the year.",
-    examples:[["Chennai, India",13.08,80.27],["Trincomalee, Sri Lanka",8.59,81.22]]},
+    examples:[["Dili, Timor-Leste",-8.55,125.58],["São Tomé",0.34,6.73]]},
   // B — Arid
   "BWh":{name:"Hot Desert",sum:"Very hot, very dry, and sunny almost every day.",
     features:"Rain is scarce and unreliable. Summer days are extremely hot, while clear skies let nights cool sharply. Vegetation is sparse or absent.",
     calc:KOP_DRY+" Desert (W): less than half the threshold. Hot (h): the mean annual temperature is 18°C or more.",
-    examples:[["Alice Springs, NT",-23.70,133.88],["Dubai, UAE",25.20,55.27],["Phoenix, USA",33.45,-112.07]]},
+    examples:[["Alice Springs, NT",-23.7,133.88],["Cairo, Egypt",30.05,31.24],["Phoenix, USA",33.45,-112.07]]},
   "BWk":{name:"Cold Desert",sum:"Very dry, with warm to hot summers and cold winters.",
     features:"Rain is scarce, often because mountains block moist air or the land sits high or far inland. Summers can be hot, winters freeze, and the daily temperature swing is large.",
     calc:KOP_DRY+" Desert (W): less than half the threshold. Cold (k): the mean annual temperature is below 18°C.",
-    examples:[["Kashgar, China",39.47,75.99],["Leh, India",34.16,77.58],["Mendoza, Argentina",-32.89,-68.83]]},
+    examples:[["Berri, SA",-34.29,140.6],["St George, USA",37.11,-113.58],["Antofagasta, Chile",-23.65,-70.4]]},
   "BWn":{name:"Fog Desert",sum:"A cool coastal desert where fog, not rain, brings most of the moisture.",
     features:"Cold ocean currents chill the air offshore, so rain almost never falls but low cloud and fog are frequent, and temperatures stay mild for a desert. Found on the coasts of Peru and northern Chile, Namibia and the western Sahara.",
     calc:KOP_DRY+" Desert (W): less than half the threshold. Fog (n, from the German Nebel): frequent fog. Peel et al. (2007) don’t use the n suffix; it is an older extension still seen in some references.",
@@ -5133,61 +5005,61 @@ var KOPPEN_DATA={
   "BSh":{name:"Hot Semi-Arid (Steppe)",sum:"Hot and dry, with a short, unreliable rainy season.",
     features:"Wetter than a desert — enough rain for grassland and scrub — but too dry and erratic for reliable farming without irrigation. Droughts are common.",
     calc:KOP_DRY+" Steppe (S): between half and all of the threshold. Hot (h): the mean annual temperature is 18°C or more.",
-    examples:[["Longreach, QLD",-23.44,144.25],["Marrakesh, Morocco",31.63,-8.01],["Niamey, Niger",13.51,2.11]]},
+    examples:[["Longreach, QLD",-23.44,144.25],["Tucson, USA",32.22,-110.97],["Niamey, Niger",13.52,2.11]]},
   "BSk":{name:"Cold Semi-Arid (Steppe)",sum:"Dry, with warm summers and cold winters.",
     features:"Grassland and scrub country, often in the rain shadow of mountains or deep inland. Large swings between seasons and between day and night; winters bring frost and some snow.",
     calc:KOP_DRY+" Steppe (S): between half and all of the threshold. Cold (k): the mean annual temperature is below 18°C.",
-    examples:[["Denver, USA",39.74,-104.99],["Zaragoza, Spain",41.65,-0.89],["Lanzhou, China",36.06,103.83]]},
+    examples:[["Mildura, VIC",-34.2,142.15],["Denver, USA",39.74,-104.98],["Santiago, Chile",-33.44,-70.65]]},
   // C — Temperate
   "Csa":{name:"Hot-Summer Mediterranean",sum:"Hot, dry summers and mild, wet winters.",
     features:"Long, sunny summers with little rain, and most of the year’s rain in the cooler months. Frost is rare at low levels. Native vegetation is drought- and fire-adapted shrubland and open woodland.",
     calc:KOP_C+KOP_S+KOP_A,
-    examples:[["Adelaide, SA",-34.93,138.60],["Athens, Greece",37.98,23.73],["Rome, Italy",41.90,12.50]]},
+    examples:[["Adelaide, SA",-34.93,138.6],["Perth, WA",-31.95,115.86],["Los Angeles, USA",34.05,-118.25]]},
   "Csb":{name:"Warm-Summer Mediterranean",sum:"Warm, dry summers and mild, wet winters.",
     features:"The Mediterranean pattern with gentler summers, usually from altitude or a cool coast. Sea breezes and summer fog are common on the coast.",
     calc:KOP_C+KOP_S+KOP_B,
-    examples:[["Paracombe, SA",-34.72,138.82],["San Francisco, USA",37.77,-122.42],["Porto, Portugal",41.15,-8.61]]},
+    examples:[["Paracombe, SA",-34.85,138.77],["San Francisco, USA",37.78,-122.42],["Cape Town, South Africa",-33.92,18.42]]},
   "Csc":{name:"Cold-Summer Mediterranean",sum:"Short, cool, dry summers and mild, wet winters.",
     features:"Very rare. Found mostly high on mountains in otherwise Mediterranean regions, such as the Cascades and Sierra Nevada, and occasionally on cool, exposed coasts. The growing season is short.",
     calc:KOP_C+KOP_S+KOP_CC,
-    examples:[["Haleakalā summit, Hawaii",20.71,-156.25]]},
+    examples:[]},
   "Cwa":{name:"Monsoon-Influenced Humid Subtropical",sum:"Hot, wet summers and mild, dry winters.",
     features:"The summer monsoon brings heat, humidity and heavy rain; winters are sunny, dry and mild to cool. Common across northern India, southern China and the higher parts of southern Africa.",
     calc:KOP_C+KOP_W+KOP_A,
-    examples:[["Hong Kong",22.32,114.17],["Delhi, India",28.61,77.21],["Lusaka, Zambia",-15.42,28.28]]},
+    examples:[["Hong Kong",22.28,114.16],["New Delhi, India",28.61,77.21],["Pretoria, South Africa",-25.75,28.19]]},
   "Cwb":{name:"Subtropical Highland",sum:"Mild all year, with a wet summer and a dry winter.",
     features:"Altitude tempers what would otherwise be a tropical climate: days are warm rather than hot, nights are cool, and the seasons change mainly in rainfall rather than temperature.",
     calc:KOP_C+KOP_W+KOP_B,
-    examples:[["Nairobi, Kenya",-1.29,36.82],["Mexico City, Mexico",19.43,-99.13],["Kunming, China",25.04,102.71]]},
+    examples:[["Nairobi, Kenya",-1.29,36.82],["Mexico City, Mexico",19.43,-99.13],["Kunming, China",25.04,102.72]]},
   "Cwc":{name:"Cold Subtropical Highland",sum:"Cool all year at high altitude, with a wet summer.",
     features:"Found only at very high elevations in the tropics and subtropics, such as the Bolivian altiplano. Days are mild, nights often freeze, and the dry season brings clear skies.",
     calc:KOP_C+KOP_W+KOP_CC,
-    examples:[["El Alto, Bolivia",-16.50,-68.16]]},
+    examples:[]},
   "Cfa":{name:"Humid Subtropical",sum:"Hot, humid summers and mild winters, with rain all year.",
     features:"Summers are sticky with thunderstorms; winters are mild with occasional frost. Rain falls in every season, often peaking in summer. Common on the east coasts of continents.",
     calc:KOP_C+KOP_F+KOP_A,
-    examples:[["Brisbane, QLD",-27.47,153.02],["Shanghai, China",31.23,121.47],["New Orleans, USA",29.95,-90.07]]},
+    examples:[["Brisbane, QLD",-27.47,153.03],["Sydney, NSW",-33.87,151.21],["Shanghai, China",31.23,121.47]]},
   "Cfb":{name:"Oceanic",sum:"Mild all year, with rain spread through every season.",
     features:"Neither summers nor winters are extreme, cloud is frequent, and rain comes often but rarely heavily. Common on mid-latitude west coasts and in temperate highlands.",
     calc:KOP_C+KOP_F+KOP_B,
-    examples:[["Canberra, ACT",-35.28,149.13],["Melbourne, VIC",-37.81,144.96],["London, UK",51.51,-0.13]]},
+    examples:[["Canberra, ACT",-35.28,149.13],["Melbourne, VIC",-37.81,144.96],["Hobart, TAS",-42.88,147.32]]},
   "Cfc":{name:"Subpolar Oceanic",sum:"Cool summers and mild winters, with frequent wind and rain.",
     features:"The cold-summer edge of the oceanic climate: short, cool summers, winters that hover around freezing without deep cold, and persistent cloud. Trees struggle in the most exposed places.",
     calc:KOP_C+KOP_F+KOP_CC,
-    examples:[["Tórshavn, Faroe Islands",62.01,-6.77],["Reykjavík, Iceland",64.14,-21.94]]},
+    examples:[["Tórshavn, Faroe Islands",62.01,-6.77],["Auckland Island",-50.52,166.22]]},
   // D — Continental
   "Dsa":{name:"Mediterranean-Influenced Hot-Summer Continental",sum:"Hot, dry summers and cold, snowy winters.",
     features:"A Mediterranean rainfall pattern at continental temperatures, usually on high plateaus beside Mediterranean regions. Rare; found in eastern Turkey, north-western Iran and parts of the American Intermountain West.",
     calc:KOP_D+KOP_S+KOP_A,
-    examples:[["Saqqez, Iran",36.24,46.27]]},
+    examples:[]},
   "Dsb":{name:"Mediterranean-Influenced Warm-Summer Continental",sum:"Warm, dry summers and cold, snowy winters.",
     features:"Mostly mountain valleys and plateaus beside Mediterranean climates, such as the Sierra Nevada. Heavy winter snow gives way to sunny, dry summers.",
     calc:KOP_D+KOP_S+KOP_B,
-    examples:[["Truckee, USA",39.36,-120.19],["Mammoth Lakes, USA",37.63,-118.99]]},
+    examples:[["South Lake Tahoe, USA",38.93,-119.98],["Flagstaff, USA",35.2,-111.65]]},
   "Dsc":{name:"Mediterranean-Influenced Subarctic",sum:"Short, cool, dry summers and long, cold winters.",
     features:"A rare subarctic type where summer is the drier season. Found at high elevations in western North America and Central Asia, and in a few northern places such as north Iceland.",
     calc:KOP_D+KOP_S+KOP_CC,
-    examples:[["Atlin, Canada",59.58,-133.72],["Akureyri, Iceland",65.68,-18.10]]},
+    examples:[]},
   "Dsd":{name:"Mediterranean-Influenced Extreme Subarctic",sum:"Brief, dry summers and extremely cold winters.",
     features:"One of the rarest climates on Earth, limited to small, remote areas of the Russian Far East. No well-known towns have it.",
     calc:KOP_D+KOP_S+KOP_DD,
@@ -5195,44 +5067,44 @@ var KOPPEN_DATA={
   "Dwa":{name:"Monsoon-Influenced Hot-Summer Continental",sum:"Hot, humid summers and very cold, dry winters.",
     features:"Siberian air rules winter, bringing clear, bitterly cold and dry weather; the summer monsoon brings heat and most of the year’s rain. Typical of northern China and Korea.",
     calc:KOP_D+KOP_W+KOP_A,
-    examples:[["Beijing, China",39.90,116.40],["Seoul, South Korea",37.57,126.98],["Shenyang, China",41.80,123.43]]},
+    examples:[["Beijing, China",39.91,116.39],["Seoul, South Korea",37.57,127],["Harbin, China",45.76,126.63]]},
   "Dwb":{name:"Monsoon-Influenced Warm-Summer Continental",sum:"Warm, wet summers and cold, dry winters.",
     features:"Like the hot-summer version but cooler in summer, from latitude, a cool sea or altitude. Found in the Russian Far East, northern Korea and the high country of south-western China.",
     calc:KOP_D+KOP_W+KOP_B,
-    examples:[["Vladivostok, Russia",43.12,131.89],["Shangri-La, China",27.83,99.71]]},
+    examples:[["Chongjin, North Korea",41.78,129.82],["Hulunbuir, China",49.21,119.74]]},
   "Dwc":{name:"Monsoon-Influenced Subarctic",sum:"Short, mild, wet summers and long, very cold, dry winters.",
     features:"Boreal forest country in north-eastern Asia and the high Himalaya, with most of the year’s precipitation in summer and little snow despite the cold.",
     calc:KOP_D+KOP_W+KOP_CC,
-    examples:[["Mohe, China",52.97,122.54]]},
+    examples:[]},
   "Dwd":{name:"Monsoon-Influenced Extreme Subarctic",sum:"Brief summers and extremely cold, very dry winters.",
     features:"Confined to north-eastern Siberia. Winters are among the coldest on Earth, with little snowfall, while summer days can be surprisingly warm.",
     calc:KOP_D+KOP_W+KOP_DD,
-    examples:[["Ust-Nera, Russia",64.58,143.25]]},
+    examples:[]},
   "Dfa":{name:"Hot-Summer Humid Continental",sum:"Hot, humid summers and cold, snowy winters.",
     features:"Large seasonal swings, with precipitation in every season and thunderstorms in summer. Deciduous forest and prairie are typical.",
     calc:KOP_D+KOP_F+KOP_A,
-    examples:[["Chicago, USA",41.88,-87.63],["Omaha, USA",41.26,-95.94],["Almaty, Kazakhstan",43.24,76.89]]},
+    examples:[["Chicago, USA",41.88,-87.62],["Sapporo, Japan",43.06,141.35],["Boston, USA",42.36,-71.06]]},
   "Dfb":{name:"Warm-Summer Humid Continental",sum:"Warm summers and long, cold, snowy winters.",
     features:"Precipitation in every season, a reliable winter snow cover, and mixed forest. Widespread across eastern Europe, southern Canada and the northern United States.",
     calc:KOP_D+KOP_F+KOP_B,
-    examples:[["Helsinki, Finland",60.17,24.94],["Moscow, Russia",55.76,37.62]]},
+    examples:[["Helsinki, Finland",60.17,24.97],["Oslo, Norway",59.91,10.74],["Warsaw, Poland",52.24,21.03]]},
   "Dfc":{name:"Subarctic",sum:"Short, cool summers and long, severe winters.",
     features:"Boreal (taiga) forest dominates, the growing season is brief, and permafrost is common further north.",
     calc:KOP_D+KOP_F+KOP_CC,
-    examples:[["Yellowknife, Canada",62.45,-114.37],["Murmansk, Russia",68.97,33.07],["Norilsk, Russia",69.35,88.20]]},
+    examples:[["Tromsø, Norway",69.65,18.96],["Fort Nelson, Canada",58.81,-122.69],["Atlin, Canada",59.57,-133.7]]},
   "Dfd":{name:"Extreme Subarctic",sum:"Brief, warm summers and the harshest winters outside Antarctica.",
     features:"Winter lows fall below −60°C, yet summer days can pass 30°C — the largest annual temperature range on Earth. Confined to eastern Siberia.",
     calc:KOP_D+KOP_F+KOP_DD,
-    examples:[["Verkhoyansk, Russia",67.55,133.39],["Oymyakon, Russia",63.46,142.79]]},
+    examples:[]},
   // E — Polar
   "ET":{name:"Tundra",sum:"No true summer — the warmest month stays below 10°C.",
     features:"Too cold for trees: mosses, lichens, grasses and low shrubs grow in a short thaw above permafrost. Found on Arctic coasts, sub-Antarctic islands and mountains above the tree line.",
     calc:"The warmest month averages above 0°C but below 10°C.",
-    examples:[["Nuuk, Greenland",64.18,-51.72],["Longyearbyen, Svalbard",78.22,15.65],["Utqiaġvik, Alaska",71.29,-156.79]]},
+    examples:[["Mount Wellington summit, TAS",-42.9,147.24],["Kosciuszko summit, NSW",-36.45,148.26],["Mount Washington, USA",44.27,-71.3]]},
   "EF":{name:"Ice Cap",sum:"Below freezing in every month of the year.",
     features:"Permanent ice and snow with no vegetation. Covers most of Antarctica and the interior of Greenland.",
     calc:"Every month averages 0°C or below.",
-    examples:[["Vostok Station, Antarctica",-78.46,106.84],["Summit Station, Greenland",72.58,-38.46]]}
+    examples:[]}
 };
 // Codes in the climate data sometimes arrive mis-cased (Bsk, bwh, Et); fix the case before lookup
 function koppenKey(code){
@@ -5267,7 +5139,7 @@ function showKoppenPop(code){
   var ttl=document.getElementById("pop-ttl"),bd=document.getElementById("pop-body");
   if(!k){
     ttl.textContent=key||"Climate type";
-    bd.innerHTML="<div class='washing-reason'>No explainer is available for the climate code “"+key+"”.</div>";
+    bd.innerHTML="<div class='washing-reason'>No explainer is available for the climate code “"+key+"”."+"<div onclick='showKoppenTable(\""+key+"\")' style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12.5px;font-weight:800;color:var(--text-sec);cursor:pointer'>Climate classifications \u203A</div>"+"</div>";
     document.getElementById("pop-ov").classList.add("open");
     return;
   }
@@ -5284,6 +5156,8 @@ function showKoppenPop(code){
       ex+="<span class='ann' onclick='loadKoppenExample(\""+key+"\","+i+")' style='cursor:pointer;color:var(--text);background:rgba("+rgb+",0.16);border-color:rgba("+rgb+",0.55)'>"+k.examples[i][0]+"</span>";
     }
     ex+="</div>";
+  }else{
+    ex=rule+"<div style='font-size:12px;font-weight:600;color:var(--text-muted);line-height:1.6'>None of the places in this app\u2019s climate data have this climate type yet, so there are no examples to load.</div>";
   }
   bd.innerHTML="<div class='washing-reason'>"+band
     +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5;margin-top:10px'>"+k.sum+"</div>"
@@ -5293,11 +5167,49 @@ function showKoppenPop(code){
     +" Temperatures are monthly means of day and night, following Peel et al. (2007)"
     +(/^[CD]/.test(key)?", which puts the temperate–continental boundary at 0°C (some sources use −3°C)":"")
     +". Places near a boundary can change type between climate periods.</div>"
+    +"<div onclick='showKoppenTable(\""+key+"\")' style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12.5px;font-weight:800;color:var(--text-sec);cursor:pointer'>Climate classifications \u203A</div>"
     +"</div>";
   ttl.textContent=k.name;
   document.getElementById("pop-ov").classList.add("open");
 }
 
+// ── Climate classifications table ─────────────────────────────────────────
+// Every Köppen code, A to E, in its map colour. The current location's code is outlined;
+// tap any code for its explainer. fromCode adds a back link to the explainer it came from.
+var KOPPEN_TABLE=[
+  ["A","Tropical",[[["Af","Am","Aw","As"],""]]],
+  ["B","Arid",[[["BWh","BWk","BWn"],"desert"],[["BSh","BSk"],"steppe"]]],
+  ["C","Temperate",[[["Csa","Csb","Csc"],"dry summer"],[["Cwa","Cwb","Cwc"],"dry winter"],[["Cfa","Cfb","Cfc"],"no dry season"]]],
+  ["D","Continental",[[["Dsa","Dsb","Dsc","Dsd"],"dry summer"],[["Dwa","Dwb","Dwc","Dwd"],"dry winter"],[["Dfa","Dfb","Dfc","Dfd"],"no dry season"]]],
+  ["E","Polar",[[["ET","EF"],""]]]
+];
+function showKoppenTable(fromCode){
+  var cur=window._climCur&&window._climCur.koppen?koppenKey(window._climCur.koppen):"";
+  var chip=function(c){
+    var rgb=KOPPEN_COL[c]||"128,128,128",p=rgb.split(",").map(Number);
+    var txt=(0.299*p[0]+0.587*p[1]+0.114*p[2])/255>0.55?"#111":"#fff";
+    var nm=KOPPEN_DATA[c]?KOPPEN_DATA[c].name:c;
+    return"<span onclick='showKoppenPop(\""+c+"\")' title='"+nm.replace(/'/g,"&#39;")+"' style='display:inline-flex;align-items:center;justify-content:center;width:46px;height:30px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:800;background:rgb("+rgb+");color:"+txt+";"
+      +(c===cur?"border:2.5px solid var(--text);box-shadow:0 0 0 2px var(--pop-bg) inset":"border:1px solid rgba(0,0,0,0.2)")+"'>"+c+"</span>";
+  };
+  var html="<div class='washing-reason'>"
+    +"<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.6;margin-bottom:10px'>The Köppen system sorts climates by temperature and rainfall. The first letter is the main group, the second the rainfall pattern (or desert and steppe), and the third how hot the summer — or cold the winter — gets. Tap a code to read about it.</div>";
+  KOPPEN_TABLE.forEach(function(g){
+    html+="<div style='margin-top:10px'><div style='font-size:12px;font-weight:800;color:var(--text-head);margin-bottom:5px'>"+g[0]+" \u00B7 "+g[1]+"</div>";
+    g[2].forEach(function(r){
+      html+="<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'><div style='display:flex;gap:5px;flex-shrink:0;width:199px'>"+r[0].map(chip).join("")+"</div>"
+        +(r[1]?"<div style='font-size:10.5px;font-weight:700;color:var(--text-muted);line-height:1.2'>"+r[1]+"</div>":"")+"</div>";
+    });
+    html+="</div>";
+  });
+  html+="<div style='height:1px;background:var(--divider);margin:11px 0 9px'></div>"
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>"+(cur?"Outlined: this location ("+cur+"). ":"")+"Colours match the Köppen–Geiger world map (Beck et al., 2018); codes follow Peel et al. (2007), plus As and BWn.</div>"
+    +(fromCode?"<div onclick='showKoppenPop(\""+fromCode+"\")' style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer'>\u2190 Back to "+fromCode+"</div>":"")
+    +"</div>";
+  document.getElementById("pop-ttl").textContent="Climate classifications";
+  document.getElementById("pop-body").innerHTML=html;
+  document.getElementById("pop-ov").classList.add("open");
+}
 function loadKoppenExample(code,i){
   var ex=KOPPEN_DATA[code]&&KOPPEN_DATA[code].examples[i];
   if(!ex)return;
