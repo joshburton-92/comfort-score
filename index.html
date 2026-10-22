@@ -20,7 +20,7 @@
 <style>
 #liv-map{height:260px;border-radius:12px;border:1px solid var(--card-border);margin-top:10px;z-index:1}
 .liv-map-expand{margin-left:auto}
-#liv-map-wrap.expanded{position:fixed;inset:0;z-index:190;background:var(--pop-bg);display:flex;flex-direction:column;padding:max(env(safe-area-inset-top,12px),12px) 12px max(env(safe-area-inset-bottom,12px),12px)}
+#liv-map-wrap.expanded{position:fixed;inset:0;z-index:190;background:var(--pop-bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px max(env(safe-area-inset-bottom,12px),12px)}
 #liv-map-wrap.expanded .liv-map-toggle{margin-top:0}
 #liv-map-wrap.expanded #liv-map{flex:1;height:auto}
 .liv-map-toggle{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
@@ -60,7 +60,7 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font);-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
 body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var(--text)}
-.app{max-width:480px;margin:0 auto;padding:max(env(safe-area-inset-top,12px),12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
+.app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px max(env(safe-area-inset-bottom,20px),20px)}
 .header{padding:16px 0 14px;text-align:center;position:relative}
 .header-icon{width:48px;height:48px;margin:0 auto 8px;background:var(--card);border:1px solid var(--card-border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
 .header h1{font-size:clamp(18px,5.5vw,24px);font-weight:800;color:var(--text-head);letter-spacing:-0.3px}
@@ -327,7 +327,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .star-save-row input{width:100%;padding:8px 10px;font-size:13px;font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text);margin-bottom:8px}
 .star-save-btns{display:flex;gap:6px}
 .results-list{margin-top:4px;border-radius:10px;overflow:hidden;border:1px solid var(--card-border)}
-.topbar{position:sticky;top:max(env(safe-area-inset-top,8px),8px);z-index:150;display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 10px;background:var(--pop-bg);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);box-shadow:0 4px 18px rgba(20,60,80,0.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.topbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:150;display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 10px;background:var(--pop-bg);border:1px solid var(--card-border);border-radius:clamp(14px,4vw,20px);box-shadow:0 4px 18px rgba(20,60,80,0.08);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .tb-group{display:flex;align-items:center;gap:6px;flex:1}
 .tb-group.tb-right{justify-content:flex-end}
 .tb-title{font-size:16px;font-weight:800;color:var(--text-head);white-space:nowrap;letter-spacing:-0.2px}
@@ -528,6 +528,7 @@ body.manual-mode #clim-card{display:none!important}
       <div id="m-dp-row" class="irow"><label>Dew point</label><input type="number" id="m-dp" value="16.1" step="0.1"/><span class="unit" id="unit-dp">&#176;C</span></div>
       <div id="m-rh-row" class="irow" style="display:none"><label>Relative humidity</label><input type="number" id="m-rh" value="60" step="1" min="0" max="100"/><span class="unit">%</span></div>
       <div class="irow"><label>Wind speed</label><input type="number" id="m-wind" value="0" step="1" min="0"/><span class="unit">km/h</span></div>
+      <div class="irow"><label>Rain</label><input type="number" id="m-rain" value="0" step="0.1" min="0"/><span class="unit">mm/h</span></div>
       <div style="margin-top:4px"><button class="btn btn-p" onclick="calcManual()">Calculate</button></div>
     </div>
     <div class="card" id="manual-result" style="display:none">
@@ -576,6 +577,13 @@ body.manual-mode #clim-card{display:none!important}
         <div class="slider-lbl-row"><span class="slider-name">Wind preference</span><span class="slider-val" id="wind-val">Moderate</span></div>
         <input type="range" id="sl-wind" min="0" max="100" value="50" oninput="onSlider('wind')"/>
         <div class="slider-ends"><span class="slider-end">Hate wind</span><span class="slider-end">Love wind</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="liv-hardfail-row" style="margin-top:0">
+          <input type="checkbox" id="pref-rain" onchange="onRainPref()"/>
+          <label for="pref-rain" style="flex:1;font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head)">Rain lowers my score</label>
+          <div class="ibtn" onclick="showPop('Rain and your score',RAIN_INFO)">i</div>
+        </div>
       </div>
       <div style="margin-top:14px;border-top:1px solid var(--divider)">
         <div class="adv-tog" id="liv-pref-tog" onclick="toggleLivPref()" style="padding:10px 0 6px">
@@ -1384,7 +1392,7 @@ function hwForDate(hwd,dateStr){
   var lo=i,hi=i;
   while(lo>0&&hwd.map[d[lo-1]])lo--;
   while(hi<d.length-1&&hwd.map[d[hi+1]])hi++;
-  var info=(hwd.info||hwInfo)(e.sev),j;
+  var info=(hwd.info||hwInfo)(e.sev,e),j;
   // The peak is a BAND of days, not one. Several days routinely round to the
   // same x/10, and singling out the first of them reads as a separate event
   // that has already passed.
@@ -1401,7 +1409,7 @@ function hwForDate(hwd,dateStr){
   return{sev:e.sev,scale:scale,label:info.label,col:info.col,band:info.band,
     date:dateStr,start:d[lo],end:d[hi],
     peakScale:top,peakFrom:d[pFrom],peakTo:d[pTo],atPeak:(scale===top),
-    days:hi-lo+1,remaining:hi-i+1,openEnded:openEnded,d3:e.d3,d30:e.d30,
+    days:hi-lo+1,remaining:hi-i+1,openEnded:openEnded,d3:e.d3,d30:e.d30,cooler:!!info.cooler,
     thresh:hwd.clim.thresh,range:hwd.clim.Range};
 }
 function hwToday(fc,clim){
@@ -1419,6 +1427,11 @@ var CW_K=0.49;        // coldwave threshold sits this far below the coldest-mont
 var CW_C=0.50;        // ECF85 ~ CW_C * Range^2
 var CW_DROP=0.5;      // daytime-maximum drop on an extreme cold day
 var CW_SEASON=2;      // months either side of the climatological coldest month
+// Mild-temperature cut-off. A spell whose three-day mean (day and night) is CW_WARM °C or
+// more is still unusually cool for the place, but not cold: 4/10 and above shows as a
+// "Cooler spell" with no cold-health advice, and 1–3/10 isn't shown at all. Without it,
+// low-Range tropical climates (Singapore, Jakarta) flagged "cold snaps" on 29°C days.
+var CW_WARM=18;
 function cwClimatology(entry){
   if(!entry||!entry.monthly||entry.monthly.length<12)return null;
   var m=entry.monthly,i,x;
@@ -1435,7 +1448,8 @@ function cwClimatology(entry){
   var pk=1;for(i=0;i<12;i++)if(m[i]===cm){pk=i+1;break;}
   return{Tcold:Tcold,Range:Range,thresh:Tcold-CW_K*Range,peak:pk};
 }
-function cwInfo(s){
+function cwInfo(s,e){
+  if(e&&e.warm)return{label:"Cooler spell",col:"rgba(40,130,140,1)",band:0,cooler:true};
   if(s>=3)return{label:"Extreme coldwave",col:"rgba(90,40,180,1)",band:3};
   if(s>=1)return{label:"Severe coldwave",col:"rgba(30,90,210,1)",band:2};
   return{label:"Cold snap",col:"rgba(60,125,175,1)",band:1};
@@ -1467,6 +1481,11 @@ function coldwaveDays(fc,clim){
         map[dates[j]]={sev:sev,d3:d3,d30:d30,winStart:dates[i]};
     }
   }
+  // Mild spells: hide 1–3/10, mark the rest as a "Cooler spell"
+  for(var dk in map){
+    if(map[dk].d3<CW_WARM)continue;
+    if(map[dk].sev<1)delete map[dk];else map[dk].warm=true;
+  }
   return{dates:dates,map:map,clim:clim,lastDay:n-3,info:cwInfo};
 }
 function cwAdvice(band){
@@ -1477,6 +1496,13 @@ function cwAdvice(band){
   a+=" Follow your local weather service and health authority for official cold warnings.</div>";
   return a;
 }
+// Body for a "Cooler spell": what to expect, who might notice, and why it isn't a cold snap
+function coolerText(h,deg){
+  var p="<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65'>";
+  return p+"<b>What to expect:</b> days and nights running cooler than usual for this time of year here, averaging "+deg(h.d3)+" across day and night against a typical cool-season "+deg(h.thresh+CW_K*h.range)+". For most people that\u2019s pleasant rather than a problem.</div>"
+    +p.replace("line-height:1.65'","line-height:1.65;margin-top:8px'")+"<b>Who might notice:</b> if you\u2019re used to the warmth it can feel chilly, especially overnight and early in the morning. Babies, older people and anyone unwell lose heat more easily, so keep an extra layer or blanket handy at night.</div>"
+    +p.replace("line-height:1.65'","line-height:1.65;margin-top:8px'")+"<b>Why it\u2019s showing:</b> cold is measured against what\u2019s normal for each place, and this spell is unusual enough here to rate "+h.scale+"/10. Because the temperatures themselves are mild \u2014 an average of "+String(Math.round(toDisp(CW_WARM)))+unitSym()+" or more across day and night \u2014 it\u2019s shown as a cooler spell rather than a cold snap or coldwave, and milder readings aren\u2019t shown at all.</div>";
+}
 function showColdwavePop(dateStr,backDi){
   var h=window._CWDAYS?hwForDate(window._CWDAYS,dateStr||window._CWPILLDATE):null;
   var back=backDi!==undefined&&backDi!==null?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>\u2190 Back</div>":"";
@@ -1485,6 +1511,7 @@ function showColdwavePop(dateStr,backDi){
     body="<div class='washing-reason'><div style='font-size:12px;color:var(--text-muted)'>No coldwave conditions for this day.</div>"+back+"</div>";
   }else{
     if(h.band===1)title="Cold snap \u2744\uFE0F";
+    if(h.cooler)title="Cooler spell \uD83C\uDF43";
     var nowStr=new Intl.DateTimeFormat("en-CA",{timeZone:(window._FC&&window._FC.timezone)||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
     var startTxt=h.start===nowStr?"Started today":(h.start<nowStr?"Began "+hwDayFmt(h.start):"Starts "+hwDayFmt(h.start));
     var endTxt=h.openEnded?"still going at the end of the forecast"
@@ -1507,7 +1534,7 @@ function showColdwavePop(dateStr,backDi){
       +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5'>"+dur+"</div>"
       +(peakTxt?"<div style='font-size:13px;font-weight:700;color:var(--text-muted);margin-top:3px'>"+peakTxt+"</div>":"")
       +rule
-      +cwAdvice(h.band)
+      +(h.cooler?coolerText(h,deg):cwAdvice(h.band))
       +rule
       +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>"
       +"Three-day mean temperature "+deg(h.d3)+" against a local coldwave threshold of "+deg(h.thresh)+", with the preceding 30 days averaging "+deg(h.d30)+". "
@@ -1533,8 +1560,8 @@ function waveTileTags(fc,dateStr){
   var w=waveDaysFor(fc),out="";
   if(w.hw&&w.hw.map[dateStr])out+="<div class='fc-hw'>\uD83C\uDF21\uFE0F Heatwave</div>";
   if(w.cw&&w.cw.map[dateStr]){
-    var b=cwInfo(w.cw.map[dateStr].sev).band;
-    out+="<div class='"+(b>=2?"fc-cw":"fc-cs")+"'>\u2744\uFE0F "+(b>=2?"Coldwave":"Cold snap")+"</div>";
+    var ci=cwInfo(w.cw.map[dateStr].sev,w.cw.map[dateStr]),b=ci.band;
+    out+="<div class='"+(b>=2?"fc-cw":"fc-cs")+"'>"+(ci.cooler?"\uD83C\uDF43 Cooler":"\u2744\uFE0F "+(b>=2?"Coldwave":"Cold snap"))+"</div>";
   }
   return out;
 }
@@ -1809,7 +1836,9 @@ var SETTINGS=[
   {id:"s-cws",label:"Cold wind sensitivity (x)",val:1.5,step:0.1,title:"Wind chill intensity",info:"How aggressively wind amplifies cold discomfort below the threshold."},
   {id:"s-pwlo",label:"Pleasant wind low (km/h)",val:10,step:1,title:"Comfortable breeze — lower end",info:"The minimum wind speed that starts to feel like a pleasant breeze. Within this range a small score bonus applies near ideal temperatures."},
   {id:"s-pwhi",label:"Pleasant wind high (km/h)",val:20,step:1,title:"Comfortable breeze — upper end",info:"The maximum wind speed that still feels pleasant. Above this, wind starts becoming a nuisance."},
-  {id:"s-swt",label:"Wind discomfort threshold (km/h)",val:35,step:1,title:"Wind discomfort threshold",info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."}
+  {id:"s-swt",label:"Wind discomfort threshold (km/h)",val:35,step:1,title:"Wind discomfort threshold",info:"Wind above this speed is uncomfortable regardless of temperature. The penalty accelerates beyond this point."},
+  {grp:"Rain"},
+  {id:"s-rmax",label:"Rain max penalty (pts)",val:15,step:1,title:"Rain penalty",info:"Points taken off for heavy rain (4 mm or more in an hour) at a comfortable temperature. Lighter rain takes off less. Below your cold threshold the penalty grows, up to two and a half times this value in cold, windy rain. Only applies when \u201CRain lowers my score\u201D is on in Preferences."}
 ];
 function showPop(title,text){document.getElementById("pop-ttl").textContent=title;document.getElementById("pop-body").textContent=text;document.getElementById("pop-ov").classList.add("open");}
 function closePop(){document.getElementById("pop-ov").classList.remove("open");}
@@ -1833,11 +1862,13 @@ function hiwCollapse(wrap){
 function showHowItWorks(){
   var body="<div class='washing-reason pop-body-scroll'>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>The Comfort Score</div>"
-    +"<div style='margin-bottom:12px'>A score from 0–100 representing how comfortable it is to be outside, personalised to your preferences. 100 is perfect. Penalties are applied for heat, cold, humidity, and wind based on your comfort range settings — so two people in the same place can get different scores.</div>"
+    +"<div style='margin-bottom:12px'>A score from 0–100 representing how comfortable it is to be outside, personalised to your preferences. 100 is perfect. Penalties are applied for heat, cold, humidity, and wind — and rain, if you choose — based on your comfort range settings, so two people in the same place can get different scores.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Why dew point, not humidity?</div>"
     +"<div style='margin-bottom:12px'>Relative humidity tells you how full the air is compared to its capacity — but capacity changes with temperature. A 70% humidity day at 10°C feels crisp; at 30°C it's oppressive. Dew point measures the actual moisture in the air regardless of temperature, making it a far better indicator of how sticky or clammy conditions feel. Once it is hotter than your comfort ceiling, the score also uses wet-bulb temperature, which combines heat and humidity into the lowest temperature sweat can cool you to — so the same humidity costs more the hotter it gets. When wet bulb reaches 28°C a “Dangerously hot” warning appears, and at 31°C “Extremely dangerous heat”.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Wind 💨</div>"
     +"<div style='margin-bottom:12px'>Wind is described on the Beaufort scale, using the average wind speed at 10 m — the measure the scale is defined on. Pills name everything from a gentle breeze (12 km/h) up to hurricane force (118 km/h and above); when the wind sits within your pleasant-wind range close to your ideal temperature, it reads as a “nice” breeze. Day summaries mention wind from a fresh breeze (29 km/h) up. Gusts are brief bursts well above the average, so they’re shown separately once they pass 50 km/h.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Rain 🌧️</div>"
+    +"<div style='margin-bottom:12px'>Optional and off by default — switch it on with “Rain lowers my score” in Preferences. Rain counts from 0.2 mm in an hour, taking off about 2 points for a light shower, 7 for steady rain (1 mm) and 15 for heavy rain (4 mm or more). Below the temperature where you start to feel cold it counts for more, and wind adds to it, up to 38 points in cold, windy rain; warm rain above your heat threshold counts half. Forecast scores use each hour’s forecast rainfall. The climate averages in Climate Explorer are scored dry.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Clothing recommendation</div>"
     +"<div style='margin-bottom:12px'>Layers are calculated from your comfort floor and ceiling, adjusted for wind chill. The outer layer accounts for rain and wind independently — a rain jacket replaces rather than adds to the insulating layer recommendation.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Will washing dry?</div>"
@@ -1857,7 +1888,7 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Hypothermia risk 🌧️</div>"
     +"<div style='margin-bottom:12px'>The cold hazard of mild climates: rain soaks clothing and wind strips its warmth, so a few degrees above zero can be more dangerous than a dry frost. The warning appears when it is 8°C or colder, the wind averages 30 km/h or more, and it is raining. In the forecast, a day is flagged when at least two such hours are expected. It stays quiet when a frostbite warning is already showing.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Heatwaves & coldwaves 🌡️❄️</div>"
-    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within 20 km. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Low-intensity cold spells are called cold snaps. Both are independent calculations, not official warnings.</div>"
+    +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within 20 km. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
     +"<div>Weather data: Open-Meteo (open-meteo.com) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
@@ -1881,11 +1912,37 @@ function scheduleRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTime
 // ── Get settings ───────────────────────────────────────────────────────────
 function gs(){
   function v(id){var el=document.getElementById(id);return el?(parseFloat(el.value)||0):0;}
-  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:_coolmax||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,wb0:v("s-wb0")||21,wbmax:v("s-wbmax")||25,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35};
+  return{tlo:_tlo||18,thi:_thi||22,hw:v("s-hw")||1.2,tmax:v("s-tmax")||70,coolmax:_coolmax||35,coldfloor:v("s-coldfloor")||-15,coldmax:v("s-coldmax")||100,coldexp:v("s-coldexp")||1.2,dp:v("s-dp")||12,hmax:v("s-hmax")||50,hdp_ceil:v("s-hdp_ceil")||26,hexp:v("s-hexp")||0.6,wb0:v("s-wb0")||21,wbmax:v("s-wbmax")||25,wmax:v("s-wmax")||20,wchill_thresh:v("s-wchill_thresh")||10,cws:v("s-cws")||1.5,pwlo:v("s-pwlo")||10,pwhi:v("s-pwhi")||20,swt:v("s-swt")||35,rmax:v("s-rmax")||15,rainOn:rainCounts()};
 }
 
 // ── Calc ───────────────────────────────────────────────────────────────────
-function calc(temp,dp,wind){
+// ── Rain ───────────────────────────────────────────────────────────────────
+// Optional rain penalty (Preferences → "Rain lowers my score"). Counts from 0.2 mm in
+// the hour, rising with intensity to s.rmax at 4 mm/h. Below your cold threshold it
+// grows — up to 2.5× s.rmax when 15°C under it and windy, the soaking-through-clothes
+// conditions behind the hypothermia warning. Halved above your heat threshold.
+var RAIN_MIN=0.2,RAIN_FULL=4,RAIN_COLD_SPAN=15,RAIN_WIND_FULL=40;
+var RAIN_INFO="Turn this on and rain takes points off your comfort score.\n\nHow much depends on how hard it is raining: about 2 points for a light shower (0.2 mm in an hour), 7 for steady rain (1 mm), and 15 for heavy rain (4 mm or more).\n\nCold rain counts for more. Below the temperature where you start to feel cold, the penalty grows the colder it gets, and wind adds to it \u2014 cold, windy rain can take off up to 38 points, two and a half times the heavy-rain figure. Warm rain above your heat threshold counts half.\n\nForecast scores use each hour\u2019s forecast rainfall; climate averages aren\u2019t affected. Turn it off if you don\u2019t mind rain and only want temperature, humidity and wind to count.";
+function rainCounts(){var el=document.getElementById("pref-rain");return el?el.checked:false;}
+function rainPenalty(temp,wind,rain,s){
+  if(!s.rainOn||rain==null||isNaN(rain)||rain<RAIN_MIN)return 0;
+  var fI=Math.min(1,Math.sqrt((rain-0.1)/(RAIN_FULL-0.1)));
+  var coldF=Math.max(0,Math.min(1,(s.tlo-temp)/RAIN_COLD_SPAN));
+  var windF=Math.max(0,Math.min(1,(wind||0)/RAIN_WIND_FULL));
+  var mult=temp>s.thi?0.5:1+coldF*0.75*(1+windF);
+  return s.rmax*fI*mult;
+}
+function onRainPref(){localStorage.setItem("pref_rain",document.getElementById("pref-rain").checked?"1":"0");scheduleRender();}
+function initRainPref(){var el=document.getElementById("pref-rain");if(el)el.checked=localStorage.getItem("pref_rain")==="1";}
+// Rain over the hour to now, from the forecast's hourly data (located by date and hour)
+function hourRainNow(fc){
+  if(!fc||!fc.hourly||!fc.hourly.precipitation)return null;
+  var tz=fc.timezone,h=localHourInTZ(tz);
+  var day=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  for(var i=0;i<fc.hourly.time.length;i++)if(fc.hourly.time[i].slice(0,10)===day&&parseInt(fc.hourly.time[i].slice(11,13))===h)return fc.hourly.precipitation[i];
+  return null;
+}
+function calc(temp,dp,wind,rain){
   var s=gs();
   var tP=0;
 if(temp>=s.thi){
@@ -1934,7 +1991,8 @@ tP=Math.min(s.tmax,tP);
   if(temp<s.wchill_thresh){var cf2=Math.min(1,(s.wchill_thresh-temp)/Math.max(1,s.wchill_thresh-s.coldfloor));wChill=cf2*Math.min(1,wind/50)*s.wmax*s.cws;}
   var evap=(temp>s.thi&&dp<s.dp)?Math.min(3,(temp-s.thi)/5*(s.dp-dp)/5):0;
   var wP=Math.max(-5,Math.min(s.wmax*2.5,wBase+wChill-evap));
-  return{score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP))),tP:tP,hP:hP,iP:iP,wP:wP};
+  var rP=rainPenalty(temp,wind,rain,s);
+  return{score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP-rP))),tP:tP,hP:hP,iP:iP,wP:wP,rP:rP};
 }
 
 // ── Display ────────────────────────────────────────────────────────────────
@@ -2169,7 +2227,8 @@ if(temp>=0){
   var wb=windBeaufort(wind,temp,s);if(wb)a.push(wb);
   if(wxCode!==undefined&&wxCode!==null){var wx=wxFromCode(wxCode);if(wx)a.push(wx);}
   var inIdeal=(temp>=s.tlo&&temp<=s.thi&&dp<=s.dp&&wP<=2);
-  if(inIdeal||score>90)a.push({c:"ann-great",t:"feels great \u2728"});
+  var wetNow=s.rainOn&&wxCode!=null&&wxCode>=51;
+  if((inIdeal||score>90)&&!wetNow)a.push({c:"ann-great",t:"feels great \u2728"});
   if(score===69)a.push({c:"ann-great",t:"nice \uD83D\uDE0F"});
   if(score>=80){var _loc=document.getElementById("live-locname");if(_loc&&_loc.textContent.indexOf("Los Angeles")!==-1)a.push({c:"ann-great ann-info",t:"Magdalena Bay weather \uD83C\uDF05",url:"https://www.youtube.com/magdalenabay"});}
   var seen={},out=[];
@@ -2197,7 +2256,7 @@ function drawGauge(id,score){
   }
   el.innerHTML=html;
 }
-function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
+function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
   var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=gs();
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP,wxCode);
   // Build pill HTML — unified order: comfort conditions, then hazards, then verdict
@@ -2219,7 +2278,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   // Hazards go in the alert strip above the ring; everything else stays a pill
   alertHtml+=wetBulbPill(temp,effDP);
   alertHtml+=coldPill(temp,wind);
-  alertHtml+=hypoPill(temp,wind,wxCode,null);
+  alertHtml+=hypoPill(temp,wind,wxCode,rain==null?null:rain);
   // Hazard pills: UV, AQI, Fire — inserted between conditions and verdict
   if(areaId==="live-score-area"&&window._FC){
     // UV — always shown during daylight, even when low
@@ -2299,7 +2358,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
             window._CWPILLDATE=cw.date;
             var cwIsTomorrow=cw.date!==cwFmt.format(cwD0);
             alertHtml+="<span class='ann "+(cw.band>=2?"ann-cwave":"ann-csnap quiet")+"' onclick='showColdwavePop(\""+cw.date+"\",null)'>"
-              +"<span>\u2744\uFE0F "+cw.label+(cwIsTomorrow?" from tomorrow":"")+" \u00B7 "+cw.scale+"/10</span></span>";
+              +"<span>"+(cw.cooler?"\uD83C\uDF43 ":"\u2744\uFE0F ")+cw.label+(cwIsTomorrow?" from tomorrow":"")+" \u00B7 "+cw.scale+"/10</span></span>";
           }
         }
       }
@@ -2309,7 +2368,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode){
   document.getElementById(areaId).innerHTML=
     (alertHtml?"<div class='alert-strip'>"+alertHtml+"</div>":"")
     +"<div class='score-hero'>"
-    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+","+temp+","+effDP+","+wind+")' title='Score breakdown'>"+scoreRing(score)
+    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+","+temp+","+effDP+","+wind+","+(r.rP||0)+","+(rain==null?"null":rain)+")' title='Score breakdown'>"+scoreRing(score)
     +"<div class='ring-centre'>"
     +"<span class='ring-num' style='color:"+si.col+"'>"+score+"</span>"
     +"<span class='ring-lbl' style='color:"+si.col+"'>"+si.label+" "+si.emoji+"</span>"
@@ -2434,9 +2493,10 @@ function showUVPop(dateStr,uvVal,backDi){
     foot:"The UV index follows the World Health Organization scale: 1\u20132 low, 3\u20135 moderate, 6\u20137 high, 8\u201310 very high, 11+ extreme. Sun protection is recommended whenever it reaches 3. Forecast values include cloud cover and can change through the day. Follow your local health authority\u2019s sun-protection advice.",
     backDi:backDi});
 }
-function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind){
+function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind,rP,rain){
   var lw=window._LW||{};
   if(temp==null)temp=lw.temp;if(dp==null)dp=lw.effDP;if(wind==null)wind=lw.wind;
+  rP=rP||0;
   var s=gs(),si=scoreInfo(score),col=SBANDS[bandForScore(score)].col.replace("0.92","1");
   var deg=function(c){return String(toDisp(c).toFixed(1)).replace("-","−")+unitSym();};
   var gap=function(d){return(useFahrenheit?d*1.8:d).toFixed(1)+"°";};
@@ -2470,10 +2530,15 @@ function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind){
   if(Math.round(wP)<0)row("🍃","Breeze bonus","A "+(bft||"pleasant breeze")+" near your ideal temperature",wP,true);
   else if(Math.round(wP)>0)row("💨","Windy",(bft?bft.charAt(0).toUpperCase()+bft.slice(1)+(hasW?" ("+Math.round(wind)+" km/h)":""):"Wind")+(hasT&&temp<s.wchill_thresh&&wind>0?" — wind chill adds to the cold":""),wP);
   else row("💨","Wind",hasW?(wind<1?"Calm":bft.charAt(0).toUpperCase()+bft.slice(1)+" ("+Math.round(wind)+" km/h)"):"no penalty",0);
+  // Rain (optional preference)
+  var wet=rain!=null&&!isNaN(rain)&&rain>=RAIN_MIN,rmm=wet?(rain<10?rain.toFixed(1):Math.round(rain))+" mm in the hour":"";
+  if(Math.round(rP)>0)row("🌧️","Rain",rmm+(hasT&&temp<s.tlo?" — cold rain counts for more":hasT&&temp>s.thi?" — warm rain counts for less":""),rP);
+  else if(wet&&!s.rainOn)row("🌧️","Rain",rmm+" — not counted (turned off in Preferences)",0);
+  else if(s.rainOn)row("🌧️","Rain",wet?rmm:"Dry",0);
   // Headline: the biggest factor
-  var f=[["the heat",hasT&&temp>s.thi?tP:0],["the cold",hasT&&temp<=s.thi?tP:0],["the humidity",hP],["heat stress",iP],["the wind",Math.max(0,wP)]];
+  var f=[["the heat",hasT&&temp>s.thi?tP:0],["the cold",hasT&&temp<=s.thi?tP:0],["the humidity",hP],["heat stress",iP],["the wind",Math.max(0,wP)],["the rain",rP]];
   f.sort(function(a,b){return b[1]-a[1];});
-  var tot=tP+hP+iP+Math.max(0,wP);
+  var tot=tP+hP+iP+Math.max(0,wP)+rP;
   if(Math.round(f[0][1])<1)lead=Math.round(wP)<0?"Every reading is inside your comfort ranges, and a pleasant breeze lifts it further.":"Every reading is inside your comfort ranges — nothing to take off.";
   else lead=(f[0][1]>=tot*0.6?"Mostly ":"Led by ")+f[0][0]+(Math.round(f[1][1])>=1?", then "+f[1][0]:"")+".";
   var over=100-tot+Math.max(0,-wP)<0;
@@ -2490,7 +2555,7 @@ function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind){
     +"<span style='font-size:13px;font-weight:700;color:var(--text-muted)'>100"+(Math.round(tot)>0?" − "+Math.round(tot):"")+(Math.round(wP)<0?" + "+Math.round(-wP):"")+" = <span style='font-size:18px;font-weight:800;color:"+col+"'>"+score+"</span></span></div>"
     +(over?"<div style='font-size:11px;color:var(--text-muted);margin-top:2px'>Penalties add up to more than 100, so the score stops at 0.</div>":"")
     +"<div style='height:1px;background:var(--divider);margin:10px 0 9px'></div>"
-    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Each penalty comes from your Preferences: where you start to feel hot and cold, and how sensitive you are to heat, cold, humidity and wind. Points are rounded, so the lines can differ from the total by one.</div>"
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Each penalty comes from your Preferences: where you start to feel hot and cold, how sensitive you are to heat, cold, humidity and wind, and whether rain counts. Points are rounded, so the lines can differ from the total by one.</div>"
     +"</div>";
   document.getElementById("pop-ttl").textContent="Score breakdown";
   document.getElementById("pop-body").innerHTML=body;
@@ -2498,7 +2563,7 @@ function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind){
 }
 function shareScore(){
   if(!window._LW)return;
-  var w=window._LW,res=calc(w.temp,w.effDP,w.wind),si=scoreInfo(res.score);
+  var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain),si=scoreInfo(res.score);
   var loc=document.getElementById("live-locname").textContent;
   // TODO: update URL below once comfortscore.joshburton.au is live
   var text=loc+" right now: "+res.score+" \u2014 "+si.label+" "+si.emoji+"\n"+toDisp(w.temp).toFixed(1)+unitSym()+" | DP "+toDisp(w.effDP).toFixed(1)+unitSym()+" | Wind "+Math.round(w.wind)+" km/h\ncomfortscore.joshburton.au";
@@ -2518,9 +2583,9 @@ function refreshWeather(){
 // ── Re-render ──────────────────────────────────────────────────────────────
 function reRenderLive(){
   if(!window._LW)return;
-  var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
+  var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain);
   window._LW.res=res;
-  renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode);
+  renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode,w.rain);
 }
 function reRenderManual(){if(document.getElementById("manual-result").style.display==="none")return;calcManual();}
 function reRenderAll(){reRenderLive();reRenderManual();if(window._FC)renderForecast(window._FC);}
@@ -2544,9 +2609,10 @@ function calcManual(){
     effDP=Math.round((bb*alph/(aa-alph))*10)/10;
   }
   var wind=parseFloat(document.getElementById("m-wind").value)||0;
-  var r=calc(temp,effDP,wind);
+  var rain=Math.max(0,parseFloat(document.getElementById("m-rain").value)||0);
+  var r=calc(temp,effDP,wind,rain);
   document.getElementById("manual-result").style.display="block";
-  renderScore("manual-score-area","gauge-manual",r,temp,effDP,wind,null);
+  renderScore("manual-score-area","gauge-manual",r,temp,effDP,wind,null,rain);
 }
 function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
 function togglePref(){document.getElementById("pref-tog").classList.toggle("open");document.getElementById("pref-panel").classList.toggle("open");}
@@ -2701,8 +2767,9 @@ var weatherPromise=fetch(url).then(function(r){if(!r.ok)return r.json().catch(fu
     var d=results[0],aq=results[1];
     window._AQ=aq;
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
-    var res=calc(temp,effDP,wind);
-    window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,gust:cur.wind_gusts_10m,res:res,wxCode:wxCode};
+    var rain=hourRainNow(d);
+    var res=calc(temp,effDP,wind,rain);
+    window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,gust:cur.wind_gusts_10m,rain:rain,res:res,wxCode:wxCode};
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
@@ -2716,7 +2783,7 @@ var weatherPromise=fetch(url).then(function(r){if(!r.ok)return r.json().catch(fu
     // load and the previous location's on every load after.
     window._FC=d;
     renderChips(temp,effDP,rh,wind,d);
-    renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode);
+    renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode,rain);
     renderForecast(d);
     updateHomeBtn();
     if(cb)cb();
@@ -2737,8 +2804,9 @@ function fetchWU(stationId,apiKey,label,cb){
   .then(function(d){
     if(!d.observations||!d.observations.length)throw new Error("No data returned");
     var obs=d.observations[0],m=obs.metric,temp=m.temp,rh=obs.humidity,wind=m.windSpeed,dew=m.dewpt;
-    var res=calc(temp,dew,wind);
-    window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,gust:m.windGust,res:res,wxCode:null};
+    var rain=m.precipRate!=null?m.precipRate:null;
+    var res=calc(temp,dew,wind,rain);
+    window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,gust:m.windGust,rain:rain,res:res,wxCode:null};
     window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;
     window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
     document.getElementById("live-status").textContent="";
@@ -2750,7 +2818,7 @@ function fetchWU(stationId,apiKey,label,cb){
     var obsTime=obs.obsTimeLocal||obs.obsTimeUtc||"";
     document.getElementById("live-obstime").textContent=obsTime?"Observed "+obsTime.slice(0,16).replace("T"," "):"";
     renderChips(temp,dew,rh,wind);
-    renderScore("live-score-area","gauge-live",res,temp,dew,wind,null);
+    renderScore("live-score-area","gauge-live",res,temp,dew,wind,null,rain);
     document.getElementById("forecast-wrap").style.display="none";
     if(obs.lat&&obs.lon)fetchForecastOnly(obs.lat,obs.lon);
     if(cb)cb();
@@ -2770,9 +2838,9 @@ function fetchForecastOnly(lat,lon){
     }
     renderForecast(d); // sets window._FC first
     if(window._LW){
-      var w=window._LW,res=calc(w.temp,w.effDP,w.wind);
+      var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain);
       // Re-render live score after _FC and _AQ are both set
-      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode!==undefined?w.wxCode:null);
+      renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode!==undefined?w.wxCode:null,w.rain);
     }
   }).catch(function(){});
 }
@@ -3695,7 +3763,7 @@ function render7Day(fc){
     var useSlots=todayFuture.length?todayFuture:todayAll;
     if(useSlots.length){
       var tmx=-1,tmn=999,tmxS=null,tmnS=null;
-      for(var ti=0;ti<useSlots.length;ti++){var ts=useSlots[ti],tr=calc(ts.temp,ts.dp,ts.wind);if(tr.score>tmx){tmx=tr.score;tmxS=ts;}if(tr.score<tmn){tmn=tr.score;tmnS=ts;}}
+      for(var ti=0;ti<useSlots.length;ti++){var ts=useSlots[ti],tr=calc(ts.temp,ts.dp,ts.wind,ts.rain);if(tr.score>tmx){tmx=tr.score;tmxS=ts;}if(tr.score<tmn){tmn=tr.score;tmnS=ts;}}
       var tmxNc=SBANDS[bandForScore(tmx)].col.replace("0.92","1");
       var tmnNc=SBANDS[bandForScore(tmn)].col.replace("0.92","1");
       var tmxTime=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(tmxS.utcMs)).toLowerCase().replace(" ","");
@@ -3717,7 +3785,7 @@ function render7Day(fc){
     var slots=days[key].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
     if(!slots.length)continue;
     var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
-    for(var si=0;si<slots.length;si++){var s=slots[si],r=calc(s.temp,s.dp,s.wind);if(r.score>maxScore){maxScore=r.score;maxSlot=s;}if(r.score<minScore){minScore=r.score;minSlot=s;}}
+    for(var si=0;si<slots.length;si++){var s=slots[si],r=calc(s.temp,s.dp,s.wind,s.rain);if(r.score>maxScore){maxScore=r.score;maxSlot=s;}if(r.score<minScore){minScore=r.score;minSlot=s;}}
     var maxNc=SBANDS[bandForScore(maxScore)].col.replace("0.92","1");
     var minNc=SBANDS[bandForScore(minScore)].col.replace("0.92","1");
     var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(slots[0].utcMs));
@@ -3781,7 +3849,7 @@ function show7DayHourSlot(idx,di,timeStr){
   var rain2h=(precips[idx]||0)+(precips[idx+1]||0);
   var uvVal=(fc.hourly.uv_index||[])[idx]||0;
     var uvSun=uvVal>=3?(uvVal<6?"UV "+uvVal+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvVal<8?"UV "+uvVal+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvVal<11?"UV "+uvVal+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+uvVal+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
-  var r=calc(t,dp,w),si=scoreInfo(r.score),s=gs();
+  var r=calc(t,dp,w,precips[idx]),si=scoreInfo(r.score),s=gs();
   var wxCode=(fc.hourly.weather_code||[])[idx];
   if(wxCode===undefined)wxCode=null;
   var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
@@ -3871,7 +3939,7 @@ function narrPeriods(slots,tz,hcodes,precips,onlyFuture){
       var lh=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(sl.utcMs)),10);
       if(lh===24)lh=0;
       if(lh<d.lo||lh>d.hi)continue;
-            ts+=sl.temp;ds+=sl.dp;ws+=sl.wind;if(sl.wind>wmx)wmx=sl.wind;sc+=calc(sl.temp,sl.dp,sl.wind).score;n++;
+            ts+=sl.temp;ds+=sl.dp;ws+=sl.wind;if(sl.wind>wmx)wmx=sl.wind;sc+=calc(sl.temp,sl.dp,sl.wind,sl.rain).score;n++;
       rain+=(precips[sl.idx]||0);
       var c=hcodes[sl.idx];
       if(c!==undefined&&c!==null){var cl=narrWxClass(c);if(!counts[cl.adj])counts[cl.adj]=0;counts[cl.adj]++;codes[cl.adj]=cl;}
@@ -4097,7 +4165,7 @@ function show7DaySlot(di){
       cwLine="<div onclick='showColdwavePop(\""+dateKey+"\","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
         +cwDay.col.replace("1)","0.14)")+";border:1px solid "+cwDay.col.replace("1)","0.45)")+"'>"
         +"<div style='font-size:14px;font-weight:800;color:"+cwDay.col+";display:flex;justify-content:space-between;align-items:center'>"
-        +"<span>\u2744\uFE0F "+cwDay.label+"</span><span>"+cwDay.scale+"/10 \u203A</span></div></div>";
+        +"<span>"+(cwDay.cooler?"\uD83C\uDF43 ":"\u2744\uFE0F ")+cwDay.label+"</span><span>"+cwDay.scale+"/10 \u203A</span></div></div>";
     }
     var uvDayLine=dayMaxUV>=3?(dayMaxUV<6?"UV "+dayMaxUV+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":dayMaxUV<8?"UV "+dayMaxUV+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":dayMaxUV<11?"UV "+dayMaxUV+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+dayMaxUV+" \u2014 Avoid direct sun \u2620\uFE0F"):"";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
@@ -4122,7 +4190,7 @@ function show7DaySlot(di){
     var localHr=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(sl.utcMs)));
     if(localHr%2!==0)continue;
     var timeStr=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(sl.utcMs)).toLowerCase().replace(" ","");
-    var r=calc(sl.temp,sl.dp,sl.wind);
+    var r=calc(sl.temp,sl.dp,sl.wind,sl.rain);
         var scoreCol=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
     var rowBg=SBANDS[bandForScore(r.score)].col.replace("0.92","0.10");
     var rain2h=(hourlyPrecip[sl.idx]||0)+(hourlyPrecip[sl.idx+1]||0);
@@ -5269,6 +5337,7 @@ function showClimMonthPop(i){
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
+initRainPref();
 buildSettings();
 syncSlidersFromAdv();
 initUnit();
