@@ -345,6 +345,8 @@ body.manual-mode #clim-card{display:none!important}
 .alert-strip .ann{display:flex;justify-content:space-between;align-items:center;width:100%;border-radius:10px;padding:8px 11px;font-size:13.5px;font-weight:800;cursor:pointer}
 .alert-strip .ann::after{content:"\203A";font-size:19px;line-height:1;opacity:0.7;margin-left:8px}
 .alert-strip .ann.quiet{font-size:12.5px;font-weight:700;padding:6px 11px}
+.alert-strip .ann-hzload{background:var(--card-inner);color:var(--text-muted);border-color:var(--card-inner-border);cursor:default}
+.alert-strip .ann-hzload::after{content:none}
 /* Tappable things get a slightly bolder edge in a stronger shade of their own colour */
 .ann[onclick],a.ann{border-width:1.5px;border-color:color-mix(in srgb,currentColor 50%,transparent);cursor:pointer}
 .cond-tile[onclick],.fc-slot-7{border-width:1.5px;border-color:color-mix(in srgb,var(--text-sec) 45%,transparent)}
@@ -1034,12 +1036,23 @@ function windBeaufort(wind,temp,s){
   if(wind==null||isNaN(wind)||wind<6)return null;
   var b=beaufort(wind);
   var nice=b.f<=6&&wind>=s.pwlo&&wind<=s.pwhi&&temp>=s.tlo&&Math.abs(temp-(s.tlo+s.thi)/2)<6;
-  if(nice)return{c:"ann-breeze",t:"nice "+b.n+" \uD83C\uDF43"};
+  if(nice)return{c:"ann-breeze",t:"nice "+b.n+" \uD83C\uDF43",w:1};
   if(b.f<3)return null;
-  return{c:b.f===3?"ann-breeze":"ann-wind",t:b.n+" "+b.e};
+  return{c:b.f===3?"ann-breeze":"ann-wind",t:b.n+" "+b.e,w:1};
 }
 // Gusts are shown separately once they pass GUST_SHOW km/h
 var GUST_SHOW=50;
+// Gusts join the wind pill ("strong breeze, gusts to 83 km/h 💨") rather than adding a
+// second pill; standalone only when there's no wind pill. Skipped when a damaging-wind or
+// cyclone alert already covers them. Returns any extra pill HTML.
+function withGust(anns,g,skip){
+  if(skip||g==null||isNaN(g)||g<=GUST_SHOW)return"";
+  for(var i=0;i<anns.length;i++)if(anns[i].w){
+    anns[i]={c:anns[i].c.replace("ann-breeze","ann-wind"),t:anns[i].t.replace(/^nice /,"").replace(/ (\S+)$/,", gusts to "+Math.round(g)+" km/h $1"),w:1};
+    return"";
+  }
+  return gustPill(g);
+}
 function gustPill(g){
   if(g==null||isNaN(g)||g<=GUST_SHOW)return"";
   return"<span class='ann ann-wind'>gusts to "+Math.round(g)+" km/h \uD83D\uDCA8</span>";
@@ -2265,9 +2278,13 @@ var _gdacsCache={};
 function gdacsGet(path){
   var c=_gdacsCache[path];
   if(c&&Date.now()-c.t<1800000)return Promise.resolve(c.d);
-  var direct=function(){return fetch("https://www.gdacs.org/gdacsapi/api/"+path).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});};
-  var proxy=function(){return fetch("/api/gdacs?p="+encodeURIComponent(path)).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});};
-  return direct().catch(proxy).then(function(d){_gdacsCache[path]={t:Date.now(),d:d};return d;});
+  try{var ls=JSON.parse(localStorage.getItem("gdacs:"+path)||"null");if(ls&&Date.now()-ls.t<1800000){_gdacsCache[path]=ls;return Promise.resolve(ls.d);}}catch(e){}
+  var get=function(u,route){return fetch(u).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(function(d){try{localStorage.setItem("gdacs_route",route);}catch(e){}return d;});};
+  var direct=function(){return get("https://www.gdacs.org/gdacsapi/api/"+path,"direct");};
+  var proxy=function(){return get("/api/gdacs?p="+encodeURIComponent(path),"proxy");};
+  var first="direct";try{first=localStorage.getItem("gdacs_route")||"direct";}catch(e){}
+  var p=first==="proxy"?proxy().catch(direct):direct().catch(proxy);
+  return p.then(function(d){var c2={t:Date.now(),d:d};_gdacsCache[path]=c2;try{localStorage.setItem("gdacs:"+path,JSON.stringify(c2));}catch(e){}return d;});
 }
 function tcPointIn(lat,lon,geom){
   var polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
@@ -2289,6 +2306,12 @@ function tcPointIn(lat,lon,geom){
 function tcName(p){var n=String(p.eventname||p.name||"").split("-")[0].toLowerCase();return n.charAt(0).toUpperCase()+n.slice(1);}
 function gdacsCheck(lat,lon){
   window._TC=null;
+  var key=lat+","+lon;window._TCpending=key;
+  var done=function(){
+    if(window._TCpending!==key)return;
+    window._TCpending=null;
+    if(window._renderedFor===key){reRenderLive();if(window._FC)renderForecast(window._FC);}
+  };
   gdacsGet("events/geteventlist/SEARCH?eventlist=TC").then(function(list){
     var now=Date.now(),cand=[];
     (list&&list.features||[]).forEach(function(f){
@@ -2310,15 +2333,16 @@ function gdacsCheck(lat,lon){
       }).catch(function(){c.band=0;return c;});
     }));
   }).then(function(cs){
-    if(!cs||!cs.length||window._currentLat!==lat||window._currentLon!==lon)return;
+    if(!cs||!cs.length||window._currentLat!==lat||window._currentLon!==lon)return done();
     cs.sort(function(a,b){return(b.band-a.band)||(a.km-b.km);});
     var c=cs[0],p=c.p,sv=p.severitydata||{};
     window._TC={name:tcName(p),alert:p.alertlevel||"",band:c.band,km:c.km,
       maxwind:sv.severityunit==="km/h"?sv.severity:null,country:p.country||"",report:p.url&&p.url.report||""};
-    reRenderLive();if(window._FC)renderForecast(window._FC);
-  }).catch(function(){});
+    done();
+  }).catch(function(){done();});
 }
 function tcStripPill(){
+  if(window._TCpending&&window._TCpending===window._renderedFor)return"<span class='ann ann-hzload quiet'>\u23F3 Checking for cyclones\u2026</span>";
   var T=window._TC;if(!T)return"";
   if(!T.band)return"<span class='ann ann-tcnear quiet' onclick='showTCPop(null)'>\uD83C\uDF00 Cyclone "+T.name+" \u00B7 "+Math.round(T.km/10)*10+" km away</span>";
   return"<span class='ann ann-tc' onclick='showTCPop(null)'>\uD83C\uDF00 Cyclone "+T.name+" \u00B7 "+(T.band>=3?"destructive":T.band===2?"damaging":"gale-force")+" winds possible</span>";
@@ -2327,7 +2351,7 @@ function showTCPop(backDi){
   var T=window._TC;if(!T)return;
   var bits=[];
   if(T.alert)bits.push("GDACS "+T.alert+" alert");
-  if(T.maxwind)bits.push("max winds "+Math.round(T.maxwind)+" km/h");
+  if(T.maxwind)bits.push("peak winds "+Math.round(T.maxwind)+" km/h");
   bits.push("centre "+Math.round(T.km/10)*10+" km away");
   var lead=!T.band?"A tropical cyclone is active within "+TC_NEAR_KM.toLocaleString("en-AU")+" km. This place isn\u2019t in its expected wind zone, but tracks can change \u2014 keep an eye on official forecasts."
     :"This place lies in the cyclone\u2019s wind zone, where winds of "+TC_BAND_KMH[T.band]+" km/h or more are expected along its track.";
@@ -2494,9 +2518,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
     return ann.url?"<a class='ann "+ann.c+"' href='"+ann.url+"' target='_blank' rel='noopener' style='text-decoration:none'>"+ann.t+"</a>"
       :"<span class='ann "+ann.c+"'>"+ann.t+"</span>";
   }
-  var annHtml="",alertHtml="";
+  var annHtml="",alertHtml="",gustExtra="";
+  if(areaId==="live-score-area"&&window._LW)gustExtra=withGust(condAnns,window._LW.gust,tcActive()||!!(window._FC&&windStripPill(window._FC)));
   for(var i=0;i<condAnns.length;i++)annHtml+=annSpan(condAnns[i]);
-  if(areaId==="live-score-area"&&window._LW)annHtml+=gustPill(window._LW.gust);
+  annHtml+=gustExtra;
   // Hazards go in the alert strip above the ring; everything else stays a pill
   alertHtml+=wetBulbPill(temp,effDP);
   alertHtml+=coldPill(temp,wind);
@@ -2948,6 +2973,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
   goLive();
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
+  window._renderedFor=null;gdacsCheck(lat,lon);
   var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index,cape,lifted_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
@@ -2974,10 +3000,10 @@ var weatherPromise=fetch(url).then(function(r){if(!r.ok)return r.json().catch(fu
     // renderScore sees THIS location's forecast rather than nothing on first
     // load and the previous location's on every load after.
     window._FC=d;
+    window._renderedFor=lat+","+lon;
     renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode,rain);
     renderForecast(d);
-    gdacsCheck(lat,lon);
     updateHomeBtn();
     if(cb)cb();
   }).catch(function(e){document.getElementById("live-status").textContent=(e.friendly?"":"Fetch failed: ")+e.message;if(cb)cb();});
@@ -3030,8 +3056,9 @@ function fetchForecastOnly(lat,lon){
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
       window._LW.wxCode=d.current.weather_code;
     }
-    renderForecast(d); // sets window._FC first
+    window._renderedFor=window._currentLat+","+window._currentLon;
     gdacsCheck(window._currentLat,window._currentLon);
+    renderForecast(d); // sets window._FC first
     if(window._LW){
       var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain);
       // Re-render live score after _FC and _AQ are both set
@@ -4021,10 +4048,11 @@ function show7DayHourSlot(idx,di,timeStr){
   if(wxCode===undefined)wxCode=null;
   var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
   var anns=getAnnotations(t,dp,w,r.score,s,r.iP,r.wP,wxCode);
+  var gustExtra=withGust(anns,(fc.hourly.wind_gusts_10m||[])[idx],!!windHourPill(fc,idx));
   var annHtml="";
   for(var i=0;i<anns.length;i++){annHtml+="<span class='ann "+anns[i].c+"'>"+anns[i].t.replace(" \u2139\uFE0F","")+"</span> ";}
   annHtml+=wetBulbPill(t,dp,"h");
-  annHtml+=gustPill((fc.hourly.wind_gusts_10m||[])[idx]);
+  annHtml+=gustExtra;
   annHtml+=coldPill(t,w,"h");
   annHtml+=hypoPill(t,w,wxCode,precips[idx],"h");
   annHtml+=stormHourPill(fc,idx);
