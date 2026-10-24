@@ -1,0 +1,8 @@
+# Files that belong to the Worker or the repo, not the website
+worker.js
+wrangler.jsonc
+.assetsignore
+functions
+.git
+.github
+LICENSE
