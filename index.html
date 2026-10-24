@@ -713,7 +713,7 @@ body.manual-mode #clim-card{display:none!important}
 </div>
 </div>
 
-<script src="climatology-cache.js"></script>
+<script src="climatology-core.js" async onerror="window.CLIM_FAIL=true;if(window.climReady)climReady();"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <div class="pop-ov" id="pop-ov" onclick="closePop()">
   <div class="pop" onclick="event.stopPropagation()">
@@ -2272,7 +2272,8 @@ function showWindPop(i0,i1,backDi){
 // buffers (60 / 90 / 120 km/h) and within TC_NEAR_KM of the storm's current centre — the
 // buffers also cover where the storm has already been. Within TC_NEAR_KM but outside the
 // buffers it's shown as a quiet "nearby" note. Tries GDACS directly, then the site's own
-// /api/gdacs proxy; on any failure the feature stays silent.
+// /api/gdacs proxy; on any failure the feature stays silent. The "Checking for cyclones"
+// line only shows once a cyclone is known to be within TC_NEAR_KM and its zones are loading.
 var TC_NEAR_KM=1000,TC_BANDS=["","Poly_Green","Poly_Orange","Poly_Red"],TC_BAND_KMH=[0,60,90,120];
 var _gdacsCache={};
 function gdacsGet(path){
@@ -2306,7 +2307,7 @@ function tcPointIn(lat,lon,geom){
 function tcName(p){var n=String(p.eventname||p.name||"").split("-")[0].toLowerCase();return n.charAt(0).toUpperCase()+n.slice(1);}
 function gdacsCheck(lat,lon){
   window._TC=null;
-  var key=lat+","+lon;window._TCpending=key;
+  var key=lat+","+lon;window._TCpending=key;window._TCnear=null;
   var done=function(){
     if(window._TCpending!==key)return;
     window._TCpending=null;
@@ -2322,6 +2323,7 @@ function gdacsCheck(lat,lon){
       if(km<=TC_NEAR_KM)cand.push({p:p,km:km});
     });
     cand.sort(function(a,b){return a.km-b.km;});
+    if(cand.length&&window._TCpending===key){window._TCnear=key;if(window._renderedFor===key)reRenderLive();}
     return Promise.all(cand.slice(0,3).map(function(c){
       return gdacsGet("polygons/getgeometry?eventtype=TC&eventid="+c.p.eventid+"&episodeid="+c.p.episodeid).then(function(geo){
         var band=0;
@@ -2342,7 +2344,7 @@ function gdacsCheck(lat,lon){
   }).catch(function(){done();});
 }
 function tcStripPill(){
-  if(window._TCpending&&window._TCpending===window._renderedFor)return"<span class='ann ann-hzload quiet'>\u23F3 Checking for cyclones\u2026</span>";
+  if(window._TCpending&&window._TCpending===window._renderedFor&&window._TCnear===window._TCpending)return"<span class='ann ann-hzload quiet'>\u23F3 Checking for cyclones\u2026</span>";
   var T=window._TC;if(!T)return"";
   if(!T.band)return"<span class='ann ann-tcnear quiet' onclick='showTCPop(null)'>\uD83C\uDF00 Cyclone "+T.name+" \u00B7 "+Math.round(T.km/10)*10+" km away</span>";
   return"<span class='ann ann-tc' onclick='showTCPop(null)'>\uD83C\uDF00 Cyclone "+T.name+" \u00B7 "+(T.band>=3?"destructive":T.band===2?"damaging":"gale-force")+" winds possible</span>";
@@ -4513,6 +4515,46 @@ var CLIM_EXACT_KM=20,CLIM_EXACT_DZ=100;   // within both: used as is, no "from" 
 var CLIM_KM_PER_100M=10;
 var CLIM_LAPSE=0.0065,CLIM_DP_LAPSE=0.002; // °C per metre
 var _climMatchMemo={};
+// The climate data (climatology-core.js) loads in the background. Its rows are compact
+// arrays; climExpand() rebuilds the {name,…,monthly:[{month,T,tmin,…}]} shape the rest of
+// the app reads. climReady() runs when the file arrives (it calls it itself) or at start-up
+// if it arrived first, then redraws anything that was drawn without it.
+var CLIM_MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function climExpand(C){
+  var nm=C.mcols.length;
+  return C.rows.map(function(r){
+    var e={};
+    for(var j=0;j<C.cols.length;j++){
+      var c=C.cols[j],v=r[j];
+      if(c==="region")e.region=C.regions[v];
+      else if(c==="notes")e.hasNotes=!!v;
+      else if(c==="monthly"){
+        e.monthly=[];
+        for(var i=0;i<12;i++){var m={month:CLIM_MONTHS[i]};for(var k=0;k<nm;k++)m[C.mcols[k]]=v[i*nm+k];e.monthly.push(m);}
+      }
+      else e[c]=v;
+    }
+    return e;
+  });
+}
+function climReady(){
+  if(window.CLIM_CORE&&typeof CLIM_CACHE==="undefined"){
+    try{window.CLIM_CACHE=climExpand(window.CLIM_CORE);}catch(e){window.CLIM_FAIL=true;}
+    _climMatchMemo={};window._WAVEFC=null;window._WAVEDAYS=null;
+  }
+  if(typeof CLIM_CACHE==="undefined"&&!window.CLIM_FAIL)return;
+  if(window._currentLat!=null&&document.getElementById("clim-card").style.display==="block")showClimCard(window._currentLat,window._currentLon);
+  if(window._FC&&window._renderedFor){reRenderLive();renderForecast(window._FC);}
+  livMapBuildMarkers();
+}
+// "Learn more" text lives in climatology-notes.json, fetched the first time it's opened
+var _climNotesP=null;
+function climNotesKey(e){var s=(e&&e._src)||e;return s?s.region+"|"+s.name+"|"+(s.ter||""):"";}
+function loadClimNotes(){
+  if(!_climNotesP)_climNotesP=fetch("climatology-notes.json").then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .catch(function(e){_climNotesP=null;throw e;});
+  return _climNotesP;
+}
 function findClimEntry(lat,lon,elev,maxKm){
   if(typeof CLIM_CACHE==="undefined"||lat==null||lon==null)return null;
   maxKm=maxKm||CLIM_MAX_KM;
@@ -4684,7 +4726,8 @@ function showClimCard(lat,lon,elev){
   var entry=findClimEntry(lat,lon,elev,CLIM_MAX_KM);
   var lbl=document.getElementById("clim-loc-label");
   if(!entry){
-    lbl.innerHTML="<span style='color:var(--text-muted)'>No climate data within "+CLIM_MAX_KM+" km of this location yet.</span>";
+    lbl.innerHTML="<span style='color:var(--text-muted)'>"+(typeof CLIM_CACHE!=="undefined"?"No climate data within "+CLIM_MAX_KM+" km of this location yet."
+      :window.CLIM_FAIL?"Climate data couldn\u2019t load \u2014 check your connection and reload.":"\u23F3 Loading climate data\u2026")+"</span>";
     document.getElementById("clim-chart-grid").innerHTML="";
     document.getElementById("clim-month-row").innerHTML="";
     document.getElementById("clim-tbody").innerHTML="";
@@ -4753,11 +4796,12 @@ function showClimCard(lat,lon,elev){
   notesWrap.style.cssText="margin-top:8px";
   var linkCss="background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-sec);display:flex;align-items:center;gap:4px;padding:4px 0";
   notesWrap.innerHTML="<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>"
-    +(entry.notes?"<button id='clim-notes-btn' onclick='toggleClimNotes()' style='"+linkCss+"'>"
+    +(entry.hasNotes?"<button id='clim-notes-btn' onclick='toggleClimNotes()' style='"+linkCss+"'>"
       +"<svg id='clim-notes-arrow' width='10' height='10' viewBox='0 0 10 10' fill='none' style='transition:transform 0.2s'><path d='M2 3l3 3 3-3' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"
       +"Learn more</button>":"<span></span>")
     +"<button onclick='showKoppenTable()' style='"+linkCss+"'>Climate classifications \u203A</button></div>"
-    +(entry.notes?"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'>"+entry.notes+"</div>":"");
+    +(entry.hasNotes?"<div id='clim-notes-body' style='display:none;font-size:12px;line-height:1.65;color:var(--text-muted);padding:8px 0 4px'></div>":"");
+  window._climNotesKey=climNotesKey(entry);
   sumDiv.after(notesWrap);
   renderHomeCompare(entry);
   showLivCard(entry);
@@ -5625,6 +5669,15 @@ function toggleClimNotes(){
   var open=body.style.display==="none";
   body.style.display=open?"block":"none";
   arrow.style.transform=open?"rotate(0deg)":"rotate(-90deg)";
+  if(!open||body.getAttribute("data-loaded"))return;
+  var key=window._climNotesKey;
+  body.textContent="\u23F3 Loading\u2026";
+  loadClimNotes().then(function(N){
+    if(window._climNotesKey!==key||!body.isConnected)return;
+    body.innerHTML=N[key]||"No notes for this place yet.";body.setAttribute("data-loaded","1");
+  }).catch(function(){
+    if(window._climNotesKey===key)body.textContent="The notes couldn\u2019t load \u2014 check your connection and try again.";
+  });
 }
 function showClimMonthPop(i){
   if(!window._climMonthly)return;
@@ -5651,6 +5704,7 @@ function showClimMonthPop(i){
 // ── Init ───────────────────────────────────────────────────────────────────
 initRainPref();
 buildSettings();
+climReady();
 syncSlidersFromAdv();
 initUnit();
 initOnboard();
