@@ -4230,7 +4230,7 @@ function dayNarrative(slots,tz,hcodes,precips,isToday){
   }
   if(wclauses.length){
     var wj=wclauses.join(" and ");
-    for(i=0;i<wclauses.length;i++)if(wclauses[i].indexOf(" and ")>-1){wj=wclauses.slice(0,-1).join(", ")+", and "+wclauses[wclauses.length-1];break;}
+    if(wclauses.length>1)for(i=0;i<wclauses.length;i++)if(wclauses[i].indexOf(" and ")>-1){wj=wclauses.slice(0,-1).join(", ")+", and "+wclauses[wclauses.length-1];break;}
     s3=s3.replace(/\.$/,"")+", with "+wj+".";
   }
   return{s1:s1,s2:s2,s3:s3,mean:mean};
