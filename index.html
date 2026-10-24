@@ -4711,7 +4711,7 @@ function toggleClim(){
   if(panel.classList.contains("open")){
     setTimeout(function(){
       initLivMap();
-      if(_livMap)_livMap.invalidateSize();
+      if(_livMap){_livMap.invalidateSize();livMapCentre();}
     },60);
   }
 }
@@ -4722,6 +4722,7 @@ function climT(v){return(v!==null&&v!==undefined&&!isNaN(v))?String(toDisp(v).to
 function showClimCard(lat,lon,elev){
   var card=document.getElementById("clim-card");
   card.style.display="block";
+  livMapCentre();
   if(elev===undefined)elev=window._currentElev;
   var entry=findClimEntry(lat,lon,elev,CLIM_MAX_KM);
   var lbl=document.getElementById("clim-loc-label");
@@ -5279,14 +5280,23 @@ var LIV_MAP_REGIONS=[
   {name:"Southern Africa",bounds:[[-35,16],[-15,38]],test:function(lat,lon){return lat>=-35&&lat<=-15&&lon>=16&&lon<=38;}}
 ];
 
-function livMapRegionBounds(lat,lon){
-  if(lat===null||lat===undefined)return LIV_MAP_REGIONS[0].bounds;
-  for(var i=0;i<LIV_MAP_REGIONS.length;i++){
-    if(LIV_MAP_REGIONS[i].test(lat,lon))return LIV_MAP_REGIONS[i].bounds;
-  }
-  return LIV_MAP_REGIONS[0].bounds;
+// Centre the map on the loaded place, zoomed to suit its region (zoom 5 outside the listed
+// regions). Re-centres only when the place changes, so panning isn't undone by a redraw, and
+// waits while the map is hidden (it can't size itself then) — toggleClim() catches up.
+var _livMapCentredFor=null;
+function livMapCentre(){
+  if(!_livMap)return;
+  var lat=window._currentLat,lon=window._currentLon;
+  var el=document.getElementById("liv-map");
+  if(!el||!el.offsetWidth)return;
+  if(lat==null||lon==null){if(!_livMapCentredFor){_livMap.fitBounds(LIV_MAP_REGIONS[0].bounds,{padding:[10,10]});_livMapCentredFor="none";}return;}
+  var key=lat+","+lon;
+  if(_livMapCentredFor===key)return;
+  _livMapCentredFor=key;
+  var z=5;
+  for(var i=0;i<LIV_MAP_REGIONS.length;i++)if(LIV_MAP_REGIONS[i].test(lat,lon)){z=_livMap.getBoundsZoom(LIV_MAP_REGIONS[i].bounds,false,L.point(20,20));break;}
+  _livMap.setView([lat,lon],z);
 }
-
 function initLivMap(){
   if(_livMap)return;
   if(typeof L==="undefined")return;
@@ -5297,10 +5307,8 @@ function initLivMap(){
     attribution:"\u00a9 OpenStreetMap contributors",
     maxZoom:13
   }).addTo(_livMap);
-  var userLat=window._currentLat||null;
-  var userLon=window._currentLon||null;
-  var bounds=livMapRegionBounds(userLat,userLon);
-  _livMap.fitBounds(bounds,{padding:[10,10]});
+  _livMap.setView([0,0],2);
+  livMapCentre();
   _livMap.on("move",livMapWrapMarkers);
   livMapBuildMarkers();
 }
