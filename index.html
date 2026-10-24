@@ -209,11 +209,24 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .fc-wc{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;background:rgba(20,130,210,0.18);color:#0a3a70;border:1px solid rgba(20,130,210,0.55);white-space:nowrap;display:inline-block}
 .fc-wc-x{background:rgba(60,30,150,0.88);color:#fff;border-color:rgba(60,30,150,1)}
 @media(prefers-color-scheme:dark){.fc-wc{background:rgba(40,150,230,0.28);color:#8fd0ff;border-color:rgba(60,160,240,0.6)}.fc-wc-x{background:rgba(100,70,220,0.85);color:#fff;border-color:rgba(160,140,255,0.8)}}
+.ann-storm{background:rgba(120,60,190,0.16);color:#3d1a6e;border-color:rgba(120,60,190,0.55);cursor:pointer;font-weight:800}
+.ann-stormx{background:rgba(150,30,130,0.9);color:#fff;border-color:rgba(150,30,130,1);cursor:pointer;font-weight:800}
+.fc-storm,.fc-storm-x{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;white-space:nowrap;display:inline-block;background:rgba(120,60,190,0.16);color:#3d1a6e;border:1px solid rgba(120,60,190,0.55)}
+.fc-storm-x{background:rgba(150,30,130,0.9);color:#fff;border-color:rgba(150,30,130,1)}
+@media(prefers-color-scheme:dark){.ann-storm,.fc-storm{background:rgba(160,110,240,0.26);color:#d8c4ff;border-color:rgba(170,130,250,0.6)}.ann-stormx,.fc-storm-x{background:rgba(190,60,170,0.85);color:#fff;border-color:rgba(230,130,220,0.8)}}
+.ann-wdmg{background:rgba(0,125,130,0.16);color:#004a4e;border-color:rgba(0,125,130,0.55);cursor:pointer;font-weight:800}
+.ann-wdes{background:rgba(160,40,40,0.9);color:#fff;border-color:rgba(160,40,40,1);cursor:pointer;font-weight:800}
+.ann-tc{background:rgba(200,30,50,0.9);color:#fff;border-color:rgba(200,30,50,1);cursor:pointer;font-weight:800}
+.ann-tcnear{background:rgba(200,30,50,0.12);color:#7a1020;border-color:rgba(200,30,50,0.45);cursor:pointer;font-weight:800}
+.fc-wdmg,.fc-wdes,.fc-tc{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;white-space:nowrap;display:inline-block;background:rgba(0,125,130,0.16);color:#004a4e;border:1px solid rgba(0,125,130,0.55)}
+.fc-wdes{background:rgba(160,40,40,0.9);color:#fff;border-color:rgba(160,40,40,1)}
+.fc-tc{background:rgba(200,30,50,0.9);color:#fff;border-color:rgba(200,30,50,1)}
+@media(prefers-color-scheme:dark){.ann-wdmg,.fc-wdmg{background:rgba(40,190,195,0.24);color:#a6f0f2;border-color:rgba(60,200,205,0.6)}.ann-wdes,.fc-wdes{background:rgba(200,70,60,0.85);color:#fff;border-color:rgba(240,130,120,0.8)}.ann-tc,.fc-tc{background:rgba(220,50,70,0.88);color:#fff;border-color:rgba(255,130,140,0.8)}.ann-tcnear{background:rgba(230,80,100,0.2);color:#ffc2ca;border-color:rgba(240,110,130,0.55)}}
 .fc-hypo{margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;background:rgba(40,120,150,0.18);color:#0d4558;border:1px solid rgba(40,120,150,0.55);white-space:nowrap;display:inline-block}
 @media(prefers-color-scheme:dark){.fc-hypo{background:rgba(60,160,190,0.28);color:#9fe0f0;border-color:rgba(80,170,200,0.6)}}
 .fc-hw,.fc-cw,.fc-cs{font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;white-space:nowrap}
 /* All 7-day tile tags stack, centred, so two warnings on one day never widen the tile */
-.fc-slot-7 .fc-hw,.fc-slot-7 .fc-cw,.fc-slot-7 .fc-cs,.fc-slot-7 .fc-wb,.fc-slot-7 .fc-wc,.fc-slot-7 .fc-hypo{display:block;width:fit-content;margin:4px auto 0}
+.fc-slot-7 .fc-hw,.fc-slot-7 .fc-cw,.fc-slot-7 .fc-cs,.fc-slot-7 .fc-wb,.fc-slot-7 .fc-wc,.fc-slot-7 .fc-hypo,.fc-slot-7 .fc-storm,.fc-slot-7 .fc-storm-x,.fc-slot-7 .fc-wdmg,.fc-slot-7 .fc-wdes,.fc-slot-7 .fc-tc{display:block;width:fit-content;margin:4px auto 0}
 .fc-hw{background:rgba(200,25,45,0.18);color:#8a0018;border:1px solid rgba(200,25,45,0.5)}
 .fc-cw{background:rgba(30,90,210,0.16);color:#0b2f80;border:1px solid rgba(30,90,210,0.5)}
 .fc-cs{background:rgba(60,125,175,0.1);color:#21506f;border:1px solid rgba(60,125,175,0.35);font-weight:700}
@@ -1814,6 +1827,12 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>Relative humidity tells you how full the air is compared to its capacity — but capacity changes with temperature. A 70% humidity day at 10°C feels crisp; at 30°C it's oppressive. Dew point measures the actual moisture in the air regardless of temperature, making it a far better indicator of how sticky or clammy conditions feel. Once it is hotter than your comfort ceiling, the score also uses wet-bulb temperature, which combines heat and humidity into the lowest temperature sweat can cool you to — so the same humidity costs more the hotter it gets. When wet bulb reaches 28°C a “Dangerously hot” warning appears, and at 31°C “Extremely dangerous heat”.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Wind 💨</div>"
     +"<div style='margin-bottom:12px'>Wind is described on the Beaufort scale, using the average wind speed at 10 m — the measure the scale is defined on. Pills name everything from a gentle breeze (12 km/h) up to hurricane force (118 km/h and above); when the wind sits within your pleasant-wind range close to your ideal temperature, it reads as a “nice” breeze. Day summaries mention wind from a fresh breeze (29 km/h) up. Gusts are brief bursts well above the average, so they’re shown separately once they pass 50 km/h.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Storms ⛈️</div>"
+    +"<div style='margin-bottom:12px'>A modelled storm indicator, not an official warning. Each forecast hour is rated from the forecast’s thunderstorm signal, storm energy (CAPE) and atmospheric stability: <b>Storms possible</b> when showers have enough energy to turn thundery, <b>Thunderstorms likely</b> when thunder is forecast with moderate energy or more, and <b>Severe storms possible</b> when those storms come with very heavy rain (10 mm or more in an hour), gusts of 90 km/h or more, or hail. The alert strip looks six hours ahead; the 7-day tiles show likely and severe storms. Storms are small and hard to place, so treat timing and location as a guide, and follow your local weather service for official warnings.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Damaging winds 💨</div>"
+    +"<div style='margin-bottom:12px'>Shown when forecast gusts reach 80 km/h (<b>Damaging winds</b>) or 125 km/h (<b>Destructive winds</b>): in the alert strip for the next six hours, and on the 7-day tiles, day and hour views. Gusts during forecast thunderstorms are left to the storm alert, and when a tropical cyclone’s wind zone covers the place they show as cyclone winds. The washing check warns when damaging gusts are due in the next 12 hours.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Tropical cyclones 🌀</div>"
+    +"<div style='margin-bottom:12px'>Current tropical cyclones (hurricanes and typhoons) come from GDACS, the United Nations and European Commission’s Global Disaster Alert and Coordination System. When a cyclone’s centre is within 1,000 km and this place lies inside its modelled wind zone (60, 90 or 120 km/h along its track), the alert strip shows the cyclone and the winds possible; otherwise a quiet note shows it nearby. GDACS’s Green, Orange and Red alerts rate the cyclone’s overall humanitarian impact, not the conditions at this place. The wind zone can include where the storm has already been, so always check the official forecast track and warnings.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Rain 🌧️</div>"
     +"<div style='margin-bottom:12px'>Optional and off by default — switch it on with “Rain lowers my score” in Preferences. Rain counts from 0.2 mm in an hour, taking off about 2 points for a light shower, 7 for steady rain (1 mm) and 15 for heavy rain (4 mm or more). Below the temperature where you start to feel cold it counts for more, and wind adds to it, up to 38 points in cold, windy rain; warm rain above your heat threshold counts half. Forecast scores use each hour’s forecast rainfall. The climate averages in Climate Explorer are scored dry.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Clothing recommendation</div>"
@@ -2069,6 +2088,261 @@ function dayHypo(slots,codes,futureOnly){
 function hypoTileTag(slots,codes,futureOnly){
   return dayHypo(slots,codes,futureOnly)?"<div class='fc-hypo'>\uD83C\uDF27\uFE0F Hypothermia</div>":"";
 }
+// ── Storms ─────────────────────────────────────────────────────────────────
+// A modelled storm indicator, not an official warning. Each forecast hour is rated from
+// the model's thunderstorm codes (95/96/99), storm energy (CAPE, J/kg) and stability
+// (lifted index), with the hour's rain rate, gusts and hail used to pick out severe storms.
+//   1 Storms possible        — showers with storm energy, but no thunder in the forecast,
+//                              or thunder forecast with little energy behind it
+//   2 Thunderstorms likely   — thunder forecast with moderate energy or more
+//   3 Severe storms possible — as 2, with ≥ STORM_HEAVY_MM in the hour, gusts ≥ STORM_GUST or hail
+var STORM_CAPE=[500,1000,2000],STORM_LI=[-2,-4,-6],STORM_HEAVY_MM=10,STORM_GUST=90,STORM_AHEAD=6;
+var STORM_LBL=["","Storms possible","Thunderstorms likely","Severe storms possible"];
+var STORM_COL=["","rgba(110,80,170,1)","rgba(120,60,190,1)","rgba(150,30,130,1)"];
+function stormEnergy(cape,li){
+  if(cape==null&&li==null)return null;
+  for(var k=2;k>=0;k--)if((cape!=null&&cape>=STORM_CAPE[k])||(li!=null&&li<=STORM_LI[k]))return k+1;
+  return 0;
+}
+function capeWord(c){return c<300?"low":c<1000?"marginal":c<2500?"moderate":c<3500?"strong":"extreme";}
+function stormHour(fc,i){
+  var H=fc&&fc.hourly;if(!H||i<0||i>=H.time.length)return{lvl:0};
+  var code=(H.weather_code||[])[i],cape=(H.cape||[])[i],li=(H.lifted_index||[])[i];
+  var mm=(H.precipitation||[])[i]||0,gust=(H.wind_gusts_10m||[])[i]||0;
+  var thunder=code===95||code===96||code===99,hail=code===96||code===99;
+  var showers=(code>=80&&code<=82)||mm>=0.5,e=stormEnergy(cape,li),lvl=0;
+  if(thunder){
+    lvl=(e==null||e>=2)?2:1;
+    if(lvl===2&&(mm>=STORM_HEAVY_MM||gust>=STORM_GUST||hail))lvl=3;
+  }else if(showers&&e!=null&&e>=2)lvl=1;
+  return{lvl:lvl,cape:cape,gust:gust,hail:hail,thunder:thunder};
+}
+// Worst rating over a list of hourly indices, with when it starts and what drives it
+function stormOver(fc,idxs){
+  var S={lvl:0,first:null,n:0,cape:null,gust:0,hail:false,thunder:false};
+  for(var k=0;k<idxs.length;k++){
+    var h=stormHour(fc,idxs[k]);if(!h.lvl)continue;
+    S.n++;
+    if(h.lvl>S.lvl){S.lvl=h.lvl;S.first=idxs[k];}
+    if(h.cape!=null&&(S.cape==null||h.cape>S.cape))S.cape=h.cape;
+    if(h.gust>S.gust)S.gust=h.gust;
+    if(h.hail)S.hail=true;
+    if(h.thunder)S.thunder=true;
+  }
+  return S;
+}
+// "3pm" from a forecast hour (Open-Meteo times are already local to the place)
+function fcHourLabel(fc,i){
+  var h=parseInt(fc.hourly.time[i].slice(11,13),10);
+  return h===0?"midnight":h===12?"midday":(h%12)+(h<12?"am":"pm");
+}
+// The forecast hour that contains "now", located by date and hour in the place's time zone
+function fcNowIdx(fc){
+  if(!fc||!fc.hourly||!fc.hourly.time)return -1;
+  var tz=fc.timezone,h=localHourInTZ(tz);
+  var day=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  for(var i=0;i<fc.hourly.time.length;i++)if(fc.hourly.time[i].slice(0,10)===day&&parseInt(fc.hourly.time[i].slice(11,13))===h)return i;
+  return -1;
+}
+function stormCls(lvl){return lvl>=3?"ann-stormx":lvl===2?"ann-storm":"ann-storm quiet";}
+// Live strip: the next STORM_AHEAD hours
+function stormStripPill(fc){
+  var i0=fcNowIdx(fc);if(i0<0)return"";
+  var idxs=[];for(var i=i0;i<=i0+STORM_AHEAD&&i<fc.hourly.time.length;i++)idxs.push(i);
+  var S=stormOver(fc,idxs);if(!S.lvl)return"";
+  var when=S.first===i0?"":" from "+fcHourLabel(fc,S.first);
+  return"<span class='ann "+stormCls(S.lvl)+"' onclick='showStormPop("+i0+","+idxs[idxs.length-1]+",null)'>\u26C8\uFE0F "+STORM_LBL[S.lvl]+when+"</span>";
+}
+// Hour popup pill — covers the popup's 2-hour slot, like its rain figure
+function stormHourPill(fc,idx){
+  var i1=Math.min(idx+1,fc.hourly.time.length-1),S=stormOver(fc,[idx,i1]);if(!S.lvl)return"";
+  return"<span class='ann "+stormCls(S.lvl)+"' onclick='showStormPop("+idx+","+i1+",\"h\")'>\u26C8\uFE0F "+STORM_LBL[S.lvl]+"</span>";
+}
+// 7-day tile tag: storms likely or severe only (possible stays in the day and hour views)
+function stormTileTag(fc,slots,futureOnly){
+  var now=Date.now(),idxs=[];
+  for(var i=0;i<slots.length;i++){if(futureOnly&&slots[i].utcMs<now-3600000)continue;idxs.push(slots[i].idx);}
+  var S=stormOver(fc,idxs);
+  if(S.lvl<2)return"";
+  return S.lvl>=3?"<div class='fc-storm-x'>\u26C8\uFE0F Severe storms</div>":"<div class='fc-storm'>\u26C8\uFE0F Storms</div>";
+}
+function showStormPop(i0,i1,backDi){
+  var fc=window._FC;if(!fc)return;
+  var idxs=[];for(var i=i0;i<=i1;i++)idxs.push(i);
+  var S=stormOver(fc,idxs);if(!S.lvl)return;
+  var col=STORM_COL[S.lvl];
+  var bits=[S.first===fcNowIdx(fc)?"From now":"From "+fcHourLabel(fc,S.first)];
+  if(S.n>1)bits.push("about "+S.n+" hours");
+  if(S.gust>=GUST_SHOW)bits.push("gusts to "+Math.round(S.gust)+" km/h");
+  if(S.hail)bits.push("hail possible");
+  var lead=S.lvl===1?(S.thunder?"Thunder is in the forecast, but with little storm energy behind it, so any storms should be brief and isolated."
+      :"Showers could turn thundery. The atmosphere has enough energy for storms, though the forecast doesn\u2019t show them outright.")
+    :S.lvl===2?"Thunderstorms are forecast. Lightning is the main danger, and storms can bring sudden downpours and strong gusts."
+    :"Storms could be severe: the forecast pairs plenty of storm energy with very heavy rain, damaging gusts or hail.";
+  hazardPop({
+    title:"Storms",
+    col:col,
+    headline:"\u26C8\uFE0F "+STORM_LBL[S.lvl],
+    sub:bits.join(" \u00B7 "),
+    lead:lead,
+    advice:"Plan outdoor activities around the storms and keep an eye on the sky. <b>When thunder roars, go indoors</b> \u2014 if you can hear thunder, you\u2019re close enough to be struck. Shelter in a solid building or a hard-topped car, not under a tree, and keep away from open ground, water and metal fences. Bring in or tie down loose outdoor items"+(S.lvl>=3||S.hail?", and park undercover if you can \u2014 hail can damage cars":"")+".",
+    signs:"<b>Watch for</b> towering dark clouds, a sudden cool gust or drop in temperature, and the first rumbles of thunder. Heavy rain can cause flash flooding in minutes \u2014 never drive, ride or walk through floodwater.",
+    foot:"A modelled indicator, not an official warning. It combines the forecast\u2019s thunderstorm signal with storm energy (CAPE"+(S.cape!=null?", peaking around "+Math.round(S.cape).toLocaleString("en-AU")+" J/kg \u2014 "+capeWord(S.cape):"")+") and atmospheric stability, and flags storms as severe when they come with very heavy rain, gusts of "+STORM_GUST+" km/h or more, or hail. Storms are small and hard to place, so timing and location can be off. For official warnings, follow your local weather service.",
+    backDi:backDi});
+}
+// ── Damaging winds ─────────────────────────────────────────────────────────
+// Forecast gusts of WIND_DAMAGING km/h or more (WIND_DESTRUCTIVE for destructive winds).
+// Hours rated as thunderstorms are left to the storm alert, and when a tropical cyclone's
+// wind zone covers the place, the same gusts are shown as cyclone winds instead.
+var WIND_DAMAGING=80,WIND_DESTRUCTIVE=125;
+var WIND_COL=["","rgba(0,125,130,1)","rgba(160,40,40,1)"];
+function windHour(fc,i){
+  var g=((fc&&fc.hourly&&fc.hourly.wind_gusts_10m)||[])[i];
+  if(g==null||g<WIND_DAMAGING)return{lvl:0,gust:g||0};
+  if(stormHour(fc,i).lvl>=2)return{lvl:0,gust:g};
+  return{lvl:g>=WIND_DESTRUCTIVE?2:1,gust:g};
+}
+function windOver(fc,idxs){
+  var W={lvl:0,first:null,n:0,gust:0};
+  for(var k=0;k<idxs.length;k++){
+    var h=windHour(fc,idxs[k]);if(!h.lvl)continue;
+    W.n++;if(W.first==null)W.first=idxs[k];
+    if(h.lvl>W.lvl)W.lvl=h.lvl;
+    if(h.gust>W.gust)W.gust=h.gust;
+  }
+  return W;
+}
+function windName(lvl){return lvl>=2?"Destructive winds":"Damaging winds";}
+function windCls(lvl){return lvl>=2?"ann-wdes":"ann-wdmg";}
+function tcActive(){return!!(window._TC&&window._TC.band>0);}
+function windStripPill(fc){
+  if(tcActive())return"";
+  var i0=fcNowIdx(fc);if(i0<0)return"";
+  var idxs=[];for(var i=i0;i<=i0+STORM_AHEAD&&i<fc.hourly.time.length;i++)idxs.push(i);
+  var W=windOver(fc,idxs);if(!W.lvl)return"";
+  return"<span class='ann "+windCls(W.lvl)+"' onclick='showWindPop("+i0+","+idxs[idxs.length-1]+",null)'>\uD83D\uDCA8 "+windName(W.lvl)+(W.first===i0?"":" from "+fcHourLabel(fc,W.first))+" \u00B7 gusts to "+Math.round(W.gust)+" km/h</span>";
+}
+function windHourPill(fc,idx){
+  var i1=Math.min(idx+1,fc.hourly.time.length-1),W=windOver(fc,[idx,i1]);if(!W.lvl)return"";
+  if(tcActive())return"<span class='ann ann-tc' onclick='showTCPop(\"h\")'>\uD83C\uDF00 Cyclone winds</span>";
+  return"<span class='ann "+windCls(W.lvl)+"' onclick='showWindPop("+idx+","+i1+",\"h\")'>\uD83D\uDCA8 "+windName(W.lvl)+"</span>";
+}
+function windTileTag(fc,slots,futureOnly){
+  var now=Date.now(),idxs=[];
+  for(var i=0;i<slots.length;i++){if(futureOnly&&slots[i].utcMs<now-3600000)continue;idxs.push(slots[i].idx);}
+  var W=windOver(fc,idxs);if(!W.lvl)return"";
+  if(tcActive())return"<div class='fc-tc'>\uD83C\uDF00 Cyclone winds</div>";
+  return W.lvl>=2?"<div class='fc-wdes'>\uD83D\uDCA8 Destructive winds</div>":"<div class='fc-wdmg'>\uD83D\uDCA8 Damaging winds</div>";
+}
+function showWindPop(i0,i1,backDi){
+  var fc=window._FC;if(!fc)return;
+  var idxs=[];for(var i=i0;i<=i1;i++)idxs.push(i);
+  var W=windOver(fc,idxs);if(!W.lvl)return;
+  var bits=[W.first===fcNowIdx(fc)?"From now":"From "+fcHourLabel(fc,W.first)];
+  if(W.n>1)bits.push("about "+W.n+" hours");
+  bits.push("gusts to "+Math.round(W.gust)+" km/h ("+beaufort(W.gust).n+")");
+  hazardPop({
+    title:windName(W.lvl),
+    col:WIND_COL[W.lvl],
+    headline:"\uD83D\uDCA8 "+windName(W.lvl),
+    sub:bits.join(" \u00B7 "),
+    lead:W.lvl>=2?"Gusts this strong can tear off roofing, bring down large trees and power lines, and make travel dangerous."
+      :"Gusts this strong can bring down trees, branches and power lines, lift loose roofing and outdoor items, and make driving hazardous \u2014 especially in high-sided vehicles or when towing.",
+    advice:"Secure or bring in anything that could blow around \u2014 outdoor furniture, bins, trampolines, washing. Park away from trees and power lines, avoid forests and walking under trees, and take extra care on the roads"+(W.lvl>=2?". Stay indoors, away from windows, while the strongest winds pass":"")+".",
+    signs:"<b>Stay well clear of fallen power lines</b> \u2014 always assume they\u2019re live \u2014 and of damaged trees, which can drop limbs after the wind eases.",
+    foot:"Shown when forecast gusts reach "+WIND_DAMAGING+" km/h, or "+WIND_DESTRUCTIVE+" km/h for destructive winds. Hours with forecast thunderstorms are covered by the storm alert, and a tropical cyclone takes over when one is nearby. Gusts are modelled for open ground at 10 m: exposed ridges and coasts can be stronger, sheltered valleys lighter. Not an official warning \u2014 follow your local weather service.",
+    backDi:backDi});
+}
+// ── Tropical cyclones (GDACS) ──────────────────────────────────────────────
+// Current tropical cyclones from GDACS (Global Disaster Alert and Coordination System).
+// A place counts as in a cyclone's wind zone when it lies inside one of GDACS's wind
+// buffers (60 / 90 / 120 km/h) and within TC_NEAR_KM of the storm's current centre — the
+// buffers also cover where the storm has already been. Within TC_NEAR_KM but outside the
+// buffers it's shown as a quiet "nearby" note. Tries GDACS directly, then the site's own
+// /api/gdacs proxy; on any failure the feature stays silent.
+var TC_NEAR_KM=1000,TC_BANDS=["","Poly_Green","Poly_Orange","Poly_Red"],TC_BAND_KMH=[0,60,90,120];
+var _gdacsCache={};
+function gdacsGet(path){
+  var c=_gdacsCache[path];
+  if(c&&Date.now()-c.t<1800000)return Promise.resolve(c.d);
+  var direct=function(){return fetch("https://www.gdacs.org/gdacsapi/api/"+path).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});};
+  var proxy=function(){return fetch("/api/gdacs?p="+encodeURIComponent(path)).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});};
+  return direct().catch(proxy).then(function(d){_gdacsCache[path]={t:Date.now(),d:d};return d;});
+}
+function tcPointIn(lat,lon,geom){
+  var polys=geom.type==="Polygon"?[geom.coordinates]:geom.type==="MultiPolygon"?geom.coordinates:[];
+  for(var p=0;p<polys.length;p++){
+    var inside=false;
+    for(var r=0;r<polys[p].length;r++){
+      var ring=polys[p][r],wrap=ring.some(function(c){return c[0]>90;})&&ring.some(function(c){return c[0]<-90;});
+      var x=wrap&&lon<0?lon+360:lon;
+      for(var i=0,j=ring.length-1;i<ring.length;j=i++){
+        var xi=wrap&&ring[i][0]<0?ring[i][0]+360:ring[i][0],yi=ring[i][1];
+        var xj=wrap&&ring[j][0]<0?ring[j][0]+360:ring[j][0],yj=ring[j][1];
+        if(((yi>lat)!==(yj>lat))&&(x<(xj-xi)*(lat-yi)/(yj-yi)+xi))inside=!inside;
+      }
+    }
+    if(inside)return true;
+  }
+  return false;
+}
+function tcName(p){var n=String(p.eventname||p.name||"").split("-")[0].toLowerCase();return n.charAt(0).toUpperCase()+n.slice(1);}
+function gdacsCheck(lat,lon){
+  window._TC=null;
+  gdacsGet("events/geteventlist/SEARCH?eventlist=TC").then(function(list){
+    var now=Date.now(),cand=[];
+    (list&&list.features||[]).forEach(function(f){
+      var p=f.properties||{},g=f.geometry;
+      if(String(p.iscurrent)!=="true"||!g||g.type!=="Point")return;
+      if(p.datemodified&&now-Date.parse(p.datemodified+"Z")>3*86400000)return;
+      var km=haversineKm(lat,lon,g.coordinates[1],g.coordinates[0]);
+      if(km<=TC_NEAR_KM)cand.push({p:p,km:km});
+    });
+    cand.sort(function(a,b){return a.km-b.km;});
+    return Promise.all(cand.slice(0,3).map(function(c){
+      return gdacsGet("polygons/getgeometry?eventtype=TC&eventid="+c.p.eventid+"&episodeid="+c.p.episodeid).then(function(geo){
+        var band=0;
+        (geo&&geo.features||[]).forEach(function(f){
+          var b=TC_BANDS.indexOf((f.properties||{}).Class);
+          if(b>band&&f.geometry&&tcPointIn(lat,lon,f.geometry))band=b;
+        });
+        c.band=band;return c;
+      }).catch(function(){c.band=0;return c;});
+    }));
+  }).then(function(cs){
+    if(!cs||!cs.length||window._currentLat!==lat||window._currentLon!==lon)return;
+    cs.sort(function(a,b){return(b.band-a.band)||(a.km-b.km);});
+    var c=cs[0],p=c.p,sv=p.severitydata||{};
+    window._TC={name:tcName(p),alert:p.alertlevel||"",band:c.band,km:c.km,
+      maxwind:sv.severityunit==="km/h"?sv.severity:null,country:p.country||"",report:p.url&&p.url.report||""};
+    reRenderLive();if(window._FC)renderForecast(window._FC);
+  }).catch(function(){});
+}
+function tcStripPill(){
+  var T=window._TC;if(!T)return"";
+  if(!T.band)return"<span class='ann ann-tcnear quiet' onclick='showTCPop(null)'>\uD83C\uDF00 Cyclone "+T.name+" \u00B7 "+Math.round(T.km/10)*10+" km away</span>";
+  return"<span class='ann ann-tc' onclick='showTCPop(null)'>\uD83C\uDF00 Cyclone "+T.name+" \u00B7 "+(T.band>=3?"destructive":T.band===2?"damaging":"gale-force")+" winds possible</span>";
+}
+function showTCPop(backDi){
+  var T=window._TC;if(!T)return;
+  var bits=[];
+  if(T.alert)bits.push("GDACS "+T.alert+" alert");
+  if(T.maxwind)bits.push("max winds "+Math.round(T.maxwind)+" km/h");
+  bits.push("centre "+Math.round(T.km/10)*10+" km away");
+  var lead=!T.band?"A tropical cyclone is active within "+TC_NEAR_KM.toLocaleString("en-AU")+" km. This place isn\u2019t in its expected wind zone, but tracks can change \u2014 keep an eye on official forecasts."
+    :"This place lies in the cyclone\u2019s wind zone, where winds of "+TC_BAND_KMH[T.band]+" km/h or more are expected along its track.";
+  hazardPop({
+    title:"Tropical cyclone",
+    col:T.band?"rgba(200,30,50,1)":"rgba(150,60,70,1)",
+    headline:"\uD83C\uDF00 Tropical cyclone "+T.name,
+    sub:bits.join(" \u00B7 "),
+    lead:lead,
+    advice:"<b>Follow instructions from your local emergency services \u2014 evacuation orders come first.</b> Before it arrives: secure or bring in loose outdoor items, charge phones and power banks, and have water, food, medicines and a battery radio for several days. During the cyclone, stay indoors in the strongest part of the building, away from windows. If the wind suddenly drops, it may be the eye passing over \u2014 stay inside, as the winds return from the other direction.",
+    signs:"<b>Storm surge and flooding</b> are often the biggest dangers near coasts and rivers. Never drive, ride or walk through floodwater, and stay clear of fallen power lines.",
+    foot:"From GDACS (Global Disaster Alert and Coordination System, a United Nations and European Commission service). Its Green, Orange and Red alerts rate the cyclone\u2019s overall expected humanitarian impact, not the conditions at this place. The wind zone is GDACS\u2019s modelled area for winds of 60, 90 or 120 km/h along the cyclone\u2019s track, which can include where the storm has already been. Not an official warning \u2014 follow your local weather service."
+      +(T.report?" <a href='"+T.report+"' target='_blank' rel='noopener' style='color:inherit'>GDACS report \u2197</a>":""),
+    backDi:backDi});
+}
 // Peak wet bulb across a day's forecast slots ({temp,dp,utcMs}); futureOnly skips hours already past
 function dayPeakWetBulb(slots,futureOnly){
   var now=Date.now(),best=null;
@@ -2227,6 +2501,10 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
   alertHtml+=wetBulbPill(temp,effDP);
   alertHtml+=coldPill(temp,wind);
   alertHtml+=hypoPill(temp,wind,wxCode,rain==null?null:rain);
+  if(areaId==="live-score-area"){
+    alertHtml+=tcStripPill();
+    if(window._FC)alertHtml+=stormStripPill(window._FC)+windStripPill(window._FC);
+  }
   // Hazard pills: UV, AQI, Fire — inserted between conditions and verdict
   if(areaId==="live-score-area"&&window._FC){
     // UV — always shown during daylight, even when low
@@ -2670,7 +2948,7 @@ function fetchWeatherWithCb(lat,lon,label,cb){
   goLive();
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
-  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
+  var url="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index,cape,lifted_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering
   window._AQ=null;
@@ -2699,6 +2977,7 @@ var weatherPromise=fetch(url).then(function(r){if(!r.ok)return r.json().catch(fu
     renderChips(temp,effDP,rh,wind,d);
     renderScore("live-score-area","gauge-live",res,temp,effDP,wind,wxCode,rain);
     renderForecast(d);
+    gdacsCheck(lat,lon);
     updateHomeBtn();
     if(cb)cb();
   }).catch(function(e){document.getElementById("live-status").textContent=(e.friendly?"":"Fetch failed: ")+e.message;if(cb)cb();});
@@ -2741,7 +3020,7 @@ function fetchWU(stationId,apiKey,label,cb){
 }
 function fetchForecastOnly(lat,lon){
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
-  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
+  var fcUrl="https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=weather_code&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code,uv_index,cape,lifted_index&daily=sunrise,sunset,weather_code,precipitation_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min&wind_speed_unit=kmh&timezone=auto&forecast_days=10&past_days=32";
   window._AQ=null;
     var fcPromise=fetch(fcUrl).then(function(r){if(!r.ok)throw new Error("API error "+r.status);return r.json();});
   var aqPromise=fetch(aqUrl).then(function(r){return r.json();}).catch(function(){return null;});
@@ -2752,6 +3031,7 @@ function fetchForecastOnly(lat,lon){
       window._LW.wxCode=d.current.weather_code;
     }
     renderForecast(d); // sets window._FC first
+    gdacsCheck(window._currentLat,window._currentLon);
     if(window._LW){
       var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain);
       // Re-render live score after _FC and _AQ are both set
@@ -3015,6 +3295,7 @@ function findAfterRainWindow(rainStartIdx,tzOff,sunsetEpoch){
 }
 
 function checkWashingManual(){
+  window._washWind="";
   // Get values from manual inputs
   var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
   var temp=fromDisp(tempDisp);
@@ -3218,6 +3499,13 @@ function renderWorldBody(){
 
 function checkWashing(){
   if(!window._FC)return;
+  window._washWind="";
+  var wi0=fcNowIdx(window._FC);
+  if(wi0>=0){
+    var wIdx=[];for(var wk=wi0;wk<=wi0+12&&wk<window._FC.hourly.time.length;wk++)wIdx.push(wk);
+    var Ww=windOver(window._FC,wIdx);
+    if(Ww.lvl)window._washWind=(tcActive()?"\uD83C\uDF00 Cyclone winds":"\uD83D\uDCA8 "+windName(Ww.lvl))+" from "+fcHourLabel(window._FC,Ww.first)+", gusting to "+Math.round(Ww.gust)+" km/h \u2014 peg everything firmly and bring it in before then, or dry inside.";
+  }
   var fc=window._FC,tz=fc.timezone;
   window._tzOff=getTZOffsetMin(tz);
   var tzOff=window._tzOff;
@@ -3532,6 +3820,7 @@ function washingPop(title,reason,colour){
     +"<div style='padding:8px 10px;border-radius:8px;background:"+hzRgba(colour,0.12)+";border:1px solid "+hzRgba(colour,0.45)+"'>"
     +"<div style='font-size:15px;font-weight:800;color:"+colour+";line-height:1.35'>"+title+"</div></div>"
     +"<div style='font-size:13.5px;font-weight:600;color:var(--text);line-height:1.6;margin-top:10px'>"+reason+"</div>"
+    +(window._washWind?"<div style='font-size:13px;font-weight:800;color:var(--text);line-height:1.55;margin-top:8px'>"+window._washWind+"</div>":"")
     +"<div style='height:1px;background:var(--divider);margin:11px 0 9px'></div>"
     +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Drying time is estimated from how thirsty the air is (vapour pressure deficit), wind and temperature. When a forecast is available, the next few hours are also checked for rain, sunset and overnight frost.</div>"
     +"</div>";
@@ -3684,7 +3973,7 @@ function render7Day(fc){
       todayHtml="<div class='fc-slot-7' style='"+(tWst.bg?"background:"+tWst.bg+";":"")+"' onclick='show7DaySlot(0)'>"
         +"<div class='fc-day'>Today"+(tWst.emoji?" "+tWst.emoji:"")+"</div>"
         +fcTileBody(fc,todayStr,tmx,tmxNc,tmxTime,tmn,tmnNc)
-        +waveTileTags(fc,todayStr)+wbTileTag(useSlots,true)+wcTileTag(useSlots,true)+hypoTileTag(useSlots,fc.hourly.weather_code,true)+"</div>"
+        +waveTileTags(fc,todayStr)+wbTileTag(useSlots,true)+wcTileTag(useSlots,true)+hypoTileTag(useSlots,fc.hourly.weather_code,true)+stormTileTag(fc,useSlots,true)+windTileTag(fc,useSlots,true)+"</div>"
         +"<div style='width:2px;background:var(--card-border);border-radius:2px;margin:4px 6px;align-self:stretch'></div>";
     }
   }
@@ -3707,7 +3996,7 @@ function render7Day(fc){
     html+="<div class='fc-slot-7' style='"+(dWst.bg?"background:"+dWst.bg+";":"")+"' onclick='show7DaySlot("+(di+1)+")'>"
       +"<div class='fc-day'>"+dayLabel+(dWst.emoji?" "+dWst.emoji:"")+"</div>"
       +fcTileBody(fc,key,maxScore,maxNc,maxTime,minScore,minNc)
-      +waveTileTags(fc,key)+wbTileTag(slots,false)+wcTileTag(slots,false)+hypoTileTag(slots,fc.hourly.weather_code,false)+"</div>";
+      +waveTileTags(fc,key)+wbTileTag(slots,false)+wcTileTag(slots,false)+hypoTileTag(slots,fc.hourly.weather_code,false)+stormTileTag(fc,slots,false)+windTileTag(fc,slots,false)+"</div>";
   }
   document.getElementById("forecast-row-7").innerHTML=html;
   window._7dayData=days;
@@ -3738,6 +4027,8 @@ function show7DayHourSlot(idx,di,timeStr){
   annHtml+=gustPill((fc.hourly.wind_gusts_10m||[])[idx]);
   annHtml+=coldPill(t,w,"h");
   annHtml+=hypoPill(t,w,wxCode,precips[idx],"h");
+  annHtml+=stormHourPill(fc,idx);
+  annHtml+=windHourPill(fc,idx);
     var ww=whatToWear(t,w,wxCode,s,dp);
   var hasWindRain=!!(ww.extra&&ww.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(ww.extra&&ww.extra.indexOf("ain jacket")>-1);
@@ -4032,6 +4323,29 @@ function show7DaySlot(di){
         +"<span>\uD83C\uDF27\uFE0F Hypothermia risk from "+hyHr+"</span>"
         +"<span style='white-space:nowrap'>"+hy.n+" hr"+(hy.n>1?"s":"")+" \u203A</span></div></div>";
     }
+    // Storm line — the day's worst storm rating (Today: remaining hours only)
+    var stormLine="";
+    var stIdx=[];for(var si2=0;si2<slots.length;si2++){if(di===0&&slots[si2].utcMs<Date.now()-3600000)continue;stIdx.push(slots[si2].idx);}
+    var St=fc?stormOver(fc,stIdx):{lvl:0};
+    if(St.lvl){
+      var stCol=STORM_COL[St.lvl];
+      stormLine="<div onclick='showStormPop("+stIdx[0]+","+stIdx[stIdx.length-1]+","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +stCol.replace("1)","0.14)")+";border:1px solid "+stCol.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+stCol+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+        +"<span>\u26C8\uFE0F "+STORM_LBL[St.lvl]+" from "+fcHourLabel(fc,St.first)+"</span>"
+        +"<span style='white-space:nowrap'>\u203A</span></div></div>";
+    }
+    // Damaging-wind line (cyclone winds when a cyclone's wind zone covers the place)
+    var windLineHz="";
+    var Wd=fc?windOver(fc,stIdx):{lvl:0};
+    if(Wd.lvl){
+      var tcW=tcActive(),wCol=tcW?"rgba(200,30,50,1)":WIND_COL[Wd.lvl];
+      windLineHz="<div onclick='"+(tcW?"showTCPop("+di+")":"showWindPop("+stIdx[0]+","+stIdx[stIdx.length-1]+","+di+")")+"' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +wCol.replace("1)","0.14)")+";border:1px solid "+wCol.replace("1)","0.45)")+"'>"
+        +"<div style='font-size:14px;font-weight:800;color:"+wCol+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+        +"<span>"+(tcW?"\uD83C\uDF00 Cyclone winds":"\uD83D\uDCA8 "+windName(Wd.lvl))+" from "+fcHourLabel(fc,Wd.first)+"</span>"
+        +"<span style='white-space:nowrap'>"+Math.round(Wd.gust)+" km/h \u203A</span></div></div>";
+    }
     // Coldwave line — mirrors the heatwave line
     var cwLine="";
     if(!window._CWDAYS&&fc&&typeof findClimEntry==="function"){
@@ -4052,6 +4366,8 @@ function show7DaySlot(di){
       +wbLine
       +wcLine
       +hypoLine
+      +stormLine
+      +windLineHz
       +condLine
       +(rangeLine?"<div>🌡️ "+rangeLine+"</div>":"")
       +"<div>"+rainLine+"</div>"
