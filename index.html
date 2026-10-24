@@ -2921,7 +2921,13 @@ function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.
 window.addEventListener("appinstalled",function(){document.getElementById("install-banner").classList.remove("show");});
 function initLivPrefs(){loadLivPrefs();}
 function clearAndReload(){if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){Promise.all(regs.map(function(r){return r.unregister();})).then(function(){caches.keys().then(function(keys){Promise.all(keys.map(function(k){return caches.delete(k);})).then(function(){window.location.reload(true);});});});});}else{window.location.reload(true);}}
-if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+if("serviceWorker" in navigator){
+  // When an updated service worker takes over from an older one, reload once so the
+  // page runs under the new one (an old worker can't fail a request after the swap).
+  var _hadSW=!!navigator.serviceWorker.controller,_swReloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",function(){if(_hadSW&&!_swReloaded){_swReloaded=true;location.reload();}});
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(function(r){r.update();}).catch(function(){});
+}
 
 // ── Washing feature ────────────────────────────────────────────────────────
 function checkConditions(temp,dew,wind,wxCode){
