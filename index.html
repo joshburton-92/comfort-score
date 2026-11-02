@@ -471,13 +471,14 @@ body.manual-mode #clim-card{display:none!important}
       <div class="liv-card" id="liv-card">
         <div style="height:1px;background:var(--divider);margin:10px 0"></div>
         <div class="sec-lbl" style="margin-bottom:6px">Liveability</div>
-        <div class="liv-score-area" id="liv-score-area">
+        <div class="liv-score-area" id="liv-score-area" onclick="showLivBreakdown()" style="cursor:pointer" title="Liveability breakdown">
           <div class="liv-score-loc" id="liv-score-loc"></div>
           <div class="vol-bar" id="liv-vol-bar"></div>
           <div class="liv-score-bottom">
             <div class="liv-score-identity">
               <div class="liv-score-num" id="liv-score-num">—</div>
               <div class="liv-score-lbl" id="liv-score-lbl"></div>
+              <span class="ring-info">breakdown &#9432;</span>
               <div id="liv-score-ann" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-top:4px;line-height:1.5;white-space:pre-line"></div>
             </div>
           </div>
@@ -589,8 +590,8 @@ body.manual-mode #clim-card{display:none!important}
               <div class="ibtn" onclick="showPop('Extreme cold tolerance','Based on the single coldest night average (tminMin) across all 12 months.\n\nThis captures the genuine cold floor of a location — the kind of night that tests limits.\n\nThe score is highest at your chosen floor and drops as values go below it, controlled by temperature sensitivity.')">i</div>
             </div>
             <span class="liv-band-val" id="liv-cold-val">Down to −5°C</span>
-            <input type="range" id="sl-liv-cold" min="0" max="4" step="1" value="2" oninput="onLivBand('cold')"/>
-            <div class="slider-ends"><span class="slider-end">Down to 5°C</span><span class="slider-end">Any cold</span></div>
+            <input type="range" id="sl-liv-cold" min="0" max="6" step="1" value="4" oninput="onLivBand('cold')"/>
+            <div class="slider-ends"><span class="slider-end">Down to 15°C</span><span class="slider-end">Any cold</span></div>
             <div class="liv-band-sub" id="liv-cold-sub"></div>
             <div class="liv-hardfail-row">
               <input type="checkbox" id="hf-liv-cold" onchange="saveLivPrefs();renderLivScore();"/>
@@ -4818,7 +4819,9 @@ var LIV_HEAT_BANDS=[
   {label:"Up to 42°C+",max:42,sub:"e.g. Phoenix, Kuwait, central Australia"}
 ];
 var LIV_COLD_BANDS=[
-  {label:"Down to 5°C",min:5,sub:"e.g. tropical Australia, Canary Islands, Miami"},
+  {label:"Down to 15°C",min:15,sub:"e.g. Singapore, Bangkok, Honolulu"},
+  {label:"Down to 10°C",min:10,sub:"e.g. Darwin, Cairns, Cancún"},
+  {label:"Down to 5°C",min:5,sub:"e.g. Townsville, Hong Kong, Miami"},
   {label:"Down to 0°C",min:0,sub:"e.g. Sydney, Los Angeles, coastal Mediterranean"},
   {label:"Down to −5°C",min:-5,sub:"e.g. London, Paris, Seattle"},
   {label:"Down to −10°C",min:-10,sub:"e.g. Toronto, Warsaw, Seoul"},
@@ -4899,7 +4902,7 @@ function onLivSens(id){
 function saveLivPrefs(){
   var p={
     heat:parseInt(document.getElementById("sl-liv-heat").value),
-    cold:parseInt(document.getElementById("sl-liv-cold").value),
+    cold:parseInt(document.getElementById("sl-liv-cold").value),coldV:2,
     rain:parseInt(document.getElementById("sl-liv-rain").value),
     sun:parseInt(document.getElementById("sl-liv-sun").value),
     snow:parseInt(document.getElementById("sl-liv-snow").value),
@@ -4923,7 +4926,7 @@ function loadLivPrefs(){
   function sv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
   function sc(id,val){var el=document.getElementById(id);if(el)el.checked=val;}
   sv("sl-liv-heat",p.heat!==undefined?p.heat:2);
-  sv("sl-liv-cold",p.cold!==undefined?p.cold:2);
+  sv("sl-liv-cold",p.cold!==undefined?p.cold+(p.coldV===2?0:2):4); // before coldV:2 the scale started at 5°C
   sv("sl-liv-rain",p.rain!==undefined?p.rain:2);
   sv("sl-liv-sun",p.sun!==undefined?p.sun:2);
   sv("sl-liv-snow",p.snow!==undefined?p.snow:0);
@@ -4965,30 +4968,27 @@ function getLivPrefs(){
     reqWinterCool:document.getElementById("req-winter-cool").checked
   };
 }
-function calcLiveability(entry){
-  if(!entry||!entry.monthly||entry.monthly.length<12)return null;
-  var p=getLivPrefs();
-  // Extract key values from monthly data
-  var st=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
-  var wt=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
-  var peakDp=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
-  var hotmaxMax=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
-  var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
-  var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
-  var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
+// One place's liveability, worked out once: the figures it's scored on, the 0–100 score for
+// each of the nine parts, and the total. calcLiveability(), the summary line, the rule-out
+// list and the breakdown popup all read from here, so they can't disagree.
+var LIV_WEIGHTS=[15,10,15,10,20,10,10,7,3]; // summer, hottest days, winter, coldest nights, humidity, rain, sun, wind, snow
+function livCompute(entry,p){
+  p=p||getLivPrefs();
+  var M=entry.monthly;
+  var st=M.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
+  var wt=M.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
+  var peakDp=M.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
+  var hotmaxMax=M.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
+  var coldtminMin=M.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
+  var totalRain=M.reduce(function(s,m){return s+(m.rain||0);},0);
+  var totalSnow=M.reduce(function(s,m){return s+(m.snow||0);},0);
   var totalPrecip=totalRain+totalSnow; // liquid-equivalent: 10:1 snow:water depth ratio means snow cm ≈ extra liquid mm
   var sun=entry.sun||0;
   var wind=entry.wind||0;
-  // Hard fail check — any triggered hard fail zeros the whole score
-  if(p.hfHeat&&st>p.heatMax)return 0;
-  if(p.hfHeat&&hotmaxMax>p.heatMax+3)return 0;
-  if(p.hfCold&&coldtminMin<p.coldMin)return 0;
-  if(p.hfDp&&peakDp>p.dpMax)return 0;
-  if(p.hfRain&&totalPrecip<p.rainMin)return 0;
-  if(p.hfSun&&sun<p.sunMin)return 0;
-  if(p.hfSnow&&totalSnow>p.snowMax)return 0;
-  if(p.reqSummerWarm&&st<18)return 0;
-  if(p.reqWinterCool&&wt>=18)return 0;
+  // Which month each extreme falls in (for the breakdown's wording)
+  function idx(f){for(var i=0;i<12;i++)if(f(M[i]))return i;return 0;}
+  var mon={st:idx(function(m){return(m.T||0)===st;}),wt:idx(function(m){return(m.T||999)===wt;}),dp:idx(function(m){return(m.dp||0)===peakDp;}),
+    hot:idx(function(m){return(m.tmaxMax||0)===hotmaxMax;}),cold:idx(function(m){return(m.tminMin!==undefined?m.tminMin:999)===coldtminMin;})};
   // Sensitivity → slope factor: mild=0.5, severe=3.0
   function slope(sens){return 0.5+sens*2.5;}
   var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
@@ -5021,21 +5021,30 @@ function calcLiveability(entry){
     }
     return 100;
   }
-  // Humidity: use existing dp preference from main comfort sliders
-  var s1=scoreCeil(st,p.heatMax,ts,p.hfHeat);        // summer heat       weight 15
-  var s2=scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat); // extreme heat      weight 10
-  var s3=scoreFloor(wt,p.coldMin+5,ts,false);           // winter cold (avg) weight 15
-  var s4=scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold); // extreme cold      weight 10
-  var s5=scoreCeil(peakDp,p.dpMax,hs,p.hfDp);           // peak humidity     weight 20
-  var s6=scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain); // rainfall (rain + snow liquid-equivalent) weight 10
-  var s7=scoreFloor(sun,p.sunMin,ls,p.hfSun);           // sunshine          weight 10
-  var s8=scoreCeil(wind,20+((1-p.lsens)*20),ls,false);  // wind              weight 7
-  var s9=scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow);    // snowfall          weight 3
-  var score=Math.round(
-    s1*0.15+s2*0.10+s3*0.15+s4*0.10+
-    s5*0.20+s6*0.10+s7*0.10+s8*0.07+s9*0.03
-  );
-  return Math.max(0,Math.min(100,score));
+  var windCeil=20+((1-p.lsens)*20);
+  var s=[
+    scoreCeil(st,p.heatMax,ts,p.hfHeat),           // summer heat
+    scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat),  // extreme heat
+    scoreFloor(wt,p.coldMin+5,ts,false),           // winter cold (avg)
+    scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold), // extreme cold
+    scoreCeil(peakDp,p.dpMax,hs,p.hfDp),           // peak humidity
+    scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain), // rainfall (rain + snow liquid-equivalent)
+    scoreFloor(sun,p.sunMin,ls,p.hfSun),           // sunshine
+    scoreCeil(wind,windCeil,ls,false),             // wind
+    scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow)     // snowfall
+  ];
+  // Hard fail check — any triggered hard fail zeros the whole score
+  var hard=(p.hfHeat&&st>p.heatMax)||(p.hfHeat&&hotmaxMax>p.heatMax+3)||(p.hfCold&&coldtminMin<p.coldMin)||
+    (p.hfDp&&peakDp>p.dpMax)||(p.hfRain&&totalPrecip<p.rainMin)||(p.hfSun&&sun<p.sunMin)||
+    (p.hfSnow&&totalSnow>p.snowMax)||(p.reqSummerWarm&&st<18)||(p.reqWinterCool&&wt>=18);
+  var raw=Math.round(s[0]*0.15+s[1]*0.10+s[2]*0.15+s[3]*0.10+s[4]*0.20+s[5]*0.10+s[6]*0.10+s[7]*0.07+s[8]*0.03);
+  raw=Math.max(0,Math.min(100,raw));
+  return{p:p,st:st,wt:wt,peakDp:peakDp,hotmaxMax:hotmaxMax,coldtminMin:coldtminMin,totalRain:totalRain,totalSnow:totalSnow,
+    totalPrecip:totalPrecip,sun:sun,wind:wind,windCeil:windCeil,mon:mon,s:s,hard:!!hard,raw:raw,score:hard?0:raw};
+}
+function calcLiveability(entry){
+  if(!entry||!entry.monthly||entry.monthly.length<12)return null;
+  return livCompute(entry).score;
 }
 function livScoreLabel(s){
   if(s>90)return"Excellent";
@@ -5049,16 +5058,8 @@ function livScoreLabel(s){
 // Mirrors the zero-score checks at the top of calcLiveability() — keep the two in step.
 function livRuleOutReasons(entry){
   if(!entry||!entry.monthly||entry.monthly.length<12)return[];
-  var p=getLivPrefs();
-  var st=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
-  var wt=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
-  var peakDp=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
-  var hotmaxMax=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
-  var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
-  var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
-  var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
-  var totalPrecip=totalRain+totalSnow;
-  var sun=entry.sun||0;
+  var L=livCompute(entry),p=L.p,st=L.st,wt=L.wt,peakDp=L.peakDp,hotmaxMax=L.hotmaxMax,coldtminMin=L.coldtminMin;
+  var totalSnow=L.totalSnow,totalPrecip=L.totalPrecip,sun=L.sun;
   function t(v){return String(toDisp(v)).replace("-","\u2212")+unitSym();}
   function n(v){return Math.round(v).toLocaleString("en-AU");}
   function cm(v){return v<10?(Math.round(v*10)/10):Math.round(v);}
@@ -5076,86 +5077,48 @@ function livRuleOutReasons(entry){
 }
 function livScoreAnnotations(entry){
   if(!entry||!entry.monthly||entry.monthly.length<12)return"";
-  var p=getLivPrefs();
-  var st=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.T||0);},0);
-  var wt=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.T||999);},999);
-  var peakDp=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.dp||0);},0);
-  var hotmaxMax=entry.monthly.reduce(function(mx,m){return Math.max(mx,m.tmaxMax||0);},0);
-  var coldtminMin=entry.monthly.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
-  var totalRain=entry.monthly.reduce(function(s,m){return s+(m.rain||0);},0);
-  var totalSnow=entry.monthly.reduce(function(s,m){return s+(m.snow||0);},0);
-  var totalPrecip=totalRain+totalSnow; // liquid-equivalent: 10:1 snow:water depth ratio means snow cm ≈ extra liquid mm
-  var sun=entry.sun||0;
-  var wind=entry.wind||0;
   // Ruled-out locations: list each broken limit with the figures behind it
   var ruled=livRuleOutReasons(entry);
   if(ruled.length)return"Ruled out by your limits:\n\u00B7 "+ruled.join("\n\u00B7 ");
-  function slope(sens){return 0.5+sens*2.5;}
-  var ts=slope(p.tsens),hs=slope(p.hsens),ls=slope(p.lsens);
-  function scoreCeil(val,ceil,sens,hardFail){
-    if(hardFail&&val>ceil)return 0;
-    if(val<=ceil)return 100;
-    var excess=(val-ceil)/Math.max(1,ceil*0.1+1);
-    return Math.max(0,100-excess*sens*40);
-  }
-  function scoreFloor(val,floor,sens,hardFail){
-    if(val===999||val===-99)return 100;
-    if(hardFail&&val<floor)return 0;
-    if(val>=floor)return 100;
-    var deficit=(floor-val)/Math.max(1,Math.abs(floor)*0.1+1);
-    return Math.max(0,100-deficit*sens*40);
-  }
-  function scoreRain(val,minPref,maxPref,sens,hardFail){
-    if(hardFail&&val<minPref)return 0;
-    if(minPref===0)return 100;
-    if(val<minPref){
-      var deficit=(minPref-val)/Math.max(1,minPref*0.2);
-      return Math.max(0,100-deficit*sens*40);
-    }
-    if(val>maxPref){
-      var excess=(val-maxPref)/Math.max(1,maxPref*0.2);
-      return Math.max(0,100-excess*ls*20);
-    }
-    return 100;
-  }
+  var L=livCompute(entry),S=L.s,p=L.p,coldtminMin=L.coldtminMin,totalSnow=L.totalSnow,totalPrecip=L.totalPrecip;
   var dims=[
     {
-      score:scoreCeil(st,p.heatMax,ts,p.hfHeat),
+      score:S[0],
       pos:"pleasant summers",
       mild_neg:"summers occasionally hot",
       neg:"summers regularly too hot",
       bad:"summers severely hot"
     },
     {
-      score:scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat),
+      score:S[1],
       pos:"heatwaves uncommon",
       mild_neg:"heatwaves at the edge of tolerance",
       neg:"heatwaves too frequent or intense",
-      bad:"dangerously hot days expected"
+      bad:"hottest days far beyond your tolerance"
     },
     {
-      score:scoreFloor(wt,p.coldMin+5,ts,false),
+      score:S[2],
       pos:"mild winters",
       mild_neg:"winters on the cool side",
       neg:"winters uncomfortably cold",
       bad:"winters severely cold"
     },
     {
-      score:scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold),
+      score:S[3],
       pos:coldtminMin>5?"cold nights rare or mild":null,
       mild_neg:"cold nights push your tolerance",
       neg:"coldest nights beyond your tolerance",
       bad:"severe overnight lows"
     },
     {
-      score:scoreCeil(peakDp,p.dpMax,hs,p.hfDp),
+      score:S[4],
       pos:"air stays dry and comfortable",
       mild_neg:"can get sticky in peak season",
       neg:"humid season exceeds tolerance",
       bad:"oppressively humid"
     },
     (function(){
-      var rs=scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain);
+      var rs=S[5];
       var tooWet=totalPrecip>p.rainMax;
       return{
         score:rs,
@@ -5166,21 +5129,21 @@ function livScoreAnnotations(entry){
       };
     })(),
     {
-      score:scoreFloor(sun,p.sunMin,ls,p.hfSun),
+      score:S[6],
       pos:"excellent sunshine",
       mild_neg:"sunshine below preference",
       neg:"overcast and grey",
       bad:"persistently overcast"
     },
     {
-      score:scoreCeil(wind,20+((1-p.lsens)*20),ls,false),
+      score:S[7],
       pos:"calm and sheltered",
       mild_neg:"occasionally breezy",
       neg:"frequently windy",
       bad:"persistently windy"
     },
     (function(){
-      var ss=scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow);
+      var ss=S[8];
       var snowMild=totalSnow<5,snowModerate=totalSnow<30;
       return{
         score:ss,
@@ -5248,6 +5211,105 @@ function showLivCard(entry){
   window._livEntry=entry;
   card.style.display="block";
   renderLivScore();
+}
+// ── Liveability breakdown popup ────────────────────────────────────────────
+// Tap the liveability score: what lifts it, what holds it back, and what the climate
+// would feel like against your Liveability preferences.
+var LIV_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function showLivBreakdown(){
+  var entry=window._livEntry;
+  if(!entry||!entry.monthly||entry.monthly.length<12)return;
+  var L=livCompute(entry),p=L.p,s=L.s,ruled=livRuleOutReasons(entry);
+  var deg=function(c){return String(toDisp(c)).replace("-","−")+unitSym();};
+  var n=function(v){return Math.round(v).toLocaleString("en-AU");};
+  var cm=function(v){return v<10?(Math.round(v*10)/10):Math.round(v);};
+  var mon=function(k){return LIV_MONTHS[L.mon[k]];};
+  var lvl=function(x){return x>=99.5?0:x>=75?1:x>=45?2:3;};
+  var noCold=p.coldMin<=-99;
+  var rows=[];
+  function row(i,icon,name,fig,feel){
+    var w=LIV_WEIGHTS[i],lost=(100-s[i])*w/100;
+    rows.push({i:i,lost:lost,html:function(col){
+      var r=Math.round(lost),ok=r===0;
+      return"<div style='padding:7px 0;border-bottom:1px solid var(--divider)'>"
+        +"<div style='display:flex;justify-content:space-between;align-items:baseline;gap:8px'>"
+        +"<span style='font-size:13.5px;font-weight:800;color:var(--text)'>"+icon+" "+name+"</span>"
+        +"<span style='font-size:14px;font-weight:800;color:var(--text);white-space:nowrap'>"
+        +(ok?"<span style='color:#1a7a3a'>✓</span>":"−"+r+" <span style='font-size:10px;color:var(--text-muted)'>of "+w+"</span>")+"</span></div>"
+        +"<div style='font-size:11.5px;font-weight:600;color:var(--text-muted);margin-top:1px'>"+fig+"</div>"
+        +"<div style='font-size:12.5px;font-weight:600;color:var(--text);margin-top:3px;line-height:1.45'>"+feel+"</div>"
+        +(ok?"":"<div style='height:5px;border-radius:3px;background:var(--range-bg);margin-top:5px;overflow:hidden'><div style='height:100%;width:"+Math.max(3,Math.min(100,100-s[i]))+"%;border-radius:3px;background:"+climScoreCol(s[i])+"'></div></div>")
+        +"</div>";
+    }});
+  }
+  // 1 — Summer heat
+  row(0,"☀️","Summer heat","Warmest month ("+mon("st")+"): days average "+deg(L.st)+" · your limit "+deg(p.heatMax),
+    [L.st>=p.heatMax-2?"Summers run warm, right up near the top of your range.":L.st>=18?"Summer days stay comfortably inside your range.":"Summers stay cool — days rarely get properly warm.",
+     "Summer afternoons run a little warmer than you’d like.","Summer days would regularly feel too hot for you.","Summers would be far too hot for you, for months at a time."][lvl(s[0])]);
+  // 2 — Hottest days
+  row(1,"🔥","Hottest days","The hottest day of a typical year reaches "+deg(L.hotmaxMax)+" · you allow "+deg(p.heatMax+3),
+    ["Heatwaves rarely push past what you can handle.","The hottest days of the year would test you.","Heatwaves would regularly go beyond what you can handle.","The hottest days go far beyond what you can handle."][lvl(s[1])]);
+  // 3 — Winter days
+  row(2,"🧥","Winter days","Coolest month ("+mon("wt")+"): days average "+deg(L.wt)+(noCold?" · any winter suits you":" · you’re happiest above "+deg(p.coldMin+5)),
+    [L.wt>=20?"Barely a winter at all — days stay warm year-round.":"Winter days stay comfortable for you.",
+     "Winter days are a little cooler than you’d like.","Winter days would feel genuinely cold to you.","Winters would be harsh for you."][lvl(s[2])]);
+  // 4 — Coldest nights
+  row(3,"🌙","Coldest nights","The coldest night of a typical year drops to "+deg(L.coldtminMin)+" ("+mon("cold")+")"+(noCold?" · any cold suits you":" · your limit "+deg(p.coldMin)),
+    [noCold||L.coldtminMin>=p.coldMin+5?"Cold nights stay well clear of your limit.":"The coldest nights come close to your limit, but stay above it.",
+     "The coldest nights dip a little below what you’d like.","Cold snaps would go well beyond your limit.","Severe cold nights, far below your limit."][lvl(s[3])]);
+  // 5 — Humidity
+  var dpw=L.peakDp<=10?"Even at its most humid, the air stays crisp and dry.":L.peakDp<=16?"Even the most humid month stays comfortable.":L.peakDp<=18?"The humid season is noticeable, but not sticky.":L.peakDp<=21?"The humid season feels sticky.":L.peakDp<=24?"The humid season is muggy and close.":"The humid season is oppressive.";
+  row(4,"💧","Humidity","Most humid month ("+mon("dp")+"): dew point averages "+deg(L.peakDp)+(p.dpMax>=99?" · any humidity suits you":" · your limit "+deg(p.dpMax)),
+    dpw+(s[4]<99.5?" That’s more humid than you’re comfortable with.":""));
+  // 6 — Rainfall
+  var wetter=L.totalPrecip>p.rainMax;
+  row(5,"🌧️","Rainfall",n(L.totalPrecip)+" mm a year"+(L.totalSnow>0?" (rain and melted snow)":"")+(p.rainMin===0?" · any amount suits you":" · you like "+n(p.rainMin)+"–"+n(p.rainMax)+" mm"),
+    lvl(s[5])===0?"Rainfall sits in the range you like."
+      :["",(wetter?"A little wetter":"A little drier")+" than you’d like.",(wetter?"Noticeably wetter":"Noticeably drier")+" than you’d like.",(wetter?"Far wetter":"Far drier")+" than you’d like."][lvl(s[5])]);
+  // 7 — Sunshine
+  row(6,"🌤️","Sunshine",n(L.sun)+" hours a year"+(p.sunMin===0?" · any amount suits you":" · you want at least "+n(p.sunMin)),
+    [L.sun>=2800?"Very sunny — clear skies most days.":L.sun>=2200?"Plenty of sunshine.":"Enough sunshine for you.",
+     "A little greyer than you’d like.","Often grey — less sun than you want.","Persistently grey and overcast for you."][lvl(s[6])]);
+  // 8 — Wind
+  if(entry.wind==null)row(7,"💨","Wind","No wind figure for this place","Not counted against it.");
+  else row(7,"💨","Wind","Averages "+n(L.wind)+" km/h · comfortable up to "+n(L.windCeil)+" km/h for you",
+    [L.wind<10?"Generally calm.":"Breezy at times, but within what you like.","Breezier than you’d like.","Frequently windy for you.","Persistently windy."][lvl(s[7])]);
+  // 9 — Snow
+  row(8,"☃️","Snow",(L.totalSnow<0.05?"No snow":cm(L.totalSnow)+" cm a year")+(p.snowMax>=9999?" · any amount suits you":p.snowMax===0?" · you’d prefer none":" · your limit "+p.snowMax+" cm"),
+    lvl(s[8])===0?(L.totalSnow<0.05?"Snow is essentially unheard of.":"Some snow, within what you’re happy with."):lvl(s[8])<3?"More snow than you’d like.":"A proper snow season, well beyond your limit.");
+  // Headline: what holds it back, and what works in its favour
+  var col=climScoreCol(L.score),lbl=ruled.length?"Ruled out":livScoreLabel(L.score);
+  var NAMES=["summer heat","the hottest days","winter cold","cold nights","humidity",wetter?"too much rain":"too little rain","too little sun","wind","snow"];
+  var GOOD=["comfortable summers","few extreme hot days","mild winters","mild nights","comfortable air","rainfall you like","plenty of sun","calm conditions","no snow worries"];
+  var losses=rows.filter(function(r){return Math.round(r.lost)>=1;}).sort(function(a,b){return b.lost-a.lost;});
+  var totLost=rows.reduce(function(t,r){return t+r.lost;},0);
+  var lead;
+  if(!losses.length)lead="A complete match — this climate meets every preference you’ve set.";
+  else lead=(losses[0].lost>=totLost*0.6?"Held back mostly by ":"Held back by ")+NAMES[losses[0].i]+(losses.length>1&&losses[0].lost<totLost*0.6?", then "+NAMES[losses[1].i]:"")+".";
+  var goods=rows.filter(function(r){return s[r.i]>=99.5&&LIV_WEIGHTS[r.i]>=10;}).slice(0,3).map(function(r){return GOOD[r.i];});
+  if(losses.length&&goods.length)lead+=" In its favour: "+goods.join(", ")+".";
+  rows.sort(function(a,b){return b.lost-a.lost||a.i-b.i;});
+  var from=climFromNote(entry);
+  var body="<div class='washing-reason'>"
+    +"<div style='padding:8px 10px;border-radius:8px;background:"+hzRgba(col,0.14)+";border:1px solid "+hzRgba(col,0.45)+"'>"
+    +"<div style='font-size:15px;font-weight:800;color:"+col+";line-height:1.3'>"+L.score+" — "+lbl+"</div>"
+    +"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:2px'>"+entry.name+(entry.ter?", "+entry.ter:"")+"</div>"
+    +(from?"<div style='font-size:11px;font-weight:600;color:var(--text-muted);margin-top:2px'>📍 "+from+"</div>":"")
+    +"</div>"
+    +(ruled.length?"<div style='font-size:13px;font-weight:700;color:var(--text);line-height:1.5;margin-top:10px'>Ruled out by your limits:<div style='font-weight:600;margin-top:2px'>· "+ruled.join("<br>· ")+"</div>"
+      +"<div style='font-weight:600;color:var(--text-muted);margin-top:4px'>Without those limits it would score "+L.raw+". Here’s how that breaks down:</div></div>"
+      :"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5;margin-top:10px'>"+lead+"</div>")
+    +"<div style='margin-top:6px'>"+rows.map(function(r){return r.html(col);}).join("")+"</div>"
+    +"<div style='display:flex;justify-content:space-between;align-items:baseline;padding-top:8px'>"
+    +"<span style='font-size:13px;font-weight:800;color:var(--text-head)'>Score</span>"
+    +"<span style='font-size:13px;font-weight:700;color:var(--text-muted)'>100"+(Math.round(totLost)>0?" − "+Math.round(totLost):"")+" = <span style='font-size:18px;font-weight:800;color:"+col+"'>"+L.raw+"</span>"
+    +(ruled.length?" → <span style='font-size:18px;font-weight:800;color:"+col+"'>0</span>":"")+"</span></div>"
+    +"<div style='height:1px;background:var(--divider);margin:10px 0 9px'></div>"
+    +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Each part can take off up to the points shown (“of 15”), out of 100 in all. Your Liveability preferences set the limits, and the sensitivity sliders set how fast points drop once a limit is passed: temperature for heat and cold, humidity for dew point, and lifestyle for rain, sun, wind and snow. Based on long-term climate averages, not the current weather. Points are rounded, so the lines can differ from the total by one.</div>"
+    +"</div>";
+  document.getElementById("pop-ttl").textContent="Liveability breakdown";
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
 }
 
 // ── Liveability map ────────────────────────────────────────────────────────
