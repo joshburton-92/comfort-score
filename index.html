@@ -572,11 +572,11 @@ body.manual-mode #clim-card{display:none!important}
         <div id="liv-pref-panel" style="display:none">
           <div class="liv-band-row">
             <div class="liv-band-lbl-row">
-              <span class="liv-band-name">Extreme heat tolerance</span>
-              <div class="ibtn" onclick="showPop('Extreme heat tolerance','Based on the average of each year\'s single hottest day (tmaxMax) for the warmest month.\n\nThis captures whether a place regularly produces days beyond your personal limit — not just average highs.\n\nThe score is highest at your chosen ceiling and drops as values exceed it, controlled by temperature sensitivity.')">i</div>
+              <span class="liv-band-name">Summer days</span>
+              <div class="ibtn" onclick="showPop('Summer days','How warm a typical summer day can be: the average daytime high of the warmest month.\n\nThe score is full while a place is inside your limit and drops the further past it, as fast as your temperature sensitivity says.')">i</div>
             </div>
-            <span class="liv-band-val" id="liv-heat-val">Up to 35°C</span>
-            <input type="range" id="sl-liv-heat" min="0" max="6" step="1" value="3" oninput="onLivBand('heat')"/>
+            <span class="liv-band-val" id="liv-heat-val">Up to 30°C</span>
+            <input type="range" id="sl-liv-heat" min="0" max="6" step="1" value="2" oninput="onLivBand('heat')"/>
             <div class="slider-ends"><span class="slider-end">Up to 20°C</span><span class="slider-end">Up to 42°C+</span></div>
             <div class="liv-band-sub" id="liv-heat-sub"></div>
             <div class="liv-hardfail-row">
@@ -586,8 +586,36 @@ body.manual-mode #clim-card{display:none!important}
           </div>
           <div class="liv-band-row">
             <div class="liv-band-lbl-row">
-              <span class="liv-band-name">Extreme cold tolerance</span>
-              <div class="ibtn" onclick="showPop('Extreme cold tolerance','Based on the single coldest night average (tminMin) across all 12 months.\n\nThis captures the genuine cold floor of a location — the kind of night that tests limits.\n\nThe score is highest at your chosen floor and drops as values go below it, controlled by temperature sensitivity.')">i</div>
+              <span class="liv-band-name">Hottest days</span>
+              <div class="ibtn" onclick="showPop('Hottest days','How hot the hottest day of a typical year can be: the average of each year\'s single hottest day. Heatwaves are what push it up.\n\nIt usually runs about 6° above the summer-days figure, more inland and less on the coast.\n\nThe score is full while a place is inside your limit and drops the further past it, as fast as your temperature sensitivity says.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-hot-val">Up to 36°C</span>
+            <input type="range" id="sl-liv-hot" min="0" max="7" step="1" value="3" oninput="onLivBand('hot')"/>
+            <div class="slider-ends"><span class="slider-end">Up to 25°C</span><span class="slider-end">Any heat</span></div>
+            <div class="liv-band-sub" id="liv-hot-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-hot" onchange="saveLivPrefs();renderLivScore();"/>
+              <label for="hf-liv-hot">Rule out anywhere hotter</label>
+            </div>
+          </div>
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Winter days</span>
+              <div class="ibtn" onclick="showPop('Winter days','How cool a typical winter day can be: the average daytime high of the coolest month.\n\nThe score is full while a place is inside your limit and drops the further past it, as fast as your temperature sensitivity says.')">i</div>
+            </div>
+            <span class="liv-band-val" id="liv-winter-val">Down to 10°C</span>
+            <input type="range" id="sl-liv-winter" min="0" max="6" step="1" value="3" oninput="onLivBand('winter')"/>
+            <div class="slider-ends"><span class="slider-end">Down to 25°C</span><span class="slider-end">Any winter</span></div>
+            <div class="liv-band-sub" id="liv-winter-sub"></div>
+            <div class="liv-hardfail-row">
+              <input type="checkbox" id="hf-liv-winter" onchange="saveLivPrefs();renderLivScore();"/>
+              <label for="hf-liv-winter">Rule out anywhere colder</label>
+            </div>
+          </div>
+          <div class="liv-band-row">
+            <div class="liv-band-lbl-row">
+              <span class="liv-band-name">Coldest nights</span>
+              <div class="ibtn" onclick="showPop('Coldest nights','How cold the coldest night of a typical year can be: the average of each year\'s single coldest night. Frosts and cold snaps are what push it down.\n\nIt usually runs about 15° below the winter-days figure, more inland and less on the coast.\n\nThe score is full while a place is inside your limit and drops the further past it, as fast as your temperature sensitivity says.')">i</div>
             </div>
             <span class="liv-band-val" id="liv-cold-val">Down to −5°C</span>
             <input type="range" id="sl-liv-cold" min="0" max="6" step="1" value="4" oninput="onLivBand('cold')"/>
@@ -1648,7 +1676,7 @@ function setUnit(unit){
   if(window._LW)renderChips(window._LW.temp,window._LW.effDP,window._LW.rh,window._LW.wind);
   reRenderAll();
   initTempPrefs();
-  ["heat","cold","dp"].forEach(function(d){if(document.getElementById("sl-liv-"+d))onLivBand(d);});
+  ["heat","hot","winter","cold","dp"].forEach(function(d){if(document.getElementById("sl-liv-"+d))onLivBand(d);});
   livUnitText();
   if(window._currentLat!=null&&document.getElementById("clim-card").style.display==="block")showClimCard(window._currentLat,window._currentLon);
 }
@@ -4809,23 +4837,46 @@ function showClimCard(lat,lon,elev){
   showLivCard(entry);
 }
 // ── Liveability preference data ────────────────────────────────────────────
+// Four temperature sliders, each checked against one figure from the climate profile:
+// summer days = the warmest month's average day; hottest days = the hottest day of a typical
+// year; winter days = the coolest month's average day; coldest nights = the coldest night of
+// a typical year. Example places are from the climate data, in the band they belong to.
 var LIV_HEAT_BANDS=[
-  {label:"Up to 20°C",max:20,sub:"e.g. Iceland, northern Scotland, Tierra del Fuego"},
-  {label:"Up to 25°C",max:25,sub:"e.g. Ireland, New Zealand, Pacific Northwest"},
-  {label:"Up to 30°C",max:30,sub:"e.g. coastal BC, southern Chile, Azores"},
-  {label:"Up to 33°C",max:33,sub:"e.g. Sydney, Cape Town, Portugal"},
-  {label:"Up to 35°C",max:35,sub:"e.g. Adelaide, Athens, California"},
-  {label:"Up to 38°C",max:38,sub:"e.g. Seville, Dallas, inland Australia"},
-  {label:"Up to 42°C+",max:42,sub:"e.g. Phoenix, Kuwait, central Australia"}
+  {label:"Up to 20°C",max:20,sub:"e.g. Dublin, Edinburgh, Bergen"},
+  {label:"Up to 25°C",max:25,sub:"e.g. Hobart, Wellington, Auckland"},
+  {label:"Up to 30°C",max:30,sub:"e.g. Adelaide, Melbourne, Lisbon"},
+  {label:"Up to 33°C",max:33,sub:"e.g. Perth, Brisbane, Singapore"},
+  {label:"Up to 35°C",max:35,sub:"e.g. Darwin, Cairo, Hanoi"},
+  {label:"Up to 38°C",max:38,sub:"e.g. Alice Springs, Bangkok, Dallas"},
+  {label:"Up to 42°C+",max:42,sub:"e.g. Phoenix, New Delhi, Tucson"}
+];
+var LIV_HOT_BANDS=[
+  {label:"Up to 25°C",max:25,sub:"e.g. Dublin, Edinburgh, Wellington"},
+  {label:"Up to 30°C",max:30,sub:"e.g. Auckland, Christchurch, Oslo"},
+  {label:"Up to 33°C",max:33,sub:"e.g. Hobart, London, Cape Town"},
+  {label:"Up to 36°C",max:36,sub:"e.g. Sydney, Brisbane, Darwin"},
+  {label:"Up to 39°C",max:39,sub:"e.g. Melbourne, Canberra, Bangkok"},
+  {label:"Up to 42°C",max:42,sub:"e.g. Adelaide, Perth, Alice Springs"},
+  {label:"Up to 45°C",max:45,sub:"e.g. Mildura, Cairo, Las Vegas"},
+  {label:"Any heat",max:99,sub:"e.g. Marble Bar, Phoenix, New Delhi"}
+];
+var LIV_WINTER_BANDS=[
+  {label:"Down to 25°C",min:25,sub:"e.g. Darwin, Singapore, Honolulu"},
+  {label:"Down to 20°C",min:20,sub:"e.g. Brisbane, Miami, Nairobi"},
+  {label:"Down to 15°C",min:15,sub:"e.g. Sydney, Perth, Adelaide"},
+  {label:"Down to 10°C",min:10,sub:"e.g. Melbourne, Hobart, Canberra"},
+  {label:"Down to 5°C",min:5,sub:"e.g. London, Edinburgh, Shanghai"},
+  {label:"Down to 0°C",min:0,sub:"e.g. Berlin, Seoul, New York"},
+  {label:"Any winter",min:-99,sub:"e.g. Helsinki, Chicago, Harbin"}
 ];
 var LIV_COLD_BANDS=[
   {label:"Down to 15°C",min:15,sub:"e.g. Singapore, Bangkok, Honolulu"},
   {label:"Down to 10°C",min:10,sub:"e.g. Darwin, Cairns, Cancún"},
   {label:"Down to 5°C",min:5,sub:"e.g. Townsville, Hong Kong, Miami"},
-  {label:"Down to 0°C",min:0,sub:"e.g. Sydney, Los Angeles, coastal Mediterranean"},
-  {label:"Down to −5°C",min:-5,sub:"e.g. London, Paris, Seattle"},
-  {label:"Down to −10°C",min:-10,sub:"e.g. Toronto, Warsaw, Seoul"},
-  {label:"Any cold",min:-99,sub:"e.g. Reykjavik, Winnipeg, Norilsk"}
+  {label:"Down to 0°C",min:0,sub:"e.g. Sydney, Adelaide, Melbourne"},
+  {label:"Down to −5°C",min:-5,sub:"e.g. London, Launceston, Alice Springs"},
+  {label:"Down to −10°C",min:-10,sub:"e.g. Canberra, Berlin, Atlanta"},
+  {label:"Any cold",min:-99,sub:"e.g. Oslo, Helsinki, Chicago"}
 ];
 var LIV_RAIN_BANDS=[
   {label:"Any",min:0,sub:"0mm+ · e.g. Phoenix, Riyadh, Alice Springs"},
@@ -4866,12 +4917,14 @@ function toggleLivPref(){
 function livDeg(c){return String(Math.round(toDisp(c))).replace("-","\u2212")+unitSym();}
 function livBandLabel(dim,b,last){
   if(dim==="heat")return"Up to "+livDeg(b.max)+(last?"+":"");
+  if(dim==="hot")return b.max>=99?"Any heat":"Up to "+livDeg(b.max);
+  if(dim==="winter")return b.min<=-99?"Any winter":"Down to "+livDeg(b.min);
   if(dim==="cold")return b.min<=-99?"Any cold":"Down to "+livDeg(b.min);
   if(dim==="dp")return b.max>=99?"Any humidity":b.label.split(" (")[0]+" (\u2264"+livDeg(b.max)+")";
   return b.label;
 }
 function livUnitText(){
-  [["heat",LIV_HEAT_BANDS],["cold",LIV_COLD_BANDS]].forEach(function(x){
+  [["heat",LIV_HEAT_BANDS],["hot",LIV_HOT_BANDS],["winter",LIV_WINTER_BANDS],["cold",LIV_COLD_BANDS]].forEach(function(x){
     var sl=document.getElementById("sl-liv-"+x[0]),ends=sl&&sl.nextElementSibling;
     if(!ends||!ends.classList.contains("slider-ends")||ends.children.length<2)return;
     var bb=x[1];
@@ -4883,7 +4936,7 @@ function livUnitText(){
   if(lc)lc.textContent="Winter must be cool (coldest month <"+livDeg(18)+" avg max)";
 }
 function onLivBand(dim){
-  var bands={heat:LIV_HEAT_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
+  var bands={heat:LIV_HEAT_BANDS,hot:LIV_HOT_BANDS,winter:LIV_WINTER_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
   var b=bands[dim];
   var v=parseInt(document.getElementById("sl-liv-"+dim).value);
   document.getElementById("liv-"+dim+"-val").textContent=livBandLabel(dim,b[v],v===b.length-1);
@@ -4902,6 +4955,8 @@ function onLivSens(id){
 function saveLivPrefs(){
   var p={
     heat:parseInt(document.getElementById("sl-liv-heat").value),
+    hot:parseInt(document.getElementById("sl-liv-hot").value),
+    winter:parseInt(document.getElementById("sl-liv-winter").value),
     cold:parseInt(document.getElementById("sl-liv-cold").value),coldV:2,
     rain:parseInt(document.getElementById("sl-liv-rain").value),
     sun:parseInt(document.getElementById("sl-liv-sun").value),
@@ -4911,6 +4966,8 @@ function saveLivPrefs(){
     hsens:parseInt(document.getElementById("sl-liv-hsens").value),
     lsens:parseInt(document.getElementById("sl-liv-lsens").value),
     hfHeat:document.getElementById("hf-liv-heat").checked,
+    hfHot:document.getElementById("hf-liv-hot").checked,
+    hfWinter:document.getElementById("hf-liv-winter").checked,
     hfCold:document.getElementById("hf-liv-cold").checked,
     hfDp:document.getElementById("hf-liv-dp").checked,
     hfRain:document.getElementById("hf-liv-rain").checked,
@@ -4926,7 +4983,16 @@ function loadLivPrefs(){
   function sv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
   function sc(id,val){var el=document.getElementById(id);if(el)el.checked=val;}
   sv("sl-liv-heat",p.heat!==undefined?p.heat:2);
-  sv("sl-liv-cold",p.cold!==undefined?p.cold+(p.coldV===2?0:2):4); // before coldV:2 the scale started at 5°C
+  var cold=p.cold!==undefined?p.cold+(p.coldV===2?0:2):4; // before coldV:2 the scale started at 5°C
+  sv("sl-liv-cold",cold);
+  // Hottest days and winter days were once worked out from the other two sliders. For settings
+  // saved before they had their own, start them at the typical gaps in the climate data: the
+  // hottest day runs about 6° above the warmest month's average day, and the coolest month's
+  // average day about 15° above the coldest night.
+  function near(bands,v,key){var bi=0;for(var i=0;i<bands.length;i++)if(Math.abs(bands[i][key]-v)<Math.abs(bands[bi][key]-v))bi=i;return bi;}
+  var heatMax=LIV_HEAT_BANDS[p.heat!==undefined?p.heat:2].max,coldMin=LIV_COLD_BANDS[cold].min;
+  sv("sl-liv-hot",p.hot!==undefined?p.hot:near(LIV_HOT_BANDS,heatMax+6,"max"));
+  sv("sl-liv-winter",p.winter!==undefined?p.winter:coldMin<=-99?LIV_WINTER_BANDS.length-1:near(LIV_WINTER_BANDS,coldMin+15,"min"));
   sv("sl-liv-rain",p.rain!==undefined?p.rain:2);
   sv("sl-liv-sun",p.sun!==undefined?p.sun:2);
   sv("sl-liv-snow",p.snow!==undefined?p.snow:0);
@@ -4935,6 +5001,8 @@ function loadLivPrefs(){
   sv("sl-liv-hsens",p.hsens!==undefined?p.hsens:50);
   sv("sl-liv-lsens",p.lsens!==undefined?p.lsens:50);
   sc("hf-liv-heat",p.hfHeat||false);
+  sc("hf-liv-hot",p.hfHot!==undefined?p.hfHot:(p.hfHeat||false));
+  sc("hf-liv-winter",p.hfWinter||false);
   sc("hf-liv-cold",p.hfCold||false);
   sc("hf-liv-dp",p.hfDp||false);
   sc("hf-liv-rain",p.hfRain||false);
@@ -4942,13 +5010,15 @@ function loadLivPrefs(){
   sc("hf-liv-snow",p.hfSnow||false);
   sc("req-summer-warm",p.reqSummerWarm||false);
   sc("req-winter-cool",p.reqWinterCool||false);
-  ["heat","cold","dp","rain","sun","snow"].forEach(function(d){onLivBand(d);});
+  ["heat","hot","winter","cold","dp","rain","sun","snow"].forEach(function(d){onLivBand(d);});
   ["tsens","hsens","lsens"].forEach(function(s){onLivSens(s);});
   livUnitText();
 }
 function getLivPrefs(){
   return{
     heatMax:LIV_HEAT_BANDS[parseInt(document.getElementById("sl-liv-heat").value)].max,
+    hotMax:LIV_HOT_BANDS[parseInt(document.getElementById("sl-liv-hot").value)].max,
+    winterMin:LIV_WINTER_BANDS[parseInt(document.getElementById("sl-liv-winter").value)].min,
     coldMin:LIV_COLD_BANDS[parseInt(document.getElementById("sl-liv-cold").value)].min,
     rainMin:LIV_RAIN_BANDS[parseInt(document.getElementById("sl-liv-rain").value)].min,
     rainMax:LIV_RAIN_BANDS[parseInt(document.getElementById("sl-liv-rain").value)].min*2.5,
@@ -4960,6 +5030,8 @@ function getLivPrefs(){
     hsens:parseInt(document.getElementById("sl-liv-hsens").value)/100,
     lsens:parseInt(document.getElementById("sl-liv-lsens").value)/100,
     hfHeat:document.getElementById("hf-liv-heat").checked,
+    hfHot:document.getElementById("hf-liv-hot").checked,
+    hfWinter:document.getElementById("hf-liv-winter").checked,
     hfCold:document.getElementById("hf-liv-cold").checked,
     hfRain:document.getElementById("hf-liv-rain").checked,
     hfSun:document.getElementById("hf-liv-sun").checked,
@@ -5024,8 +5096,8 @@ function livCompute(entry,p){
   var windCeil=20+((1-p.lsens)*20);
   var s=[
     scoreCeil(st,p.heatMax,ts,p.hfHeat),           // summer heat
-    scoreCeil(hotmaxMax,p.heatMax+3,ts,p.hfHeat),  // extreme heat
-    scoreFloor(wt,p.coldMin+5,ts,false),           // winter cold (avg)
+    scoreCeil(hotmaxMax,p.hotMax,ts,p.hfHot),      // hottest days
+    scoreFloor(wt,p.winterMin,ts,p.hfWinter),      // winter days
     scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold), // extreme cold
     scoreCeil(peakDp,p.dpMax,hs,p.hfDp),           // peak humidity
     scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain), // rainfall (rain + snow liquid-equivalent)
@@ -5034,7 +5106,7 @@ function livCompute(entry,p){
     scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow)     // snowfall
   ];
   // Hard fail check — any triggered hard fail zeros the whole score
-  var hard=(p.hfHeat&&st>p.heatMax)||(p.hfHeat&&hotmaxMax>p.heatMax+3)||(p.hfCold&&coldtminMin<p.coldMin)||
+  var hard=(p.hfHeat&&st>p.heatMax)||(p.hfHot&&hotmaxMax>p.hotMax)||(p.hfWinter&&wt<p.winterMin)||(p.hfCold&&coldtminMin<p.coldMin)||
     (p.hfDp&&peakDp>p.dpMax)||(p.hfRain&&totalPrecip<p.rainMin)||(p.hfSun&&sun<p.sunMin)||
     (p.hfSnow&&totalSnow>p.snowMax)||(p.reqSummerWarm&&st<18)||(p.reqWinterCool&&wt>=18);
   var raw=Math.round(s[0]*0.15+s[1]*0.10+s[2]*0.15+s[3]*0.10+s[4]*0.20+s[5]*0.10+s[6]*0.10+s[7]*0.07+s[8]*0.03);
@@ -5064,9 +5136,10 @@ function livRuleOutReasons(entry){
   function n(v){return Math.round(v).toLocaleString("en-AU");}
   function cm(v){return v<10?(Math.round(v*10)/10):Math.round(v);}
   var r=[];
-  if(p.hfHeat&&st>p.heatMax)r.push("Summers too hot: the warmest month averages "+t(st)+", above your "+t(p.heatMax)+" limit");
-  if(p.hfHeat&&hotmaxMax>p.heatMax+3)r.push("Heat extremes too high: the hottest days typically reach "+t(hotmaxMax)+", well past your "+t(p.heatMax)+" limit");
-  if(p.hfCold&&coldtminMin<p.coldMin)r.push("Cold extremes too low: the coldest nights typically drop to "+t(coldtminMin)+", below your "+t(p.coldMin)+" limit");
+  if(p.hfHeat&&st>p.heatMax)r.push("Summer days too hot: the warmest month averages "+t(st)+", above your "+t(p.heatMax)+" limit");
+  if(p.hfHot&&hotmaxMax>p.hotMax)r.push("Hottest days too hot: the hottest day of a typical year reaches "+t(hotmaxMax)+", above your "+t(p.hotMax)+" limit");
+  if(p.hfWinter&&wt<p.winterMin)r.push("Winter days too cold: the coolest month averages "+t(wt)+", below your "+t(p.winterMin)+" limit");
+  if(p.hfCold&&coldtminMin<p.coldMin)r.push("Coldest nights too cold: the coldest night of a typical year drops to "+t(coldtminMin)+", below your "+t(p.coldMin)+" limit");
   if(p.hfDp&&peakDp>p.dpMax)r.push("Too humid: the dew point peaks at "+t(peakDp)+" in the most humid month, above your "+t(p.dpMax)+" limit");
   if(p.hfRain&&totalPrecip<p.rainMin)r.push("Too dry: "+n(totalPrecip)+" mm of "+(totalSnow>0?"rain and snow":"rain")+" a year, below your "+n(p.rainMin)+" mm minimum");
   if(p.hfSun&&sun<p.sunMin)r.push("Not sunny enough: "+n(sun)+" hours of sunshine a year, below your "+n(p.sunMin)+"-hour minimum");
@@ -5247,10 +5320,10 @@ function showLivBreakdown(){
     [L.st>=p.heatMax-2?"Summers run warm, right up near the top of your range.":L.st>=18?"Summer days stay comfortably inside your range.":"Summers stay cool — days rarely get properly warm.",
      "Summer afternoons run a little warmer than you’d like.","Summer days would regularly feel too hot for you.","Summers would be far too hot for you, for months at a time."][lvl(s[0])]);
   // 2 — Hottest days
-  row(1,"🔥","Hottest days","The hottest day of a typical year reaches "+deg(L.hotmaxMax)+" · you allow "+deg(p.heatMax+3),
+  row(1,"🔥","Hottest days","The hottest day of a typical year reaches "+deg(L.hotmaxMax)+(p.hotMax>=99?" · any heat suits you":" · your limit "+deg(p.hotMax)),
     ["Heatwaves rarely push past what you can handle.","The hottest days of the year would test you.","Heatwaves would regularly go beyond what you can handle.","The hottest days go far beyond what you can handle."][lvl(s[1])]);
   // 3 — Winter days
-  row(2,"🧥","Winter days","Coolest month ("+mon("wt")+"): days average "+deg(L.wt)+(noCold?" · any winter suits you":" · you’re happiest above "+deg(p.coldMin+5)),
+  row(2,"🧥","Winter days","Coolest month ("+mon("wt")+"): days average "+deg(L.wt)+(p.winterMin<=-99?" · any winter suits you":" · your limit "+deg(p.winterMin)),
     [L.wt>=20?"Barely a winter at all — days stay warm year-round.":"Winter days stay comfortable for you.",
      "Winter days are a little cooler than you’d like.","Winter days would feel genuinely cold to you.","Winters would be harsh for you."][lvl(s[2])]);
   // 4 — Coldest nights
