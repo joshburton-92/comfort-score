@@ -3208,12 +3208,12 @@ function metToOm(m,lat,lon){
   return d;
 }
 // Line under the location saying where the forecast came from, when it isn't Open-Meteo
-function fcSourceNote(d){
+function fcSourceNote(d,station){
   if(!d||d._src==="om"||d._src==="om-proxy")return"";
   if(d._src==="met")return"Open-Meteo isn’t responding — forecast from <a href='https://www.met.no/en' target='_blank' rel='noopener'>MET Norway</a> (<a href='https://creativecommons.org/licenses/by/4.0/' target='_blank' rel='noopener'>CC BY 4.0</a>), converted for this app. Storm ratings use weather codes only"+(d._metPastDays?".":"; heatwave and coldwave checks need recent days and are off until Open-Meteo is back.");
   if(d._src==="stored"){
     var h=(Date.now()-d._storedAt)/36e5;
-    return"Open-Meteo and the backup aren’t responding — showing the forecast saved "+(h<1?"under an hour":h<48?Math.round(h)+" hours":Math.round(h/24)+" days")+" ago. Current conditions are that forecast’s figures for this hour.";
+    return"Open-Meteo and the backup aren’t responding — showing the forecast saved "+(h<1?"under an hour":h<48?Math.round(h)+" hours":Math.round(h/24)+" days")+" ago."+(station?"":" Current conditions are that forecast’s figures for this hour.");
   }
   return"";
 }
@@ -3298,13 +3298,24 @@ function fetchWU(stationId,apiKey,label,cb){
     if(cb)cb();
   }).catch(function(e){var msg="WU fetch failed: "+e.message;document.getElementById("live-status").textContent=msg;showStatusWU(msg);if(cb)cb();});
 }
+// Forecast for a Weather Underground station: the station gives current conditions, the
+// forecast comes from getForecast() (same fallbacks), with its progress on the status line.
 function fetchForecastOnly(lat,lon){
+  var wu=window._currentWU,st=document.getElementById("live-status");
+  var same=function(){return window._currentWU===wu;};
+  st.textContent="Station readings shown \u2014 fetching the forecast\u2026";
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   window._AQ=null;
-  var fcPromise=getForecast(lat,lon,"weather_code");
+  var fcPromise=getForecast(lat,lon,"weather_code",function(msg){
+    if(same())st.textContent="Station readings shown \u2014 "+msg.replace("Fetching weather","fetching the forecast");
+  });
   var aqPromise=fetchJSONTimeout(aqUrl,FC_SWITCH_MS).catch(function(){return null;});
   Promise.all([fcPromise,aqPromise]).then(function(results){
     var d=results[0],aq=results[1];
+    if(!same())return; // another place or station was loaded meanwhile
+    st.textContent="";
+    var srcEl=document.getElementById("live-src"),srcNote=fcSourceNote(d,true);
+    srcEl.innerHTML=srcNote;srcEl.style.display=srcNote?"block":"none";
     window._AQ=aq;
     if(d.current&&d.current.weather_code!==undefined&&window._LW){
       window._LW.wxCode=d.current.weather_code;
@@ -3317,7 +3328,9 @@ function fetchForecastOnly(lat,lon){
       // Re-render live score after _FC and _AQ are both set
       renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode!==undefined?w.wxCode:null,w.rain);
     }
-  }).catch(function(){});
+  }).catch(function(){
+    if(same())st.textContent="Station readings shown, but the forecast couldn\u2019t load \u2014 Open-Meteo isn\u2019t responding and the backup source failed too. Try again in a few minutes.";
+  });
 }
 function showStatusWU(msg){var el=document.getElementById("wu-status");el.textContent=msg;el.style.display=msg?"":"none";}
 
