@@ -1570,7 +1570,7 @@ function showColdwavePop(dateStr,backDi){
 // Heat- and cold-wave readings for the 7-day tiles, worked out once per forecast
 function waveDaysFor(fc){
   if(window._WAVEFC===fc&&window._WAVEDAYS)return window._WAVEDAYS;
-  var ent=(fc&&typeof findClimEntry==="function")?findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM):null;
+  var ent=(fc&&typeof findClimEntry==="function")?findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM,true):null;
   var hc=ent?hwClimatology(ent):null,cc=ent?cwClimatology(ent):null;
   window._WAVEFC=fc;
   window._WAVEDAYS={hw:hc?heatwaveDays(fc,hc):null,cw:cc?coldwaveDays(fc,cc):null};
@@ -2608,7 +2608,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
     // Cache-derived climatology only; silent where we have none.
     window._HWDAYS=null;window._HWPILLDATE=null;
     if(window._FC&&typeof findClimEntry==="function"){
-      var hwEnt=findClimEntry(window._FC.latitude,window._FC.longitude,window._FC.elevation,CLIM_HAZARD_KM);
+      var hwEnt=findClimEntry(window._FC.latitude,window._FC.longitude,window._FC.elevation,CLIM_HAZARD_KM,true);
       var hwClim=hwEnt?hwClimatology(hwEnt):null;
       if(hwClim){
         window._HWDAYS=heatwaveDays(window._FC,hwClim);
@@ -2629,7 +2629,7 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
     // Low intensity reads as a quieter "Cold snap"; severe and extreme as "Coldwave".
     window._CWDAYS=null;window._CWPILLDATE=null;
     if(window._FC&&typeof findClimEntry==="function"){
-      var cwEnt=findClimEntry(window._FC.latitude,window._FC.longitude,window._FC.elevation,CLIM_HAZARD_KM);
+      var cwEnt=findClimEntry(window._FC.latitude,window._FC.longitude,window._FC.elevation,CLIM_HAZARD_KM,true);
       var cwClim=cwEnt?cwClimatology(cwEnt):null;
       if(cwClim){
         window._CWDAYS=coldwaveDays(window._FC,cwClim);
@@ -3218,11 +3218,16 @@ function fcSourceNote(d,station){
   return"";
 }
 function fetchWeather(lat,lon,label){fetchWeatherWithCb(lat,lon,label,null);}
-function fetchWeatherWithCb(lat,lon,label,cb){
+// elevHint: the place's height when already known (Climate Explorer pins). The climate card
+// is drawn straight away from it (or from distance alone), without waiting for the forecast;
+// with no hint it's redrawn with the forecast's height once that arrives.
+function fetchWeatherWithCb(lat,lon,label,cb,elevHint){
   goLive();
   document.getElementById("live-status").textContent="Fetching weather...";
   window._currentLat=lat;window._currentLon=lon;window._currentLabel=label;window._currentWU=null;
+  window._currentElev=elevHint!=null?elevHint:null;
   window._renderedFor=null;gdacsCheck(lat,lon);
+  showClimCard(lat,lon,window._currentElev);
   var aqUrl="https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,grass_pollen&timezone=auto&forecast_days=5";
   // Fetch weather and AQ in parallel; wait for both before rendering (AQ gives up after 20 s)
   window._AQ=null;
@@ -3242,8 +3247,8 @@ function fetchWeatherWithCb(lat,lon,label,cb){
     document.getElementById("live-result").style.display="block";
     document.getElementById("live-locname").textContent=label;
     document.getElementById("utility-row").style.display="block";
-    window._currentElev=d.elevation;
-    showClimCard(lat,lon,d.elevation);
+    if(elevHint==null)window._currentElev=d.elevation;
+    if(elevHint==null)showClimCard(lat,lon,d.elevation);
     var elevStr=d.elevation!=null?" · "+Math.round(d.elevation)+"m ASL":"";
     document.getElementById("live-obstime").textContent=(d._src==="stored"?"Saved forecast for ":d._src==="met"?"Forecast for ":"Observed ")+fmtObsTime(cur.time,d.timezone)+elevStr;
     var srcEl=document.getElementById("live-src"),srcNote=fcSourceNote(d);
@@ -4571,7 +4576,7 @@ function show7DaySlot(di){
     // Heatwave line — sits at the top of the summary card, not above it
     var hwLine="";
     if(!window._HWDAYS&&fc&&typeof findClimEntry==="function"){
-      var heE=findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM),heC=heE?hwClimatology(heE):null;
+      var heE=findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM,true),heC=heE?hwClimatology(heE):null;
       if(heC)window._HWDAYS=heatwaveDays(fc,heC);
     }
     var hwDay=window._HWDAYS?hwForDate(window._HWDAYS,dateKey):null;
@@ -4643,7 +4648,7 @@ function show7DaySlot(di){
     // Coldwave line — mirrors the heatwave line
     var cwLine="";
     if(!window._CWDAYS&&fc&&typeof findClimEntry==="function"){
-      var ceE=findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM),ceC=ceE?cwClimatology(ceE):null;
+      var ceE=findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM,true),ceC=ceE?cwClimatology(ceE):null;
       if(ceC)window._CWDAYS=coldwaveDays(fc,ceC);
     }
     var cwDay=window._CWDAYS?hwForDate(window._CWDAYS,dateKey):null;
@@ -4819,11 +4824,13 @@ function loadClimNotes(){
     .catch(function(e){_climNotesP=null;throw e;});
   return _climNotesP;
 }
-function findClimEntry(lat,lon,elev,maxKm){
+// adjust: lapse-adjust temperatures for a height difference over CLIM_EXACT_DZ. Only the
+// heatwave/coldwave checks ask for it; Climate Explorer shows the borrowed place's own figures.
+function findClimEntry(lat,lon,elev,maxKm,adjust){
   if(typeof CLIM_CACHE==="undefined"||lat==null||lon==null)return null;
   maxKm=maxKm||CLIM_MAX_KM;
   var hasZ=elev!=null&&!isNaN(elev);
-  var key=lat.toFixed(4)+","+lon.toFixed(4)+","+(hasZ?Math.round(elev):"")+","+maxKm;
+  var key=lat.toFixed(4)+","+lon.toFixed(4)+","+(hasZ?Math.round(elev):"")+","+maxKm+(adjust?",a":"");
   if(_climMatchMemo.hasOwnProperty(key))return _climMatchMemo[key];
   var best=null,bestScore=Infinity,bestKm=0,bestDz=null;
   for(var i=0;i<CLIM_CACHE.length;i++){
@@ -4838,7 +4845,7 @@ function findClimEntry(lat,lon,elev,maxKm){
   if(best){
     out={};for(var k in best)out[k]=best[k];
     out._src=best;out._km=bestKm;out._dz=bestDz;
-    if(bestDz!=null&&Math.abs(bestDz)>CLIM_EXACT_DZ){
+    if(adjust&&bestDz!=null&&Math.abs(bestDz)>CLIM_EXACT_DZ){
       var sh=-CLIM_LAPSE*bestDz,shd=-CLIM_DP_LAPSE*bestDz,r1=function(v){return v==null?v:Math.round(v*10)/10;};
       out.monthly=best.monthly.map(function(m){
         var c={};for(var f in m)c[f]=m[f];
@@ -5289,7 +5296,7 @@ function livCompute(entry,p){
   var coldtminMin=M.reduce(function(mn,m){return Math.min(mn,m.tminMin!==undefined?m.tminMin:999);},999);
   var totalRain=M.reduce(function(s,m){return s+(m.rain||0);},0);
   var totalSnow=M.reduce(function(s,m){return s+(m.snow||0);},0);
-  var totalPrecip=totalRain+totalSnow; // liquid-equivalent: 10:1 snow:water depth ratio means snow cm ≈ extra liquid mm
+  var totalPrecip=totalRain; // Rainfall column = total precipitation (rain + melted snow), so snow isn't added again
   var sun=entry.sun||0;
   var wind=entry.wind||0;
   // Which month each extreme falls in (for the breakdown's wording)
@@ -5335,7 +5342,7 @@ function livCompute(entry,p){
     scoreFloor(wt,p.winterMin,ts,p.hfWinter),      // winter days
     scoreFloor(coldtminMin,p.coldMin,ts,p.hfCold), // extreme cold
     scoreCeil(peakDp,p.dpMax,hs,p.hfDp),           // peak humidity
-    scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain), // rainfall (rain + snow liquid-equivalent)
+    scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain), // rainfall (total precipitation)
     scoreFloor(sun,p.sunMin,ls,p.hfSun),           // sunshine
     scoreCeil(wind,windCeil,ls,false),             // wind
     scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow)     // snowfall
@@ -5376,7 +5383,7 @@ function livRuleOutReasons(entry){
   if(p.hfWinter&&wt<p.winterMin)r.push("Winter days too cold: the coolest month averages "+t(wt)+", below your "+t(p.winterMin)+" limit");
   if(p.hfCold&&coldtminMin<p.coldMin)r.push("Coldest nights too cold: the coldest night of a typical year drops to "+t(coldtminMin)+", below your "+t(p.coldMin)+" limit");
   if(p.hfDp&&peakDp>p.dpMax)r.push("Too humid: the dew point peaks at "+t(peakDp)+" in the most humid month, above your "+t(p.dpMax)+" limit");
-  if(p.hfRain&&totalPrecip<p.rainMin)r.push("Too dry: "+n(totalPrecip)+" mm of "+(totalSnow>0?"rain and snow":"rain")+" a year, below your "+n(p.rainMin)+" mm minimum");
+  if(p.hfRain&&totalPrecip<p.rainMin)r.push("Too dry: "+n(totalPrecip)+" mm of rain a year, below your "+n(p.rainMin)+" mm minimum");
   if(p.hfSun&&sun<p.sunMin)r.push("Not sunny enough: "+n(sun)+" hours of sunshine a year, below your "+n(p.sunMin)+"-hour minimum");
   if(p.hfSnow&&totalSnow>p.snowMax)r.push("Too snowy: "+cm(totalSnow)+" cm of snow a year"+(p.snowMax>0?", above your "+p.snowMax+" cm limit":", and you've chosen none"));
   if(p.reqSummerWarm&&st<18)r.push("No warm summer: the warmest month averages "+t(st)+", below the "+t(18)+" you require");
@@ -5571,7 +5578,7 @@ function showLivBreakdown(){
     dpw+(s[4]<99.5?" That’s more humid than you’re comfortable with.":""));
   // 6 — Rainfall
   var wetter=L.totalPrecip>p.rainMax;
-  row(5,"🌧️","Rainfall",n(L.totalPrecip)+" mm a year"+(L.totalSnow>0?" (rain and melted snow)":"")+(p.rainMin===0?" · any amount suits you":" · you like "+n(p.rainMin)+"–"+n(p.rainMax)+" mm"),
+  row(5,"🌧️","Rainfall",n(L.totalPrecip)+" mm a year"+(L.totalSnow>0?" (snow included, as melted water)":"")+(p.rainMin===0?" · any amount suits you":" · you like "+n(p.rainMin)+"–"+n(p.rainMax)+" mm"),
     lvl(s[5])===0?"Rainfall sits in the range you like."
       :["",(wetter?"A little wetter":"A little drier")+" than you’d like.",(wetter?"Noticeably wetter":"Noticeably drier")+" than you’d like.",(wetter?"Far wetter":"Far drier")+" than you’d like."][lvl(s[5])]);
   // 7 — Sunshine
@@ -5768,7 +5775,9 @@ function livMapLoad(lat,lon,label){
   livMapToggleExpand(false);
   var popups=document.querySelectorAll(".leaflet-popup");
   for(var i=0;i<popups.length;i++)popups[i].style.display="none";
-  fetchWeather(lat,lon,label);
+  // The pin's own height, so its own climate profile is matched straight away
+  var pin=typeof CLIM_CACHE!=="undefined"?CLIM_CACHE.filter(function(e){return e.lat===lat&&e.lon===lon;})[0]:null;
+  fetchWeatherWithCb(lat,lon,label,null,pin&&pin.elev!=null?pin.elev:undefined);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
