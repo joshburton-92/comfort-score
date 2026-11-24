@@ -1235,21 +1235,21 @@ function show7DaySlot(di){
     var rain2h=(hourlyPrecip[sl.idx]||0)+(hourlyPrecip[sl.idx+1]||0);
     var rainStr=rain2h>=0.05?rain2h.toFixed(1):"—";
         tblRows+="<tr style='border-top:1px solid var(--divider);background:"+rowBg+";cursor:pointer' onclick='show7DayHourSlot("+sl.idx+","+di+",\""+timeStr+"\")'>"
-            +"<td style='padding:5px 8px 5px 6px;font-weight:800;color:var(--text);white-space:nowrap;border-right:1px solid var(--divider);border-left:2px solid var(--divider)'>"+timeStr+(r.sleep?" \uD83C\uDF19":"")+"</td>"
-      +"<td style='padding:5px 4px'>"+toDisp(sl.temp).toFixed(1)+unitSym()+"</td>"
-      +"<td style='padding:5px 4px;color:var(--text-muted)'>"+toDisp(sl.dp).toFixed(1)+unitSym()+"</td>"
+            +"<td style='padding:5px 6px 5px 6px;font-weight:800;color:var(--text);white-space:nowrap;border-right:1px solid var(--divider);border-left:2px solid var(--divider)'>"+timeStr+(r.sleep?"<span style='font-size:10px;margin-left:2px'>\uD83C\uDF19</span>":"")+"</td>"
+      +"<td style='padding:5px 4px'>"+toDisp(sl.temp).toFixed(1)+"\u00B0</td>"
+      +"<td style='padding:5px 4px;color:var(--text-muted)'>"+toDisp(sl.dp).toFixed(1)+"\u00B0</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+Math.round(sl.wind)+"</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+rainStr+"</td>"
                   +"<td style='padding:5px 6px 5px 6px;text-align:right;border-left:2px solid var(--divider);border-right:2px solid var(--divider)'>"
       +"<span style='font-size:14px;font-weight:800;color:"+scoreCol+"'>"+r.score+"</span></td>"
       +"</tr>";
   }
-    var tbl="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px'><table style='width:100%;border-collapse:collapse;font-size:12px;font-weight:700'>"
+    var tbl="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 6px;margin-bottom:10px'><table style='width:100%;border-collapse:collapse;font-size:12px;font-weight:700'>"
     +"<thead><tr>"
         +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-left:6px;border-left:2px solid var(--divider)'>Time</th>"
     +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>Temp</th>"
     +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>DP</th>"
-    +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-right:10px'>km/h</th>"
+    +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-right:4px'>km/h</th>"
     +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>mm</th>"
         +"<th style='text-align:right;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-left:8px;padding-right:6px;border-left:2px solid var(--divider);border-right:2px solid var(--divider)'>Score</th>"
     +"</tr></thead>"

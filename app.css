@@ -372,6 +372,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .pop-ttl{font-size:clamp(14px,3.5vw,16px);font-weight:800;color:var(--text-head);margin-bottom:8px;flex-shrink:0}
 .pop-body{font-size:clamp(13px,3.2vw,14px);color:var(--text);line-height:1.65;font-weight:600;white-space:pre-line;overflow-y:auto;flex:1;min-height:0}
 .pop-body-scroll{max-height:none;overflow-y:auto;padding-right:4px}
+/* A slim scrollbar in popups: Windows draws a 17px one inside the box, which squeezed the day table */
+.pop-body{scrollbar-width:thin;scrollbar-color:var(--text-muted) transparent}
+.pop-body::-webkit-scrollbar{width:6px;height:6px}
+.pop-body::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+.pop-body::-webkit-scrollbar-track{background:transparent}
 .pop-close{font-size:clamp(12px,3vw,13px);color:var(--text-muted);margin-top:12px;display:block;cursor:pointer;text-align:center;padding-top:10px;border-top:1px solid var(--divider);font-weight:700;flex-shrink:0}
 .stars-pop{background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:18px;padding:18px;max-width:320px;width:100%}
 .stars-list{margin-top:8px;max-height:260px;overflow-y:auto}
