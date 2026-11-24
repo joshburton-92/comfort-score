@@ -11,7 +11,7 @@
 .liv-view-seg .liv-map-btn{border-radius:0}
 .liv-view-seg .liv-map-btn:first-child{border-radius:20px 0 0 20px}
 .liv-view-seg .liv-map-btn:last-child{border-radius:0 20px 20px 0;margin-left:-1px}
-#liv-list{margin-top:10px;border:1px solid var(--card-border);border-radius:12px;background:var(--card-inner);height:360px;display:flex;flex-direction:column;overflow:hidden}
+#liv-list{margin-top:8px;border:1px solid var(--card-border);border-radius:12px;background:var(--card-inner);height:320px;display:flex;flex-direction:column;overflow:hidden}
 .liv-list-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 10px;border-bottom:1px solid var(--divider)}
 .liv-list-note{font-size:11px;font-weight:700;color:var(--text-muted);line-height:1.4}
 #liv-list-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -31,7 +31,15 @@
 .liv-reg-meta{margin-left:auto;font-size:11px;font-weight:700;color:var(--text-muted);white-space:nowrap}
 .liv-more{display:block;width:100%;padding:10px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:800;color:var(--text-sec);cursor:pointer}
 .liv-empty{padding:16px 12px;font-size:12px;font-weight:600;color:var(--text-muted);line-height:1.5}
-#liv-map-wrap.expanded #liv-list{flex:1;height:auto}
+/* Expanded: map and list share the screen; side by side when wide */
+#liv-map-wrap.expanded .liv-map-area{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+#liv-map-wrap.expanded .liv-map-area #liv-map{flex:3;min-height:0;height:auto}
+#liv-map-wrap.expanded #liv-list{flex:2;min-height:0;height:auto;margin-top:0}
+@media(min-width:900px){
+  #liv-map-wrap.expanded .liv-map-area{flex-direction:row}
+  #liv-map-wrap.expanded .liv-map-area #liv-map{flex:1}
+  #liv-map-wrap.expanded #liv-list{flex:0 0 360px}
+}
 /* Full-screen Climate Explorer (wide screens): two columns, bigger map and charts */
 .clim-head{display:flex;align-items:center;gap:8px}
 .clim-head .adv-tog{flex:1}
