@@ -495,7 +495,7 @@ function waveTileTags(fc,dateStr){
     var ci=cwInfo(w.cw.map[dateStr].sev,w.cw.map[dateStr]),b=ci.band;
     out+="<div class='"+(b>=2?"fc-cw":"fc-cs")+"'>"+(ci.cooler?"\uD83C\uDF43 Cooler":"\u2744\uFE0F "+(b>=2?"Coldwave":"Cold snap"))+"</div>";
   }
-  // Warmer/cooler than usual: tiles show the clearer cases only (not "a bit")
+  // Warmer/cooler than usual: both levels (plain and "Much") show on the tiles
   var an=out?null:anomFor(fc,dateStr);
   if(an&&an.lvl>=1)out+="<div class='"+(an.warm?"fc-an-w":"fc-an-c")+"'>"+(an.warm?"\u2191 Warmer":"\u2193 Cooler")+"</div>";
   return out;
@@ -510,7 +510,7 @@ function waveTileTags(fc,dateStr){
 // the average of its high's and low's departures in those units. Heatwave and coldwave take
 // precedence: this shows only on days neither covers.
 var ANOM_SPREAD=1.8,ANOM_SD_MIN=0.8;
-var ANOM_LVLS=[{z:2.25,w:"Much ",lvl:2},{z:1.5,w:"",lvl:1},{z:0.9,w:"A bit ",lvl:0}];
+var ANOM_LVLS=[{z:2.25,w:"Much ",lvl:2},{z:1.5,w:"",lvl:1}];   // a third level, "A bit" at 0.9, fired too often and too close to normal
 function anomNormal(m,dateStr){
   var y=+dateStr.slice(0,4),mo=+dateStr.slice(5,7)-1,d=+dateStr.slice(8,10);
   var dim=new Date(Date.UTC(y,mo+1,0)).getUTCDate();

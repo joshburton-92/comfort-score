@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<link rel="stylesheet" href="app.css?v=2"/>
+<link rel="stylesheet" href="app.css?v=3"/>
 </head>
 <body class="view-forecast">
 <div class="app">
@@ -141,14 +141,29 @@
       </div>
       <!-- Map stays visible even with no cache row, so you can jump to the nearest place that has data -->
       <div style="height:1px;background:var(--divider);margin:10px 0"></div>
-      <div class="sec-lbl" style="margin-bottom:6px">Climate map</div>
+      <div class="sec-lbl" style="margin-bottom:6px">Climate map &amp; rankings</div>
       <div id="liv-map-wrap">
         <div class="liv-map-toggle">
+          <div class="liv-view-seg" role="group" aria-label="Show places as">
+            <button class="liv-map-btn active" id="liv-view-map" aria-pressed="true" onclick="livView('map')">Map</button>
+            <button class="liv-map-btn" id="liv-view-list" aria-pressed="false" onclick="livView('list')">List</button>
+          </div>
           <button class="liv-map-btn active" id="liv-map-btn-exc" onclick="livMapFilter('exc')">Excellent only</button>
           <button class="liv-map-btn" id="liv-map-btn-all" onclick="livMapFilter('all')">Show all</button>
           <button class="liv-map-btn liv-map-expand" id="liv-map-btn-expand" onclick="livMapToggleExpand()">&#x2922; Expand</button>
         </div>
         <div id="liv-map"></div>
+        <!-- The same places as the map, as a list: best first, or grouped by region -->
+        <div id="liv-list" style="display:none">
+          <div class="liv-list-head">
+            <div class="liv-view-seg" role="group" aria-label="Order the list">
+              <button class="liv-map-btn active" id="liv-sort-score" aria-pressed="true" onclick="livListSort('score')">Best first</button>
+              <button class="liv-map-btn" id="liv-sort-region" aria-pressed="false" onclick="livListSort('region')">By region</button>
+            </div>
+            <div class="liv-list-note" id="liv-list-note"></div>
+          </div>
+          <div id="liv-list-body"></div>
+        </div>
       </div>
       </div>
      </div>
@@ -456,11 +471,11 @@
   </div>
 </div>
 
-<script src="js/core.js?v=2" defer></script>
-<script src="js/hazards.js?v=1" defer></script>
+<script src="js/core.js?v=3" defer></script>
+<script src="js/hazards.js?v=2" defer></script>
 <script src="js/app.js?v=3" defer></script>
 <script src="js/forecast.js?v=2" defer></script>
-<script src="js/climate.js?v=3" defer></script>
+<script src="js/climate.js?v=4" defer></script>
 <script src="js/init.js?v=2" defer></script>
 </body>
 </html>

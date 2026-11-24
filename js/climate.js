@@ -1147,7 +1147,7 @@ var _livMapMarkers=[];
 var _livMapFilter="exc";
 var _livMapRebuildTimer=null;
 function livMapScheduleRebuild(){
-  if(!_livMap)return;
+  if(!_livMap&&_livView!=="list")return;
   if(_livMapRebuildTimer)clearTimeout(_livMapRebuildTimer);
   _livMapRebuildTimer=setTimeout(livMapBuildMarkers,180);
 }
@@ -1201,10 +1201,12 @@ function initLivMap(){
   _livMap.setView([0,0],2);
   livMapCentre();
   _livMap.on("move",livMapWrapMarkers);
+  if(_livView==="list")livView("list");
   livMapBuildMarkers();
 }
 
 function livMapBuildMarkers(){
+  if(_livView==="list")livListRender();
   if(!_livMap)return;
   if(typeof CLIM_CACHE==="undefined")return;
   _livMapMarkers.forEach(function(m){_livMap.removeLayer(m);});
@@ -1269,9 +1271,108 @@ function livMapFilter(mode){
   _livMapFilter=mode;
   document.getElementById("liv-map-btn-exc").classList.toggle("active",mode==="exc");
   document.getElementById("liv-map-btn-all").classList.toggle("active",mode==="all");
+  _livListShown=100;
   livMapBuildMarkers();
 }
 
+// ── Climate map as a list ──────────────────────────────────────────────────
+// The same places as the map (and the same Excellent only / Show all filter), ranked by your
+// Liveability score: one list best first, or grouped by region with each region's best first.
+// Tapping a place loads it, as "Load in Comfort Score" does on a pin; ⇄ compares it.
+var _livView=(function(){try{return localStorage.getItem("liv_view")==="list"?"list":"map";}catch(e){return"map";}})();
+var _livSort=(function(){try{return localStorage.getItem("liv_sort")==="region"?"region":"score";}catch(e){return"score";}})();
+var _livListShown=100,_livRegOpen={};
+function livSeg(a,b,onA){
+  var x=document.getElementById(a),y=document.getElementById(b);
+  if(x){x.classList.toggle("active",onA);x.setAttribute("aria-pressed",onA?"true":"false");}
+  if(y){y.classList.toggle("active",!onA);y.setAttribute("aria-pressed",onA?"false":"true");}
+}
+function livView(v){
+  _livView=v==="list"?"list":"map";
+  try{localStorage.setItem("liv_view",_livView);}catch(e){}
+  livSeg("liv-view-map","liv-view-list",_livView==="map");
+  var map=document.getElementById("liv-map"),list=document.getElementById("liv-list");
+  if(map)map.style.display=_livView==="map"?"":"none";
+  if(list)list.style.display=_livView==="list"?"":"none";
+  if(_livView==="list"){_livListShown=100;livListRender();}
+  else{initLivMap();if(_livMap)setTimeout(function(){_livMap.invalidateSize();livMapCentre();},40);}
+}
+function livListSort(s){
+  _livSort=s==="region"?"region":"score";
+  try{localStorage.setItem("liv_sort",_livSort);}catch(e){}
+  _livListShown=100;
+  livListRender();
+  var b=document.getElementById("liv-list-body");if(b)b.scrollTop=0;
+}
+function livListItems(){
+  var all=[];
+  for(var i=0;i<CLIM_CACHE.length;i++){
+    var e=CLIM_CACHE[i];
+    if(e.lat==null||e.lon==null)continue;
+    var s=calcLiveability(e);
+    if(s===null)continue;
+    all.push({i:i,e:e,s:s});
+  }
+  // Best first; equal scores alphabetically, so the order doesn't jump about
+  all.sort(function(a,b){return b.s-a.s||a.e.name.localeCompare(b.e.name);});
+  for(var k=0;k<all.length;k++)all[k].rank=k+1;
+  return all;
+}
+function livAttr(t){return cmpEsc(t).replace(/'/g,"&#39;").replace(/"/g,"&quot;");}
+function livListRow(x,rank,sub){
+  var e=x.e,c=climScoreCol(x.s),nm=e.name+(e.ter?", "+e.ter:""),cur=x.e===cmpA();
+  return"<div class='liv-row"+(cur?" cur":"")+"'>"
+    +"<span class='liv-rank'>"+rank+"</span>"
+    +"<button class='liv-row-main' onclick='livListLoad("+x.i+")' title='Load "+livAttr(nm)+"'>"
+    +"<span class='liv-row-name'>"+cmpEsc(e.name)+(cur?" · shown above":"")+"</span>"
+    +"<span class='liv-row-sub'>"+cmpEsc(sub)+(livRuleOutReasons(e).length?" · ruled out":"")+"</span></button>"
+    +"<span class='liv-row-score' style='color:"+c+"'>"+x.s+"</span>"
+    +"<button class='liv-row-cmp' onclick='livListCmp("+x.i+")' aria-label='Compare with "+livAttr(nm)+"' title='Compare with this place'>⇄</button>"
+    +"</div>";
+}
+function livListRender(){
+  var body=document.getElementById("liv-list-body"),note=document.getElementById("liv-list-note");
+  if(!body||_livView!=="list")return;
+  livSeg("liv-sort-score","liv-sort-region",_livSort==="score");
+  if(typeof CLIM_CACHE==="undefined"){body.innerHTML="<div class='liv-empty'>⏳ Loading climate data…</div>";if(note)note.textContent="";return;}
+  var all=livListItems(),exc=_livMapFilter==="exc";
+  var shown=exc?all.filter(function(x){return x.s>90;}):all;
+  var here=cmpA(),hereX=null;
+  for(var k=0;k<all.length;k++)if(all[k].e===here){hereX=all[k];break;}
+  var n=function(v){return v.toLocaleString("en-AU");};
+  if(note)note.textContent=(exc?n(shown.length)+" Excellent places (over 90)":"All "+n(all.length)+" places")
+    +(hereX?" · "+hereX.e.name+" ranks #"+n(hereX.rank)+" of "+n(all.length):"");
+  if(!shown.length){body.innerHTML="<div class='liv-empty'>No place scores over 90 with your current preferences. Tap <b>Show all</b> to see every place in order.</div>";return;}
+  var html="";
+  if(_livSort==="score"){
+    var lim=Math.min(shown.length,_livListShown);
+    for(var j=0;j<lim;j++){var x=shown[j];html+=livListRow(x,x.rank,(x.e.ter?x.e.ter+" · ":"")+x.e.region);}
+    if(shown.length>lim)html+="<button class='liv-more' onclick='_livListShown+=200;livListRender()'>Show more ("+n(shown.length-lim)+" to go)</button>";
+  }else{
+    // Regions in order of their best place; the region of the place shown above starts open
+    var regs={},order=[];
+    shown.forEach(function(x){var r=x.e.region;if(!regs[r]){regs[r]=[];order.push(r);}regs[r].push(x);});
+    var hereReg=here&&here.region;
+    order.forEach(function(r){
+      var L=regs[r],open=_livRegOpen.hasOwnProperty(r)?_livRegOpen[r]:r===hereReg;
+      html+="<details class='liv-reg'"+(open?" open":"")+" ontoggle='_livRegOpen["+JSON.stringify(r).replace(/'/g,"&#39;")+"]=this.open'>"
+        +"<summary>"+cmpEsc(r)+"<span class='liv-reg-meta'>"+n(L.length)+(L.length===1?" place":" places")+" · best "+L[0].s+"</span></summary>";
+      L.forEach(function(x,q){html+=livListRow(x,q+1,x.e.ter||r);});
+      html+="</details>";
+    });
+  }
+  body.innerHTML=html;
+}
+function livListLoad(i){
+  var e=CLIM_CACHE[i];if(!e)return;
+  livMapLoad(e.lat,e.lon,e.name+(e.ter?", "+e.ter:""));
+}
+function livListCmp(i){
+  var e=CLIM_CACHE[i];if(!e)return;
+  if(e===cmpA()){showToast("That’s the place already shown — pick another to compare");return;}
+  livMapToggleExpand(false);
+  cmpPick(i);
+}
 function livMapToggleExpand(force){
   var wrap=document.getElementById("liv-map-wrap"),btn=document.getElementById("liv-map-btn-expand");
   if(!wrap)return;
