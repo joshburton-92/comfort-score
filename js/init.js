@@ -11,6 +11,7 @@ initLivFeature();
 initLivPrefs();
 applySliderLock();
 initTempPrefs();
+viewFromAddress();
 (function(){
   var p=new URLSearchParams(window.location.search);
   var lat=parseFloat(p.get('lat')),lon=parseFloat(p.get('lon')),label=p.get('label')||'';

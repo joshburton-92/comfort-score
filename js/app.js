@@ -32,7 +32,7 @@ function reRenderAll(){reRenderLive();reRenderManual();if(window._FC)renderForec
 
 // ── UI ─────────────────────────────────────────────────────────────────────
 function switchTab(tab){document.getElementById("page-live").classList.toggle("active",tab==="live");document.getElementById("page-manual").classList.toggle("active",tab==="manual");document.body.classList.toggle("manual-mode",tab==="manual");var mb=document.getElementById("manual-btn");if(mb){mb.classList.toggle("active",tab==="manual");mb.title=tab==="manual"?"Back to live weather":"Manual input";}}
-function toggleManual(){switchTab(document.getElementById("page-manual").classList.contains("active")?"live":"manual");window.scrollTo({top:0,behavior:"smooth"});}
+function toggleManual(){setView("forecast");switchTab(document.getElementById("page-manual").classList.contains("active")?"live":"manual");pageScrollTo(0,true);}
 function toggleMode(){var m=document.getElementById("m-mode").value;document.getElementById("m-dp-row").style.display=(m==="dp")?"flex":"none";document.getElementById("m-rh-row").style.display=(m==="rh")?"flex":"none";}
 function calcManual(){
   var tempDisp=parseFloat(document.getElementById("m-temp").value)||20;
@@ -56,6 +56,41 @@ function calcManual(){
 }
 function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
 function togglePref(){document.getElementById("pref-tog").classList.toggle("open");document.getElementById("pref-panel").classList.toggle("open");}
+// ── Views: Forecast / Climate ──────────────────────────────────────────────
+// One page with two views. Climate adds #climate to the address so it can be linked to, and
+// Back returns to Forecast. Each view keeps its own scroll position.
+var _view="forecast",_viewScroll={forecast:0,climate:0};
+if("scrollRestoration" in history)history.scrollRestoration="manual";   // setView() restores each view's scroll itself
+function setView(v,fromHistory){
+  v=v==="climate"?"climate":"forecast";
+  var body=document.body;
+  if(v===_view&&body.classList.contains("view-"+v))return;
+  if(body.classList.contains("view-"+_view))_viewScroll[_view]=pageScrollY();
+  _view=v;
+  body.classList.toggle("view-forecast",v==="forecast");
+  body.classList.toggle("view-climate",v==="climate");
+  ["forecast","climate"].forEach(function(t){
+    var el=document.getElementById("tab-"+t);if(!el)return;
+    el.classList.toggle("active",t===v);
+    if(t===v)el.setAttribute("aria-current","page");else el.removeAttribute("aria-current");
+  });
+  if(v==="climate"){
+    if(document.getElementById("page-manual").classList.contains("active"))switchTab("live");
+    if(!document.getElementById("clim-panel").classList.contains("open"))toggleClim();
+    else setTimeout(function(){initLivMap();if(_livMap){_livMap.invalidateSize();livMapCentre();}},60);
+  }else{
+    livMapToggleExpand(false);
+    climFullToggle(false);
+  }
+  if(!fromHistory){
+    if(v==="climate")history.pushState({view:"climate"},"","#climate");
+    else history.pushState({view:"forecast"},"",location.pathname+location.search);
+  }
+  pageScrollTo(_viewScroll[v]||0);
+}
+function viewFromAddress(){setView(location.hash==="#climate"?"climate":"forecast",true);}
+window.addEventListener("popstate",viewFromAddress);
+window.addEventListener("hashchange",viewFromAddress);
 // ── Sliders ────────────────────────────────────────────────────────────────
 var SLIDER_MAPS={
  heat:{labels:["Mild","Moderate","Sensitive","Severe"],thr:[25,50,75],apply:function(t){setAdv("s-hw",Math.round(lerp(0.8,2.0,t)*10)/10);setAdv("s-tmax",Math.round(lerp(50,90,t)));}},

@@ -395,7 +395,7 @@ function homeTwinLoad(i){
   if(!e)return;
   climFullToggle(false);
   fetchWeather(e.lat,e.lon,e.name+(e.ter?", "+e.ter:""));
-  window.scrollTo({top:0,behavior:"smooth"});
+  pageScrollTo(0,true);
 }
 // Full screen: the whole explorer as a wide two-column page (wide screens only — the button
 // is hidden on phones). The map's own Expand still works on top of it.
@@ -1223,7 +1223,7 @@ function livMapLoad(lat,lon,label){
   // The pin's own height, so its own climate profile is matched straight away
   var pin=typeof CLIM_CACHE!=="undefined"?CLIM_CACHE.filter(function(e){return e.lat===lat&&e.lon===lon;})[0]:null;
   fetchWeatherWithCb(lat,lon,label,null,pin&&pin.elev!=null?pin.elev:undefined);
-  window.scrollTo({top:0,behavior:"smooth"});
+  pageScrollTo(0,true);
 }
 
 // ── Köppen explainers ──────────────────────────────────────────────────────
@@ -1491,7 +1491,7 @@ function loadKoppenExample(code,i){
   if(!ex)return;
   closePop();
   fetchWeather(ex[1],ex[2],ex[0]);
-  window.scrollTo({top:0,behavior:"smooth"});
+  pageScrollTo(0,true);
 }
 
 function toggleClimNotes(){

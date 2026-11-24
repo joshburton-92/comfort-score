@@ -17,9 +17,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<link rel="stylesheet" href="app.css?v=1"/>
+<link rel="stylesheet" href="app.css?v=2"/>
 </head>
-<body>
+<body class="view-forecast">
 <div class="app">
   <div class="onboard-card" id="onboard-card" style="display:none">
     <div class="onboard-title">Welcome to Comfort Score</div>
@@ -30,10 +30,11 @@
 
   <div class="onboard-card" id="liv-feature-card" style="display:none">
     <div class="onboard-title">✨ New — Liveability</div>
-    <div class="onboard-body">The <strong>Liveability Score</strong> is now built into Comfort Score — load any location and open <strong>Climate Explorer</strong> below your result to see how well it matches your ideal climate year-round. There are new preferences to play with too: tune your heat, cold, rainfall, sun and snow tolerances, plus two new toggles for requiring a genuinely warm summer or a properly cool winter.</div>
+    <div class="onboard-body">The <strong>Liveability Score</strong> is now built into Comfort Score — load any location and tap <strong>Climate</strong> at the top to see how well it matches your ideal climate year-round. There are new preferences to play with too: tune your heat, cold, rainfall, sun and snow tolerances, plus two new toggles for requiring a genuinely warm summer or a properly cool winter.</div>
     <button class="onboard-close" onclick="dismissLivFeature()">Got it</button>
   </div>
 
+  <div class="tb-sticky">
   <div class="topbar">
     <div class="tb-group">
       <button class="tb-btn" onclick="openSearch()" title="Find a place" aria-label="Find a place"><svg width='17' height='17' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round'><circle cx='10.5' cy='10.5' r='6.5'/><path d='M15.5 15.5L21 21'/></svg></button>
@@ -47,6 +48,12 @@
         <div class="unit-btn"        id="btn-f" onclick="setUnit('F')">&#176;F</div>
       </div>
     </div>
+  </div>
+  <!-- Forecast / Climate: two views of one page. #climate in the address opens Climate, and Back switches back. -->
+  <nav class="view-tabs" aria-label="View">
+    <a class="view-tab active" id="tab-forecast" href="#" aria-current="page" onclick="setView('forecast');return false;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.4 1.4M12.6 12.6L14 14M4 14l1.4-1.4M7 21h11a4 4 0 0 0 0-8 5 5 0 0 0-8 1"/></svg>Forecast</a>
+    <a class="view-tab" id="tab-climate" href="#climate" onclick="setView('climate');return false;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Climate</a>
+  </nav>
   </div>
   <div id="live-status" class="status top-status">Detecting your location...</div>
 
@@ -449,11 +456,11 @@
   </div>
 </div>
 
-<script src="js/core.js?v=1" defer></script>
+<script src="js/core.js?v=2" defer></script>
 <script src="js/hazards.js?v=1" defer></script>
-<script src="js/app.js?v=1" defer></script>
-<script src="js/forecast.js?v=1" defer></script>
-<script src="js/climate.js?v=1" defer></script>
-<script src="js/init.js?v=1" defer></script>
+<script src="js/app.js?v=2" defer></script>
+<script src="js/forecast.js?v=2" defer></script>
+<script src="js/climate.js?v=2" defer></script>
+<script src="js/init.js?v=2" defer></script>
 </body>
 </html>

@@ -202,7 +202,7 @@ function worldLoad(i){
   if(!c)return;
   closeWorld();
   fetchWeather(c.lat,c.lon,c.name);
-  window.scrollTo({top:0,behavior:"smooth"});
+  pageScrollTo(0,true);
 }
 
 function fetchWorldScores(){
