@@ -26,6 +26,52 @@
 .liv-map-toggle{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
 .liv-map-btn{font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid var(--card-border);background:var(--card-inner);color:var(--text-sec);cursor:pointer}
 .liv-map-btn.active{background:var(--range-fill);color:#fff;border-color:var(--range-fill)}
+/* Full-screen Climate Explorer (wide screens): two columns, bigger map and charts */
+.clim-head{display:flex;align-items:center;gap:8px}
+.clim-head .adv-tog{flex:1}
+.clim-full-btn{font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid var(--card-border);background:var(--card-inner);color:var(--text-sec);cursor:pointer;white-space:nowrap}
+@media(max-width:699px){.clim-full-btn{display:none}}
+.clim-card.full{position:fixed;inset:0;z-index:170;margin:0;border:none;border-radius:0;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 14px) 20px max(env(safe-area-inset-bottom,20px),20px)}
+.clim-card.full>*{max-width:1240px;margin-left:auto;margin-right:auto}
+.clim-card.full .clim-head{font-size:16px}
+.clim-chart-grid{--clim-bar-h:110px}
+@media(min-width:900px){
+  .clim-card.full .clim-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+  .clim-card.full .clim-chart-grid{height:180px;--clim-bar-h:165px}
+  .clim-card.full #liv-map{height:min(60vh,620px)}
+  .clim-card.full .cmp-charts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* Climate comparison */
+:root{--cmp-a:#2a7fb4;--cmp-b:#d9771e}
+@media(prefers-color-scheme:dark){:root{--cmp-a:#3d8fc8;--cmp-b:#cc7a2e}}
+.cmp-pick{position:relative;margin-bottom:10px}
+.cmp-pick input{width:100%;padding:9px 12px;font-size:16px;font-weight:600;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+.cmp-pick input::placeholder{color:var(--text-muted)}
+.cmp-sugg{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:var(--pop-bg);border:1px solid var(--pop-border);border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.15)}
+.cmp-opt{padding:8px 12px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.cmp-opt span{font-size:11px;font-weight:600;color:var(--text-muted);white-space:nowrap}
+.cmp-opt:hover,.cmp-opt.sel{background:var(--card-inner)}
+.cmp-none{padding:8px 12px;font-size:12px;color:var(--text-muted)}
+.cmp-legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12.5px;font-weight:800;color:var(--text);margin-bottom:8px}
+.cmp-key{display:inline-flex;align-items:center;gap:6px}
+.cmp-sw{width:14px;height:4px;border-radius:2px;display:inline-block}
+.cmp-act{font-size:11px;font-weight:800;color:var(--text-sec);background:none;border:none;cursor:pointer;padding:2px 0}
+.cmp-charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 12px}
+@media(max-width:420px){.cmp-charts{grid-template-columns:minmax(0,1fr)}}
+.cmp-chart{background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 8px 4px}
+.cmp-ct{font-size:10px;font-weight:800;color:var(--text-sec);letter-spacing:0.06em;text-transform:uppercase}
+.cmp-rd{font-size:11px;font-weight:700;color:var(--text-muted);line-height:1.35;min-height:30px;margin:2px 0 2px}
+.cmp-rd b{color:var(--text)}
+.cmp-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.cmp-chart .gl{stroke:var(--divider);stroke-width:1}
+.cmp-chart .tk{fill:var(--text-muted);font-size:9px;font-weight:700}
+.cmp-chart .xh{stroke:var(--text-muted);stroke-width:1;stroke-dasharray:2 2;opacity:0}
+.cmp-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.cmp-tbl th{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-sec);text-align:left;padding:5px 6px 7px;border-bottom:1px solid var(--divider)}
+.cmp-tbl td{padding:6px;border-bottom:1px solid var(--divider);font-weight:700;color:var(--text);vertical-align:top}
+.cmp-tbl td:first-child{color:var(--text-muted);font-weight:600}
+.cmp-tbl tr:last-child td{border-bottom:none}
+.cmp-hint{font-size:12px;font-weight:600;color:var(--text-muted);line-height:1.5}
 </style>
 <style>
 :root{
@@ -232,6 +278,12 @@ body{background:var(--bg);background-attachment:fixed;min-height:100vh;color:var
 .fc-cs{background:rgba(60,125,175,0.1);color:#21506f;border:1px solid rgba(60,125,175,0.35);font-weight:700}
 @media(prefers-color-scheme:dark){.fc-hw{background:rgba(220,30,50,0.3);color:#ff6070;border-color:rgba(220,60,70,0.6)}.fc-cw{background:rgba(60,120,240,0.3);color:#9cc0ff;border-color:rgba(90,140,250,0.6)}.fc-cs{background:rgba(80,150,200,0.16);color:#a8d0ea;border-color:rgba(90,150,200,0.4)}}
 .fc-day{font-size:11px;font-weight:800;color:var(--text-sec);margin-bottom:6px}
+.ann-an-w{background:rgba(225,120,40,0.12);color:#7a3a00;border-color:rgba(225,120,40,0.4);cursor:pointer}
+.ann-an-c{background:rgba(40,140,170,0.12);color:#0d4a5c;border-color:rgba(40,140,170,0.4);cursor:pointer}
+.fc-an-w,.fc-an-c{font-size:9px;font-weight:800;line-height:1.2;padding:2px 4px;border-radius:6px;white-space:nowrap;display:block;width:fit-content;margin:4px auto 0}
+.fc-an-w{background:rgba(225,120,40,0.12);color:#7a3a00;border:1px solid rgba(225,120,40,0.4)}
+.fc-an-c{background:rgba(40,140,170,0.12);color:#0d4a5c;border:1px solid rgba(40,140,170,0.4)}
+@media(prefers-color-scheme:dark){.ann-an-w,.fc-an-w{background:rgba(240,140,60,0.18);color:#ffc08a;border-color:rgba(240,140,60,0.45)}.ann-an-c,.fc-an-c{background:rgba(70,170,200,0.18);color:#a6e0f0;border-color:rgba(70,170,200,0.45)}}
 .fc-hitime{font-size:9px;font-weight:600;color:var(--text-muted);margin-top:1px}
 .irow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .irow label{font-size:clamp(13px,3.5vw,14px);color:var(--text-sec);flex:0 0 44%;font-weight:700}
@@ -453,11 +505,16 @@ body.manual-mode #clim-card{display:none!important}
   </div>
 
   <div class="card clim-card" id="clim-card">
-    <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Climate Explorer</span>
+    <div class="clim-head">
+      <div class="adv-tog" id="clim-tog" onclick="toggleClim()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Climate Explorer</span>
+      </div>
+      <button class="clim-full-btn" id="clim-full-btn" onclick="climFullToggle()">&#x2922; Full screen</button>
     </div>
     <div class="s-panel" id="clim-panel">
+     <div class="clim-cols">
+      <div class="clim-col-a">
       <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:8px 0 10px" id="clim-loc-label"></div>
       <div id="clim-home-cmp" style="display:none;font-size:12px;font-weight:600;line-height:1.5;color:var(--text-sec);margin:-4px 0 12px"></div>
       <div class="clim-chart-grid" id="clim-chart-grid"></div>
@@ -468,6 +525,8 @@ body.manual-mode #clim-card{display:none!important}
         </tr></thead>
         <tbody id="clim-tbody"></tbody>
       </table>
+      </div>
+      <div class="clim-col-b">
       <!-- Liveability: hidden by showLivCard() when there's no cache row for this location -->
       <div class="liv-card" id="liv-card">
         <div style="height:1px;background:var(--divider);margin:10px 0"></div>
@@ -495,6 +554,18 @@ body.manual-mode #clim-card{display:none!important}
           <button class="liv-map-btn liv-map-expand" id="liv-map-btn-expand" onclick="livMapToggleExpand()">&#x2922; Expand</button>
         </div>
         <div id="liv-map"></div>
+      </div>
+      </div>
+     </div>
+      <!-- Compare climates: the place shown above against any other place with a climate profile -->
+      <div id="cmp-sec">
+        <div style="height:1px;background:var(--divider);margin:12px 0 10px"></div>
+        <div class="sec-lbl" style="margin-bottom:6px">Compare climates</div>
+        <div class="cmp-pick">
+          <input type="text" id="cmp-input" placeholder="Compare with… type a place" autocomplete="off" oninput="cmpSuggest()" onkeydown="cmpKey(event)" onblur="setTimeout(cmpCloseSugg,150)"/>
+          <div class="cmp-sugg" id="cmp-sugg"></div>
+        </div>
+        <div id="cmp-body"></div>
       </div>
     </div>
   </div>
@@ -1573,7 +1644,7 @@ function waveDaysFor(fc){
   var ent=(fc&&typeof findClimEntry==="function")?findClimEntry(fc.latitude,fc.longitude,fc.elevation,CLIM_HAZARD_KM,true):null;
   var hc=ent?hwClimatology(ent):null,cc=ent?cwClimatology(ent):null;
   window._WAVEFC=fc;
-  window._WAVEDAYS={hw:hc?heatwaveDays(fc,hc):null,cw:cc?coldwaveDays(fc,cc):null};
+  window._WAVEDAYS={hw:hc?heatwaveDays(fc,hc):null,cw:cc?coldwaveDays(fc,cc):null,an:ent?anomDays(fc,ent):null};
   return window._WAVEDAYS;
 }
 function waveTileTags(fc,dateStr){
@@ -1583,7 +1654,100 @@ function waveTileTags(fc,dateStr){
     var ci=cwInfo(w.cw.map[dateStr].sev,w.cw.map[dateStr]),b=ci.band;
     out+="<div class='"+(b>=2?"fc-cw":"fc-cs")+"'>"+(ci.cooler?"\uD83C\uDF43 Cooler":"\u2744\uFE0F "+(b>=2?"Coldwave":"Cold snap"))+"</div>";
   }
+  // Warmer/cooler than usual: tiles show the clearer cases only (not "a bit")
+  var an=out?null:anomFor(fc,dateStr);
+  if(an&&an.lvl>=1)out+="<div class='"+(an.warm?"fc-an-w":"fc-an-c")+"'>"+(an.warm?"\u2191 Warmer":"\u2193 Cooler")+"</div>";
   return out;
+}
+// ── Warmer / cooler than usual ─────────────────────────────────────────────
+// Each forecast day's high and low against the normal for that date here, from the same
+// climate profile the heatwave check uses (within 50 km, adjusted for height). The normal
+// is a smooth line through the monthly averages, each sitting at mid-month.
+// How far counts as unusual depends on the place: a month's average hottest day sits about
+// ANOM_SPREAD standard deviations above its average high (its coldest night as far below its
+// average low), which sets the size of a normal day-to-day swing there. A day's reading is
+// the average of its high's and low's departures in those units. Heatwave and coldwave take
+// precedence: this shows only on days neither covers.
+var ANOM_SPREAD=1.8,ANOM_SD_MIN=0.8;
+var ANOM_LVLS=[{z:2.25,w:"Much ",lvl:2},{z:1.5,w:"",lvl:1},{z:0.9,w:"A bit ",lvl:0}];
+function anomNormal(m,dateStr){
+  var y=+dateStr.slice(0,4),mo=+dateStr.slice(5,7)-1,d=+dateStr.slice(8,10);
+  var dim=new Date(Date.UTC(y,mo+1,0)).getUTCDate();
+  var t=mo+(d-0.5)/dim-0.5,i0=Math.floor(t),f=t-i0,a=m[(i0+12)%12],b=m[(i0+13)%12];
+  function L(k){return a[k]+(b[k]-a[k])*f;}
+  return{hi:L("T"),lo:L("tmin"),
+    sdHi:Math.max(ANOM_SD_MIN,(L("tmaxMax")-L("T"))/ANOM_SPREAD),
+    sdLo:Math.max(ANOM_SD_MIN,(L("tmin")-L("tminMin"))/ANOM_SPREAD)};
+}
+function anomDays(fc,ent){
+  if(!fc||!fc.daily||!fc.daily.time||!ent||!ent.monthly||ent.monthly.length<12)return null;
+  for(var i=0;i<12;i++){var x=ent.monthly[i];if(!x||x.T==null||x.tmin==null||x.tmaxMax==null||x.tminMin==null)return null;}
+  var D=fc.daily,tx=D.temperature_2m_max,tn=D.temperature_2m_min,map={};
+  if(!tx||!tn)return null;
+  for(i=0;i<D.time.length;i++){
+    if(tx[i]==null||tn[i]==null)continue;
+    var n=anomNormal(ent.monthly,D.time[i]);
+    var zH=(tx[i]-n.hi)/n.sdHi,zL=(tn[i]-n.lo)/n.sdLo,z=(zH+zL)/2,lv=null;
+    for(var k=0;k<ANOM_LVLS.length;k++)if(Math.abs(z)>=ANOM_LVLS[k].z){lv=ANOM_LVLS[k];break;}
+    if(!lv)continue;
+    var warm=z>0,lab=lv.w+(warm?"warmer":"cooler")+" than usual";
+    map[D.time[i]]={z:z,zH:zH,zL:zL,hi:tx[i],lo:tn[i],n:n,warm:warm,lvl:lv.lvl,label:lab.charAt(0).toUpperCase()+lab.slice(1)};
+  }
+  return{map:map,ent:ent};
+}
+// The day's reading, unless a heatwave or coldwave already covers it
+function anomFor(fc,dateStr){
+  if(!fc)return null;
+  var w=waveDaysFor(fc);
+  if(!w.an||(w.hw&&w.hw.map[dateStr])||(w.cw&&w.cw.map[dateStr]))return null;
+  return w.an.map[dateStr]||null;
+}
+function normCdf(z){
+  var t=1/(1+0.2316419*Math.abs(z)),d=0.3989423*Math.exp(-z*z/2);
+  var p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  return z>0?1-p:p;
+}
+function showAnomPop(dateStr,backDi){
+  var fc=window._FC,a=anomFor(fc,dateStr);
+  var back=backDi!==undefined&&backDi!==null?"<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);text-align:center;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer' onclick='show7DaySlot("+backDi+")'>\u2190 Back</div>":"";
+  var body,title="Compared with usual";
+  if(!a){
+    body="<div class='washing-reason'><div style='font-size:12px;color:var(--text-muted)'>Nothing out of the ordinary for this day.</div>"+back+"</div>";
+  }else{
+    var col=a.warm?"rgba(215,110,30,1)":"rgba(30,135,165,1)";
+    title=(a.warm?"\u2197\uFE0F ":"\u2198\uFE0F ")+a.label;
+    var deg=function(v){return String(Math.round(toDisp(v))).replace("-","\u2212")+unitSym();};
+    var dd=function(v){var x=Math.round(v*(useFahrenheit?1.8:1));return(x>0?"+":x<0?"\u2212":"\u00B1")+Math.abs(x)+"\u00B0";};
+    var n=a.n,k80=1.28,p="<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65;margin-top:8px'>";
+    // The more unusual of the high and the low, if it leans the same way as the day
+    var useHi=Math.abs(a.zH)>=Math.abs(a.zL),zc=useHi?a.zH:a.zL,often="";
+    if((zc>0)===a.warm&&Math.abs(zc)>=0.8){
+      var pr=1-normCdf(Math.abs(zc)),N=Math.round(1/pr);
+      often=p+"<b>How unusual:</b> "+(useHi?"a high":"a low")+" this "+(a.warm?"warm":"cool")+" comes on "
+        +(N>=100?"fewer than 1 day in 100":"about 1 day in "+N)+" at this time of year here.</div>";
+    }
+    var src=climFromNote(window._WAVEDAYS&&window._WAVEDAYS.an?window._WAVEDAYS.an.ent:null);
+    var rule="<div style='height:1px;background:var(--divider);margin:11px 0 10px'></div>";
+    body="<div class='washing-reason'>"
+      +"<div style='font-size:15px;font-weight:800;color:"+col+";margin-bottom:1px'>"+a.label+"</div>"
+      +"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:9px'>"+hwDayFmt(dateStr)+"</div>"
+      +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5'>Forecast: high "+deg(a.hi)+", low "+deg(a.lo)+"</div>"
+      +"<div style='font-size:13px;font-weight:700;color:var(--text-muted);margin-top:3px'>Normal for this date: high "+deg(n.hi)+", low "+deg(n.lo)
+      +" \u2014 so "+dd(a.hi-n.hi)+" on the high, "+dd(a.lo-n.lo)+" on the low</div>"
+      +rule
+      +p.replace(";margin-top:8px","")+"<b>What\u2019s normal here:</b> 8 days in 10 at this time of year have a high between "+deg(n.hi-k80*n.sdHi)+" and "+deg(n.hi+k80*n.sdHi)
+      +", and a low between "+deg(n.lo-k80*n.sdLo)+" and "+deg(n.lo+k80*n.sdLo)+".</div>"
+      +often
+      +p+"<b>Why it\u2019s showing:</b> every place has its own normal, and its own size of normal swings \u2014 a few degrees above average is ordinary in some climates and rare in others. "
+      +(a.warm?"Heatwave":"Coldwave")+" alerts take over when a spell is long and strong enough to matter for health; this is for days that are out of the ordinary without being that.</div>"
+      +rule
+      +"<div style='font-size:11px;color:var(--text-muted);line-height:1.6'>Estimated from this app\u2019s climate data: the long-term average for the date, with the usual spread worked out from each month\u2019s average hottest day and coldest night. "
+      +"It\u2019s a guide to what\u2019s normal, not an official anomaly."+(src?" "+src+".":"")+"</div>"
+      +back+"</div>";
+  }
+  document.getElementById("pop-ttl").innerHTML=title;
+  document.getElementById("pop-body").innerHTML=body;
+  document.getElementById("pop-ov").classList.add("open");
 }
 function hwAdvice(band){
   var a="<div style='font-size:12.5px;font-weight:600;color:var(--text);line-height:1.65'>"
@@ -1898,6 +2062,7 @@ function showHowItWorks(){
     +"<div style='margin-bottom:12px'>The cold hazard of mild climates: rain soaks clothing and wind strips its warmth, so a few degrees above zero can be more dangerous than a dry frost. The warning appears when it is 8°C or colder, the wind averages 30 km/h or more, and it is raining. In the forecast, a day is flagged when at least two such hours are expected. It stays quiet when a frostbite warning is already showing.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Heatwaves & coldwaves 🌡️❄️</div>"
     +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within about 50 km, adjusted for height the same way. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Heatwaves rated 1/10 — the faintest, and the most common — aren't shown. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
+    +"<div style='margin-bottom:12px'><b>Warmer or cooler than usual</b> compares each forecast day\u2019s high and low with the normal for that date at that place, from the same climate data. How far counts as unusual depends on the place \u2014 it\u2019s worked out from how much temperatures there normally swing, so a few degrees above average is ordinary in Adelaide in summer but rare in Singapore. It shows as \u201Ca bit\u201D, plain, or \u201Cmuch\u201D warmer or cooler, and only on days with no heatwave or coldwave.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
     +"<div>Weather data: Open-Meteo (open-meteo.com); backup forecasts from MET Norway (CC BY 4.0) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
@@ -2646,6 +2811,13 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
         }
       }
     }
+    // Warmer/cooler than usual — today, when no heatwave or coldwave covers today
+    if(window._FC&&typeof findClimEntry==="function"){
+      var anToday=new Intl.DateTimeFormat("en-CA",{timeZone:window._FC.timezone||"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      var anT=anomFor(window._FC,anToday);
+      if(anT)alertHtml+="<span class='ann quiet "+(anT.warm?"ann-an-w":"ann-an-c")+"' onclick='showAnomPop(\""+anToday+"\",null)'>"
+        +"<span>"+(anT.warm?"\u2197\uFE0F ":"\u2198\uFE0F ")+anT.label+" today</span></span>";
+    }
   }
   for(var i=0;i<verdictAnns.length;i++)annHtml+=annSpan(verdictAnns[i]);
   document.getElementById(areaId).innerHTML=
@@ -3028,13 +3200,42 @@ function fetchJSONTimeout(url,ms,ctl){
     return r.json();
   }).then(function(j){clearTimeout(t);return j;},function(e){clearTimeout(t);throw e;});
 }
+// Models sometimes flag snow in heavy, cold rain well above freezing (seen at Occidental,
+// California: "snow" at 8–13°C). Snow can't reach the ground once the wet-bulb temperature
+// is above about 2°C, so those hours count as rain, and a day with no hour cold enough for
+// snow loses its snowfall total and snow icon.
+var SNOW_WB_MAX=2,SNOW_TO_RAIN={71:61,73:63,75:65,77:61,85:80,86:82};
+function fcSnowOk(t,dp){if(t==null)return true;if(dp==null)return t<=4;return wetBulb(t,dp)<=SNOW_WB_MAX;}
+function fcFixSnow(d){
+  try{
+    if(!d||!d.hourly||!d.hourly.weather_code||!d.hourly.time)return d;
+    var H=d.hourly,c=H.weather_code,T=H.temperature_2m||[],DP=H.dew_point_2m||[],P=H.precipitation||[],cold={};
+    for(var i=0;i<H.time.length;i++){
+      var ok=fcSnowOk(T[i],DP[i]),day=H.time[i].slice(0,10);
+      if(ok&&(P[i]>0||SNOW_TO_RAIN[c[i]]!==undefined))cold[day]=1;
+      if(!ok&&SNOW_TO_RAIN[c[i]]!==undefined)c[i]=SNOW_TO_RAIN[c[i]];
+    }
+    var cu=d.current;
+    if(cu&&SNOW_TO_RAIN[cu.weather_code]!==undefined&&!fcSnowOk(cu.temperature_2m,cu.dew_point_2m))cu.weather_code=SNOW_TO_RAIN[cu.weather_code];
+    var D=d.daily;
+    if(D&&D.time)for(var j=0;j<D.time.length;j++){
+      var dy=D.time[j];if(cold[dy])continue;
+      if(D.snowfall_sum&&D.snowfall_sum[j]>0)D.snowfall_sum[j]=0;
+      if(D.weather_code&&SNOW_TO_RAIN[D.weather_code[j]]!==undefined){
+        var w=null;for(var k=0;k<H.time.length;k++)if(H.time[k].slice(0,10)===dy&&c[k]!=null&&(w==null||c[k]>w))w=c[k];
+        D.weather_code[j]=w!=null?w:SNOW_TO_RAIN[D.weather_code[j]];
+      }
+    }
+  }catch(e){}
+  return d;
+}
 function getForecast(lat,lon,curVars,onMsg){
   onMsg=onMsg||function(){};
   var q=omQuery(lat,lon,curVars),ctl=new AbortController(),switched=false,firstErr=null;
   return new Promise(function(resolve,reject){
     var tSlow=setTimeout(function(){onMsg("Fetching weather – but taking longer than usual…");},FC_SLOW_MS);
     var tSwitch=setTimeout(function(){alt();},FC_SWITCH_MS);
-    function ok(d,src){clearTimeout(tSlow);clearTimeout(tSwitch);d._src=src;if(src==="om"||src==="om-proxy")fcStoreSave(lat,lon,d);resolve(d);}
+    function ok(d,src){clearTimeout(tSlow);clearTimeout(tSwitch);d._src=src;fcFixSnow(d);if(src==="om"||src==="om-proxy")fcStoreSave(lat,lon,d);resolve(d);}
     function alt(){
       if(switched)return;switched=true;clearTimeout(tSlow);clearTimeout(tSwitch);ctl.abort();
       onMsg("Open-Meteo not responding – attempting to fetch from an alternate source…");
@@ -3082,7 +3283,7 @@ function fcStoreGet(lat,lon){
   var H=d.hourly;
   d.current={time:H.time[i],temperature_2m:H.temperature_2m[i],relative_humidity_2m:H.relative_humidity_2m[i],dew_point_2m:H.dew_point_2m[i],
     wind_speed_10m:H.wind_speed_10m[i],wind_gusts_10m:H.wind_gusts_10m[i],weather_code:H.weather_code[i]};
-  d._src="stored";d._storedAt=x.t;
+  d._src="stored";d._storedAt=x.t;fcFixSnow(d);
   return d;
 }
 
@@ -4172,7 +4373,7 @@ function showWearPop(temp,wind,wxCode,dp){
     var nowHr=localHourInTZ(window._FC.timezone);
     for(var ui=0;ui<uvTimes.length;ui++){if(parseInt(uvTimes[ui].slice(11,13))===nowHr&&uvHrs[ui]!=null){uvNow=uvHrs[ui];break;}}
   }
-  var uvSunW=uvNow>=3?(uvNow<6?"UV "+uvNow+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvNow<8?"UV "+uvNow+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvNow<11?"UV "+uvNow+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+uvNow+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
+  var uvSunW=uvNow>=3?(uvNow<6?"UV "+Math.round(uvNow)+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvNow<8?"UV "+Math.round(uvNow)+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvNow<11?"UV "+Math.round(uvNow)+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+Math.round(uvNow)+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
   var hasWindRain=!!(w.extra&&w.extra.indexOf("indproof rain")>-1);
   var hasRain=!hasWindRain&&!!(w.extra&&w.extra.indexOf("ain jacket")>-1);
   var tooHot=(dpVal!==null&&temp>35&&dpVal>25)||(temp>45);
@@ -4313,7 +4514,7 @@ function show7DayHourSlot(idx,di,timeStr){
     var precips=fc.hourly.precipitation||[];
   var rain2h=(precips[idx]||0)+(precips[idx+1]||0);
   var uvVal=(fc.hourly.uv_index||[])[idx]||0;
-    var uvSun=uvVal>=3?(uvVal<6?"UV "+uvVal+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvVal<8?"UV "+uvVal+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvVal<11?"UV "+uvVal+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+uvVal+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
+    var uvSun=uvVal>=3?(uvVal<6?"UV "+Math.round(uvVal)+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvVal<8?"UV "+Math.round(uvVal)+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvVal<11?"UV "+Math.round(uvVal)+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+Math.round(uvVal)+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
   var r=calc(t,dp,w,precips[idx]),si=scoreInfo(r.score),s=gs();
   var wxCode=(fc.hourly.weather_code||[])[idx];
   if(wxCode===undefined)wxCode=null;
@@ -4502,7 +4703,7 @@ function dayNarrative(slots,tz,hcodes,precips,isToday){
     if(wclauses.length>1)for(i=0;i<wclauses.length;i++)if(wclauses[i].indexOf(" and ")>-1){wj=wclauses.slice(0,-1).join(", ")+", and "+wclauses[wclauses.length-1];break;}
     s3=s3.replace(/\.$/,"")+", with "+wj+".";
   }
-  return{s1:s1,s2:s2,s3:s3,mean:mean};
+  return{s1:s1,s2:s2,s3:s3,mean:mean,wordScore:Math.min(mean,NARR_WORDS[wi].min)};
 }
 function show7DaySlot(di){
   if(!window._7dayData||!window._7dayKeys)return;
@@ -4541,7 +4742,7 @@ function show7DaySlot(di){
         var narr=dayNarrative(slots,tz,hcodes,hourlyPrecip,di===0);
     var condLine;
     if(narr){
-      var nCol=SBANDS[bandForScore(narr.mean)].col.replace("0.92","1");
+      var nCol=SBANDS[bandForScore(narr.wordScore)].col.replace("0.92","1");
       condLine="<div style='font-size:13px;color:var(--text);font-weight:700;line-height:1.45;margin-bottom:4px'>"
         +(wxInfo&&wxInfo.emoji?wxInfo.emoji+" ":"")
         +"<span style='font-weight:800;color:"+nCol+"'>"+narr.s1+"</span> "
@@ -4658,10 +4859,22 @@ function show7DaySlot(di){
         +"<div style='font-size:14px;font-weight:800;color:"+cwDay.col+";display:flex;justify-content:space-between;align-items:center'>"
         +"<span>"+(cwDay.cooler?"\uD83C\uDF43 ":"\u2744\uFE0F ")+cwDay.label+"</span><span>"+cwDay.scale+"/10 \u203A</span></div></div>";
     }
-    var uvDayLine=dayMaxUV>=3?(dayMaxUV<6?"UV "+dayMaxUV+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":dayMaxUV<8?"UV "+dayMaxUV+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":dayMaxUV<11?"UV "+dayMaxUV+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+dayMaxUV+" \u2014 Avoid direct sun \u2620\uFE0F"):"";
+    // Warmer/cooler than usual — only on days with no heatwave or coldwave
+    var anLine="",anD=(!hwDay&&!cwDay)?anomFor(fc,dateKey):null;
+    if(anD){
+      var anCol=anD.warm?"rgba(215,110,30,1)":"rgba(30,135,165,1)";
+      var anHi=Math.abs(anD.zH)>=Math.abs(anD.zL),anDv=Math.round((anHi?anD.hi-anD.n.hi:anD.lo-anD.n.lo)*(useFahrenheit?1.8:1));
+      anLine="<div onclick='showAnomPop(\""+dateKey+"\","+di+")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+        +anCol.replace("1)","0.1)")+";border:1px solid "+anCol.replace("1)","0.35)")+"'>"
+        +"<div style='font-size:13.5px;font-weight:800;color:"+anCol+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+        +"<span>"+(anD.warm?"\u2197\uFE0F ":"\u2198\uFE0F ")+anD.label+"</span>"
+        +"<span style='white-space:nowrap'>"+(anDv>0?"+":"\u2212")+Math.abs(anDv)+"\u00B0 "+(anHi?"high":"low")+" \u203A</span></div></div>";
+    }
+    var uvDayLine=dayMaxUV>=3?(dayMaxUV<6?"UV "+Math.round(dayMaxUV)+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":dayMaxUV<8?"UV "+Math.round(dayMaxUV)+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":dayMaxUV<11?"UV "+Math.round(dayMaxUV)+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+Math.round(dayMaxUV)+" \u2014 Avoid direct sun \u2620\uFE0F"):"";
     dailySummary="<div style='background:var(--card-inner);border:1px solid var(--card-inner-border);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--text-muted);line-height:1.9'>"
       +hwLine
       +cwLine
+      +anLine
       +wbLine
       +wcLine
       +hypoLine
@@ -4703,7 +4916,7 @@ function show7DaySlot(di){
         +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-left:6px;border-left:2px solid var(--divider)'>Time</th>"
     +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>Temp</th>"
     +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>DP</th>"
-    +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>km/h</th>"
+    +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-right:10px'>km/h</th>"
     +"<th style='text-align:left;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px'>mm</th>"
         +"<th style='text-align:right;font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;padding-left:8px;padding-right:6px;border-left:2px solid var(--divider);border-right:2px solid var(--divider)'>Score</th>"
     +"</tr></thead>"
@@ -4873,7 +5086,7 @@ function climFromNote(e){
 // January is compared with London's July). Each difference is scaled to one "noticeable
 // step" — 3° for temperature/dew point, 1.5x for rainfall, 15% for rain seasonality,
 // 400 hrs for sunshine — then weighted into a 0–100 score.
-var HOME_TWIN_MIN_KM=2000;   // "Places most like home" only lists places at least this far away
+var HOME_TWIN_MIN_KM=5000;   // "Places most like home" only lists places at least this far away
 var HOME_TWIN_COUNT=5;
 var SIM_W={summer:1.0,winter:1.0,dp:0.9,rain:0.8,season:0.6,sun:0.4,snow:0.5};
 function getHome(){
@@ -4930,6 +5143,7 @@ function simDetail(h,o,d){
 }
 function renderHomeCompare(entry){
   window._climCur=entry||null;
+  renderClimCompare();
   var el=document.getElementById("clim-home-cmp");
   if(!el)return;
   var ep=entry?simProfile(entry):null;
@@ -4969,11 +5183,211 @@ function renderHomeCompare(entry){
   if(!html){el.style.display="none";el.innerHTML="";return;}
   el.innerHTML=html;el.style.display="block";
 }
+// ── Compare climates ───────────────────────────────────────────────────────
+// The place shown in the explorer (A) against any other place with a climate profile (B).
+// Charts overlay the two month by month. In opposite hemispheres, "Season" shifts B by six
+// months so summer sits under summer, the same alignment the similarity score uses.
+var _cmpB=null,_cmpAlign="month",_cmpSel=-1,_cmpCharts=[];
+function cmpA(){var e=window._climCur;return e?(e._src||e):null;}
+function cmpName(e){return e.name+(e.ter?", "+e.ter:"");}
+function cmpEsc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function cmpCloseSugg(){var b=document.getElementById("cmp-sugg");if(b){b.style.display="none";b.innerHTML="";}_cmpSel=-1;}
+function cmpSuggest(){
+  var inp=document.getElementById("cmp-input"),box=document.getElementById("cmp-sugg");
+  var q=inp.value.trim().toLowerCase();
+  if(q.length<2||typeof CLIM_CACHE==="undefined"){cmpCloseSugg();return;}
+  var A=cmpA(),res=[];
+  for(var i=0;i<CLIM_CACHE.length;i++){
+    var e=CLIM_CACHE[i];if(e===A)continue;
+    var nm=cmpName(e).toLowerCase(),at=nm.indexOf(q);
+    if(at<0)continue;
+    res.push({i:i,r:at===0?0:(/[ ,(-]/.test(nm.charAt(at-1))?1:2),nm:nm});
+  }
+  res.sort(function(a,b){return a.r-b.r||a.nm.localeCompare(b.nm);});
+  res=res.slice(0,8);_cmpSel=-1;
+  box.innerHTML=res.length?res.map(function(x){var e=CLIM_CACHE[x.i];
+      return"<div class='cmp-opt' data-i='"+x.i+"' onmousedown='event.preventDefault()' onclick='cmpPick("+x.i+")'>"+cmpEsc(cmpName(e))+"<span>"+cmpEsc(e.region||"")+"</span></div>";}).join("")
+    :"<div class='cmp-none'>No climate profile matches \u201C"+cmpEsc(inp.value.trim())+"\u201D</div>";
+  box.style.display="block";
+}
+function cmpKey(ev){
+  var box=document.getElementById("cmp-sugg"),opts=box?box.querySelectorAll(".cmp-opt"):[];
+  if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){
+    if(!opts.length)return;ev.preventDefault();
+    _cmpSel=(_cmpSel+(ev.key==="ArrowDown"?1:-1)+opts.length)%opts.length;
+    for(var k=0;k<opts.length;k++)opts[k].classList.toggle("sel",k===_cmpSel);
+  }else if(ev.key==="Enter"){
+    if(opts.length)cmpPick(+opts[Math.max(0,_cmpSel)].getAttribute("data-i"));
+  }else if(ev.key==="Escape"){ev.stopPropagation();cmpCloseSugg();}
+}
+function cmpPick(i){
+  if(typeof CLIM_CACHE==="undefined"||!CLIM_CACHE[i])return;
+  _cmpB=CLIM_CACHE[i];
+  var inp=document.getElementById("cmp-input");if(inp){inp.value="";inp.blur();}
+  cmpCloseSugg();renderClimCompare();
+  var sec=document.getElementById("cmp-sec");if(sec)sec.scrollIntoView({behavior:"smooth",block:"start"});
+}
+// From a map pin's popup
+function cmpPickAt(lat,lon){
+  if(typeof CLIM_CACHE==="undefined")return;
+  livMapToggleExpand(false);
+  if(_livMap)_livMap.closePopup();
+  for(var i=0;i<CLIM_CACHE.length;i++)if(CLIM_CACHE[i].lat===lat&&CLIM_CACHE[i].lon===lon){
+    if(CLIM_CACHE[i]===cmpA()){showToast("That\u2019s the place already shown \u2014 pick another to compare");return;}
+    cmpPick(i);return;
+  }
+}
+function cmpClear(){_cmpB=null;renderClimCompare();}
+function cmpSetAlign(a){_cmpAlign=a;renderClimCompare();}
+function cmpFmt(c,v){
+  if(v==null||isNaN(v))return"\u2014";
+  if(c.d.u==="\u00B0")return String(v.toFixed(1)).replace("-","\u2212")+"\u00B0";
+  if(c.d.u)return(c.d.u===" cm"?v.toFixed(1):Math.round(v))+c.d.u;
+  return String(Math.round(v));
+}
+function cmpDot(v){return"<span class='cmp-sw' style='width:8px;height:8px;border-radius:50%;background:var(--cmp-"+v+");margin-right:3px'></span>";}
+// Readout above each chart when no month is hovered: each place's high point (or total)
+function cmpReadDefault(c){
+  var A=cmpA(),B=_cmpB,agg=c.d.agg;
+  function pick(arr,mo){
+    var best=null,bi=-1,sum=0;
+    for(var i=0;i<12;i++){var v=arr[i];if(v==null)continue;sum+=v;if(best==null||(agg==="min"?v<best:v>best)){best=v;bi=i;}}
+    return agg==="sum"?cmpFmt(c,sum):cmpFmt(c,best)+" ("+mo[bi]+")";
+  }
+  var lab={max:"Highest",min:"Lowest",sum:"Year",best:"Best"}[agg];
+  return lab+": "+cmpDot("a")+cmpEsc(A.name)+" <b>"+pick(c.a,CLIM_MONTHS)+"</b> \u00B7 "+cmpDot("b")+cmpEsc(B.name)+" <b>"+pick(c.b,c.mb)+"</b>";
+}
+function cmpHover(k,i){
+  var c=_cmpCharts[k];if(!c)return;
+  var rd=document.getElementById("cmp-rd-"+k),xh=document.getElementById("cmp-xh-"+k);
+  if(!rd)return;
+  if(i<0){rd.innerHTML=cmpReadDefault(c);if(xh)xh.style.opacity=0;return;}
+  var A=cmpA(),B=_cmpB,mA=CLIM_MONTHS[i],mB=c.mb[i];
+  rd.innerHTML="<b>"+mA+"</b> "+cmpDot("a")+cmpEsc(A.name)+" <b>"+cmpFmt(c,c.a[i])+"</b> \u00B7 "+cmpDot("b")+cmpEsc(B.name)+(mB!==mA?" ("+mB+")":"")+" <b>"+cmpFmt(c,c.b[i])+"</b>";
+  if(xh){xh.setAttribute("x1",c.xs[i]);xh.setAttribute("x2",c.xs[i]);xh.style.opacity=1;}
+}
+function cmpNiceStep(raw){
+  var p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)),f=raw/p;
+  return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;
+}
+function cmpChartSvg(c,k){
+  var W=300,H=124,L=30,Rr=6,T=8,Bt=18,pw=W-L-Rr,ph=H-T-Bt,cw=pw/12,i;
+  var vals=c.a.concat(c.b).filter(function(v){return v!=null&&!isNaN(v);});
+  if(!vals.length)return"";
+  var lo=c.d.zero?0:Math.min.apply(null,vals),hi=c.d.max!=null?c.d.max:Math.max.apply(null,vals);
+  if(!c.d.zero){var pad=(hi-lo)*0.1||1;lo-=pad;hi+=pad;}else if(c.d.max==null)hi=hi>0?hi*1.08:1;
+  var step=cmpNiceStep((hi-lo)/3);lo=Math.floor(lo/step)*step;hi=Math.ceil(hi/step-1e-9)*step;
+  if(hi<=lo)hi=lo+step;
+  var y=function(v){return T+ph-(v-lo)/(hi-lo)*ph;},x=function(j){return L+cw*(j+0.5);};
+  c.xs=[];for(i=0;i<12;i++)c.xs.push(x(i).toFixed(1));
+  var g="",m="",h="";
+  for(var t=lo;t<=hi+step*1e-6;t+=step){
+    var yy=y(t).toFixed(1),tl=Math.abs(t)<1e-9?"0":String(+t.toFixed(1)).replace("-","\u2212");
+    g+="<line class='gl' x1='"+L+"' x2='"+(W-Rr)+"' y1='"+yy+"' y2='"+yy+"'/><text class='tk' x='"+(L-5)+"' y='"+(+yy+3)+"' text-anchor='end'>"+tl+"</text>";
+  }
+  for(i=0;i<12;i++)g+="<text class='tk' x='"+x(i).toFixed(1)+"' y='"+(H-4)+"' text-anchor='middle'>"+CLIM_MONTHS[i].charAt(0)+"</text>";
+  if(c.d.bars){
+    var bw=Math.max(2,(cw-5)/2);
+    [["a",c.a,-1],["b",c.b,1]].forEach(function(s){
+      for(var j=0;j<12;j++){var v=s[1][j];if(v==null||v<=0)continue;
+        var bx=s[2]<0?x(j)-1-bw:x(j)+1,by=y(v),bh=y(0)-by;
+        m+="<rect x='"+bx.toFixed(1)+"' y='"+by.toFixed(1)+"' width='"+bw.toFixed(1)+"' height='"+Math.max(1,bh).toFixed(1)+"' rx='1.5' style='fill:var(--cmp-"+s[0]+")'/>";}
+    });
+  }else{
+    [["a",c.a],["b",c.b]].forEach(function(s){
+      var d="",pen=false;
+      for(var j=0;j<12;j++){var v=s[1][j];if(v==null){pen=false;continue;}d+=(pen?"L":"M")+x(j).toFixed(1)+" "+y(v).toFixed(1);pen=true;}
+      m+="<path d='"+d+"' style='fill:none;stroke:var(--cmp-"+s[0]+");stroke-width:2;stroke-linejoin:round;stroke-linecap:round'/>";
+      for(j=0;j<12;j++){var v2=s[1][j];if(v2==null)continue;m+="<circle cx='"+x(j).toFixed(1)+"' cy='"+y(v2).toFixed(1)+"' r='2.4' style='fill:var(--cmp-"+s[0]+")'/>";}
+    });
+  }
+  for(i=0;i<12;i++)h+="<rect x='"+(L+cw*i).toFixed(1)+"' y='0' width='"+cw.toFixed(1)+"' height='"+H+"' fill='transparent' onmouseenter='cmpHover("+k+","+i+")' onclick='cmpHover("+k+","+i+")'/>";
+  return"<div class='cmp-chart'><div class='cmp-ct'>"+c.d.t+"</div><div class='cmp-rd' id='cmp-rd-"+k+"'>"+cmpReadDefault(c)+"</div>"
+    +"<svg viewBox='0 0 "+W+" "+H+"' role='img' aria-label='"+c.d.t+" by month for both places' onmouseleave='cmpHover("+k+",-1)'>"
+    +g+"<line class='xh' id='cmp-xh-"+k+"' x1='0' x2='0' y1='"+T+"' y2='"+(T+ph)+"'/>"+m+h+"</svg></div>";
+}
+function renderClimCompare(){
+  var sec=document.getElementById("cmp-sec"),body=document.getElementById("cmp-body");
+  if(!sec||!body)return;
+  var A=cmpA();
+  if(!A){sec.style.display="none";body.innerHTML="";_cmpCharts=[];return;}
+  sec.style.display="";
+  var B=_cmpB;
+  if(!B||B===A){
+    _cmpCharts=[];
+    body.innerHTML="<div class='cmp-hint'>See another place\u2019s climate alongside "+cmpEsc(A.name)+": type a name above, or tap a pin on the map and choose \u201CCompare with this place\u201D.</div>";
+    return;
+  }
+  var split=(A.lat<0)!==(B.lat<0),season=split&&_cmpAlign==="season",i;
+  var mA=A.monthly,mB=season?B.monthly.slice(6).concat(B.monthly.slice(0,6)):B.monthly;
+  var nA=cmpEsc(A.name),nB=cmpEsc(B.name);
+  var html="<div class='cmp-legend'><span class='cmp-key'><span class='cmp-sw' style='background:var(--cmp-a)'></span>"+cmpEsc(cmpName(A))+"</span>"
+    +"<span class='cmp-key'><span class='cmp-sw' style='background:var(--cmp-b)'></span>"+cmpEsc(cmpName(B))+"</span>"
+    +"<span style='margin-left:auto;display:flex;gap:14px'><button class='cmp-act' onclick='livMapLoad("+B.lat+","+B.lon+","+JSON.stringify(cmpName(B)).replace(/'/g,"&#39;")+")'>Load "+nB+" \u203A</button>"
+    +"<button class='cmp-act' onclick='cmpClear()'>\u2715 Clear</button></span></div>";
+  var pA=simProfile(A),pB=simProfile(B);
+  if(pA&&pB){
+    var sd=simDiffs(pA,pB),ss=simScore(sd),det=simDetail(pA,pB,sd);
+    html+="<div style='font-size:12px;font-weight:600;color:var(--text-sec);line-height:1.5;margin-bottom:8px'><span style='font-weight:800;color:var(--text-head)'>"+simBand(ss)+"</span> \u2014 "
+      +(det.length?nB+" against "+nA+": "+det.join(", "):"hard to tell apart")
+      +" \u00B7 "+(Math.round(haversineKm(A.lat,A.lon,B.lat,B.lon)/100)*100).toLocaleString()+" km apart</div>";
+  }
+  if(split)html+="<div class='liv-map-toggle' style='margin:0 0 4px'><span style='font-size:11px;font-weight:700;color:var(--text-muted)'>Line up by</span>"
+    +"<button class='liv-map-btn"+(season?"":" active")+"' onclick='cmpSetAlign(\"month\")'>Calendar month</button>"
+    +"<button class='liv-map-btn"+(season?" active":"")+"' onclick='cmpSetAlign(\"season\")'>Season</button></div>"
+    +"<div style='font-size:11px;font-weight:600;color:var(--text-muted);margin:4px 0'>"
+    +(season?nB+"\u2019s months are shifted by six, so its summer sits under "+nA+"\u2019s summer. Hover or tap a month to see which is which."
+      :"These places are in opposite hemispheres, so their seasons are six months apart. Choose Season to line them up.")+"</div>";
+  var dT=function(v){return v==null?null:toDisp(v);};
+  var defs=[
+    {t:"Average high",f:function(m){return dT(m.T);},u:"\u00B0",agg:"max"},
+    {t:"Average low",f:function(m){return dT(m.tmin);},u:"\u00B0",agg:"min"},
+    {t:"Dew point",f:function(m){return dT(m.dp);},u:"\u00B0",agg:"max"},
+    {t:"Rainfall (mm)",f:function(m){return m.rain;},u:" mm",bars:true,zero:true,agg:"sum"},
+    {t:"Comfort score",f:function(m){return m.T==null||m.dp==null?null:calc(m.T,m.dp,0).score;},u:"",zero:true,max:100,agg:"best"}
+  ];
+  var sn=0;for(i=0;i<12;i++)sn+=(mA[i].snow||0)+(mB[i].snow||0);
+  if(sn>=1)defs.push({t:"Snowfall (cm)",f:function(m){return m.snow||0;},u:" cm",bars:true,zero:true,agg:"sum"});
+  _cmpCharts=defs.map(function(d){return{d:d,a:mA.map(d.f),b:mB.map(d.f),mb:mB.map(function(m){return m.month;})};});
+  html+="<div class='cmp-charts'>"+_cmpCharts.map(cmpChartSvg).join("")+"</div>";
+  // Summary table (each place's own calendar months)
+  function ext(e,k,hiWant){var b=null,bi=-1;e.monthly.forEach(function(x,j){var v=x[k];if(v==null)return;if(b==null||(hiWant?v>b:v<b)){b=v;bi=j;}});return b==null?"\u2014":climT(b)+"&deg; ("+CLIM_MONTHS[bi]+")";}
+  function rain(e){var t=0,w=0,wi=0;e.monthly.forEach(function(x,j){t+=x.rain||0;if((x.rain||0)>w){w=x.rain;wi=j;}});return Math.round(t)+" mm <span style='color:var(--text-muted);font-weight:600'>(wettest "+CLIM_MONTHS[wi]+")</span>";}
+  function snow(e){var t=0;e.monthly.forEach(function(x){t+=x.snow||0;});return t>0.05?t.toFixed(1)+" cm":"None";}
+  function liv(e){var v=calcLiveability(e);return v==null?"\u2014":"<span style='color:"+climScoreCol(v)+";font-weight:800'>"+v+"</span> "+livScoreLabel(v);}
+  function kop(e){return(e.koppen?"<b>"+cmpEsc(e.koppen)+"</b>":"\u2014")+(e.koppen2?"<div style='font-size:11px;font-weight:600;color:var(--text-muted)'>"+cmpEsc(e.koppen2)+"</div>":"");}
+  var rows=[["Climate",kop],["Elevation",function(e){return e.elev!=null?e.elev+" m":"\u2014";}],
+    ["Warmest month (avg high)",function(e){return ext(e,"T",true);}],["Coolest month (avg low)",function(e){return ext(e,"tmin",false);}],
+    ["Hottest day, typical year",function(e){return ext(e,"tmaxMax",true);}],["Coldest night, typical year",function(e){return ext(e,"tminMin",false);}],
+    ["Most humid month (dew point)",function(e){return ext(e,"dp",true);}],["Rain per year",rain]];
+  if(sn>=1)rows.push(["Snow per year",snow]);
+  if(A.sun!=null||B.sun!=null)rows.push(["Sunshine per year",function(e){return e.sun!=null?Math.round(e.sun)+" hrs":"\u2014";}]);
+  rows.push(["Liveability (your settings)",liv]);
+  html+="<table class='cmp-tbl'><thead><tr><th></th><th><span class='cmp-sw' style='background:var(--cmp-a);margin-right:5px;vertical-align:middle'></span>"+nA+"</th>"
+    +"<th><span class='cmp-sw' style='background:var(--cmp-b);margin-right:5px;vertical-align:middle'></span>"+nB+"</th></tr></thead><tbody>"
+    +rows.map(function(r){return"<tr><td>"+r[0]+"</td><td>"+r[1](A)+"</td><td>"+r[1](B)+"</td></tr>";}).join("")+"</tbody></table>";
+  body.innerHTML=html;
+}
 function homeTwinLoad(i){
   var e=CLIM_CACHE[i];
   if(!e)return;
+  climFullToggle(false);
   fetchWeather(e.lat,e.lon,e.name+(e.ter?", "+e.ter:""));
   window.scrollTo({top:0,behavior:"smooth"});
+}
+// Full screen: the whole explorer as a wide two-column page (wide screens only — the button
+// is hidden on phones). The map's own Expand still works on top of it.
+function climFullToggle(force){
+  var card=document.getElementById("clim-card"),btn=document.getElementById("clim-full-btn");
+  if(!card)return;
+  var on=force===undefined?!card.classList.contains("full"):force;
+  if(on===card.classList.contains("full"))return;
+  if(on&&!document.getElementById("clim-panel").classList.contains("open"))toggleClim();
+  card.classList.toggle("full",on);
+  document.body.style.overflow=on?"hidden":"";
+  if(btn)btn.innerHTML=on?"&#x2715; Close":"&#x2922; Full screen";
+  if(on)card.scrollTop=0;
+  setTimeout(function(){initLivMap();if(_livMap)_livMap.invalidateSize();},80);
 }
 function toggleClim(){
   var tog=document.getElementById("clim-tog"),panel=document.getElementById("clim-panel");
@@ -5020,8 +5434,7 @@ function showClimCard(lat,lon,elev){
   for(var i=0;i<entry.monthly.length;i++){
     var m=entry.monthly[i];
     var sc=calc(m.T,m.dp,0).score,col=climScoreCol(sc);
-    var h=Math.round((sc/100)*110);
-    chartHtml+="<div class='clim-bar-col' onclick='showClimMonthPop("+i+")'><span class='clim-bar-num'>"+sc+"</span><div class='clim-bar' style='height:"+h+"px;background:"+col+";opacity:0.85'></div></div>";
+    chartHtml+="<div class='clim-bar-col' onclick='showClimMonthPop("+i+")'><span class='clim-bar-num'>"+sc+"</span><div class='clim-bar' style='height:calc(var(--clim-bar-h) * "+(sc/100).toFixed(2)+");background:"+col+";opacity:0.85'></div></div>";
     monthHtml+="<div class='clim-month-lbl' style='cursor:pointer' onclick='showClimMonthPop("+i+")'>"+m.month+"</div>";
   }
   document.getElementById("clim-chart-grid").innerHTML=chartHtml;
@@ -5725,7 +6138,10 @@ function livMapBuildMarkers(){
         +(ro.length?"<div style='font-size:11px;line-height:1.4;color:#777;margin-bottom:6px'>"+ro.map(function(x){return x.split(":")[0];}).join(" \u00B7 ")+"</div>":"")
         +"<button onclick='livMapLoad("+e.lat+","+e.lon+","+JSON.stringify(e.name+(e.ter?", "+e.ter:"")).replace(/'/g,"&#39;")+")' "
         +"style='font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid #2a9fd6;background:#2a9fd6;color:#fff;cursor:pointer;width:100%'>"
-        +"Load in Comfort Score</button>";
+        +"Load in Comfort Score</button>"
+        +"<button onclick='cmpPickAt("+e.lat+","+e.lon+")' "
+        +"style='font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;border:1px solid #2a9fd6;background:transparent;color:#2a9fd6;cursor:pointer;width:100%;margin-top:5px'>"
+        +"Compare with this place</button>";
       marker.bindPopup(popHtml,{maxWidth:200,className:"liv-map-popup"});
       marker.addTo(_livMap);
       marker._origLon=e.lon;
@@ -5761,7 +6177,8 @@ function livMapToggleExpand(force){
   var expand=(force===undefined)?!wrap.classList.contains("expanded"):force;
   if(expand===wrap.classList.contains("expanded"))return;
   wrap.classList.toggle("expanded",expand);
-  document.body.style.overflow=expand?"hidden":"";
+  var climFull=document.getElementById("clim-card").classList.contains("full");
+  document.body.style.overflow=(expand||climFull)?"hidden":"";
   if(btn)btn.innerHTML=expand?"&#x2715; Close":"&#x2922; Expand";
   initLivMap();
   if(_livMap){
@@ -5769,10 +6186,16 @@ function livMapToggleExpand(force){
     setTimeout(function(){_livMap.invalidateSize();},60);
   }
 }
-document.addEventListener("keydown",function(e){if(e.key==="Escape")livMapToggleExpand(false);});
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape")return;
+  var w=document.getElementById("liv-map-wrap");
+  if(w&&w.classList.contains("expanded"))livMapToggleExpand(false);
+  else if(!document.getElementById("pop-ov").classList.contains("open"))climFullToggle(false);
+});
 
 function livMapLoad(lat,lon,label){
   livMapToggleExpand(false);
+  climFullToggle(false);
   var popups=document.querySelectorAll(".leaflet-popup");
   for(var i=0;i<popups.length;i++)popups[i].style.display="none";
   // The pin's own height, so its own climate profile is matched straight away
