@@ -1172,7 +1172,7 @@ function drawGauge(id,score){
   el.innerHTML=html;
 }
 function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
-  var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=gs();
+  var score=r.score,iP=r.iP,wP=r.wP,si=scoreInfo(score),s=r.sleep?gsSleep():gs();
   var anns=getAnnotations(temp,effDP,wind,score,s,iP,wP,wxCode);
   // Build pill HTML — unified order: comfort conditions, then hazards, then verdict
   // getAnnotations already returns: temp > humidity > dry > hot&steamy > wind > wx > verdict
@@ -1294,11 +1294,11 @@ function renderScore(areaId,gaugeId,r,temp,effDP,wind,wxCode,rain){
   document.getElementById(areaId).innerHTML=
     (alertHtml?"<div class='alert-strip'>"+alertHtml+"</div>":"")
     +"<div class='score-hero'>"
-    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+","+temp+","+effDP+","+wind+","+(r.rP||0)+","+(rain==null?"null":rain)+")' title='Score breakdown'>"+scoreRing(score)
+    +"<div class='ring-wrap' onclick='showBreakdown("+r.tP+","+r.hP+","+r.iP+","+r.wP+","+score+","+temp+","+effDP+","+wind+","+(r.rP||0)+","+(rain==null?"null":rain)+","+(r.sleep?1:0)+")' title='Score breakdown'>"+scoreRing(score)
     +"<div class='ring-centre'>"
     +"<span class='ring-num' style='color:"+si.col+"'>"+score+"</span>"
     +"<span class='ring-lbl' style='color:"+si.col+"'>"+si.label+" "+si.emoji+"</span>"
-    +"<span class='ring-info'>breakdown &#9432;</span>"
+    +"<span class='ring-info'>"+(r.sleep?"\uD83C\uDF19 sleep comfort &#9432;":"breakdown &#9432;")+"</span>"
     +"</div></div>"
     +"<div class='annotations'>"+annHtml+"</div>"
     +"</div>";
@@ -1376,11 +1376,11 @@ function showUVPop(dateStr,uvVal,backDi){
     foot:"The UV index follows the World Health Organization scale: 1\u20132 low, 3\u20135 moderate, 6\u20137 high, 8\u201310 very high, 11+ extreme. Sun protection is recommended whenever it reaches 3. Forecast values include cloud cover and can change through the day. Follow your local health authority\u2019s sun-protection advice.",
     backDi:backDi});
 }
-function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind,rP,rain){
+function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind,rP,rain,sleep){
   var lw=window._LW||{};
   if(temp==null)temp=lw.temp;if(dp==null)dp=lw.effDP;if(wind==null)wind=lw.wind;
   rP=rP||0;
-  var s=gs(),si=scoreInfo(score),col=SBANDS[bandForScore(score)].col.replace("0.92","1");
+  var s=sleep?gsSleep():gs(),si=scoreInfo(score),col=SBANDS[bandForScore(score)].col.replace("0.92","1");
   var deg=function(c){return String(toDisp(c).toFixed(1)).replace("-","−")+unitSym();};
   var gap=function(d){return(useFahrenheit?d*1.8:d).toFixed(1)+"°";};
   var hasT=temp!=null&&!isNaN(temp),hasD=dp!=null&&!isNaN(dp),hasW=wind!=null&&!isNaN(wind);
@@ -1401,8 +1401,8 @@ function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind,rP,rain){
   if(Math.round(tP)>0&&hasT){
     var warm=temp>s.thi;
     row(warm?"🌡️":"🧥",warm?"Too warm":"Too cold",
-      (warm?gap(temp-s.thi)+" above the "+deg(s.thi)+" you start to feel hot at":gap(s.tlo-temp)+" below the "+deg(s.tlo)+" you start to feel cold at"),tP);
-  }else row("🌡️","Temperature",hasT?deg(temp)+" — inside your "+deg(s.tlo)+" to "+deg(s.thi)+" range":"no penalty",0);
+      (warm?gap(temp-s.thi)+" above the "+deg(s.thi)+(sleep?" that’s too warm for you to sleep":" you start to feel hot at"):gap(s.tlo-temp)+" below the "+deg(s.tlo)+(sleep?" that’s too cold for you to sleep":" you start to feel cold at")),tP);
+  }else row("🌡️","Temperature",hasT?deg(temp)+" — inside your "+(sleep?"sleeping ":"")+deg(s.tlo)+" to "+deg(s.thi)+" range":"no penalty",0);
   // Humidity
   if(Math.round(hP)>0)row("💧","Humid air",(hasD?"Dew point "+deg(dp)+" — ":"")+"you notice humidity above "+deg(s.dp),hP);
   else row("💧","Humidity",hasD?(hasT&&temp<s.tlo?"Dew point "+deg(dp)+" — humidity doesn’t count when it’s cool":"Dew point "+deg(dp)+" — comfortable"):"no penalty",0);
@@ -1410,12 +1410,15 @@ function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind,rP,rain){
   if(Math.round(iP)>0)row("🥵","Heat stress",(wb!=null?"Wet bulb "+deg(wb)+" — ":"")+"builds from "+deg(s.wb0)+" once it’s hot",iP);
   else if(hasT&&temp>s.thi)row("🥵","Heat stress",wb!=null?"Wet bulb "+deg(wb)+" — below "+deg(s.wb0):"no penalty",0);
   // Wind
-  if(Math.round(wP)<0)row("🍃","Breeze bonus","A "+(bft||"pleasant breeze")+" near your ideal temperature",wP,true);
+  if(sleep&&Math.round(wP)<0)row("🍃","Breeze bonus","A breeze through an open window helps on a warm night",wP,true);
+  else if(sleep)row("💨","Wind","Doesn’t count while you’re indoors asleep",0);
+  else if(Math.round(wP)<0)row("🍃","Breeze bonus","A "+(bft||"pleasant breeze")+" near your ideal temperature",wP,true);
   else if(Math.round(wP)>0)row("💨","Windy",(bft?bft.charAt(0).toUpperCase()+bft.slice(1)+(hasW?" ("+Math.round(wind)+" km/h)":""):"Wind")+(hasT&&temp<s.wchill_thresh&&wind>0?" — wind chill adds to the cold":""),wP);
   else row("💨","Wind",hasW?(wind<1?"Calm":bft.charAt(0).toUpperCase()+bft.slice(1)+" ("+Math.round(wind)+" km/h)"):"no penalty",0);
   // Rain (optional preference)
   var wet=rain!=null&&!isNaN(rain)&&rain>=RAIN_MIN,rmm=wet?(rain<10?rain.toFixed(1):Math.round(rain))+" mm in the hour":"";
   if(Math.round(rP)>0)row("🌧️","Rain",rmm+(hasT&&temp<s.tlo?" — cold rain counts for more":hasT&&temp>s.thi?" — warm rain counts for less":""),rP);
+  else if(wet&&sleep)row("🌧️","Rain",rmm+" — doesn’t count while you’re asleep",0);
   else if(wet&&!s.rainOn)row("🌧️","Rain",rmm+" — not counted (turned off in Preferences)",0);
   else if(s.rainOn)row("🌧️","Rain",wet?rmm:"Dry",0);
   // Headline: the biggest factor
@@ -1431,6 +1434,7 @@ function showBreakdown(tP,hP,iP,wP,score,temp,dp,wind,rP,rain){
     +"<div style='font-size:15px;font-weight:800;color:"+col+";line-height:1.3'>"+score+" — "+si.label+" "+si.emoji+"</div>"
     +(cond?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:2px'>"+cond+"</div>":"")
     +"</div>"
+    +(sleep?"<div style='font-size:12px;font-weight:700;color:var(--text-muted);margin-top:8px'>\uD83C\uDF19 Sleep comfort: scored for sleeping, during your sleep hours ("+sleepFmt(SLEEP_FROM)+" \u2013 "+sleepFmt(SLEEP_TO)+").</div>":"")
     +"<div style='font-size:14px;font-weight:800;color:var(--text);line-height:1.5;margin-top:10px'>"+lead+"</div>"
     +"<div style='margin-top:6px'>"+rows.join("")+"</div>"
     +"<div style='display:flex;justify-content:space-between;align-items:baseline;padding-top:8px'>"

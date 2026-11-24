@@ -758,6 +758,9 @@ function render7Day(fc){
     var todayAll=days[todayStr].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
     var todayFuture=todayAll.filter(function(s){return s.utcMs>nowMs;});
     var useSlots=todayFuture.length?todayFuture:todayAll;
+    // With sleep comfort on, a tile's best and worst come from your waking hours
+    var awake=useSlots.filter(function(s){return !inSleep(fcMin(fc.hourly.time[s.idx]));});
+    if(awake.length)useSlots=awake;
     if(useSlots.length){
       var tmx=-1,tmn=999,tmxS=null,tmnS=null;
       for(var ti=0;ti<useSlots.length;ti++){var ts=useSlots[ti],tr=calc(ts.temp,ts.dp,ts.wind,ts.rain);if(tr.score>tmx){tmx=tr.score;tmxS=ts;}if(tr.score<tmn){tmn=tr.score;tmnS=ts;}}
@@ -781,8 +784,10 @@ function render7Day(fc){
     var key=dateKeys[di];
     var slots=days[key].filter(function(s){return s.temp!==null&&s.dp!==null&&s.wind!==null;});
     if(!slots.length)continue;
+    var awakeD=slots.filter(function(s){return !inSleep(fcMin(fc.hourly.time[s.idx]));});
+    var tileSlots=awakeD.length?awakeD:slots;
     var maxScore=-1,minScore=999,maxSlot=null,minSlot=null;
-    for(var si=0;si<slots.length;si++){var s=slots[si],r=calc(s.temp,s.dp,s.wind,s.rain);if(r.score>maxScore){maxScore=r.score;maxSlot=s;}if(r.score<minScore){minScore=r.score;minSlot=s;}}
+    for(var si=0;si<tileSlots.length;si++){var s=tileSlots[si],r=calc(s.temp,s.dp,s.wind,s.rain);if(r.score>maxScore){maxScore=r.score;maxSlot=s;}if(r.score<minScore){minScore=r.score;minSlot=s;}}
     var maxNc=SBANDS[bandForScore(maxScore)].col.replace("0.92","1");
     var minNc=SBANDS[bandForScore(minScore)].col.replace("0.92","1");
     var dayLabel=new Intl.DateTimeFormat("en-AU",{timeZone:tz,weekday:"short"}).format(new Date(slots[0].utcMs));
@@ -803,6 +808,34 @@ function render7Day(fc){
   if(window._LW){var lw=window._LW;renderChips(lw.temp,lw.effDP,lw.rh,lw.wind,fc);}
 }
 
+// "Tonight" in a day popup: sleep comfort over that night's sleep hours (starting on this
+// day's evening), with the hardest hour to sleep through. Only with sleep comfort on.
+function sleepTonightLine(fc,dateKey,di){
+  if(!SLEEP_ON||!fc||!fc.hourly||!fc.hourly.time)return"";
+  var H=fc.hourly,T=H.time,wraps=SLEEP_FROM>SLEEP_TO,next=null,p=dateKey.split("-");
+  if(wraps)next=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]+1)).toISOString().slice(0,10);
+  var n=0,sum=0,worst=null,tHi=-99,tLo=99;
+  for(var i=0;i<T.length;i++){
+    var d=T[i].slice(0,10),m=fcMin(T[i]);
+    var inNight=wraps?((d===dateKey&&m>=SLEEP_FROM)||(d===next&&m<SLEEP_TO)):(d===dateKey&&m>=SLEEP_FROM&&m<SLEEP_TO);
+    if(!inNight)continue;
+    var t=H.temperature_2m[i],dp=H.dew_point_2m[i],w=H.wind_speed_10m[i];
+    if(t==null||dp==null||w==null)continue;
+    var r=calc(t,dp,w,0,m);
+    n++;sum+=r.score;if(t>tHi)tHi=t;if(t<tLo)tLo=t;
+    if(!worst||r.score<worst.s)worst={s:r.score,i:i,m:m};
+  }
+  if(n<2)return"";
+  var avg=Math.round(sum/n),col=SBANDS[bandForScore(avg)].col.replace("0.92","1");
+  var deg=function(c){return Math.round(toDisp(c))+"\u00B0";};
+  var wl=sleepFmt(worst.m).replace(" ","");
+  return"<div onclick='show7DayHourSlot("+worst.i+","+di+",\""+wl+"\")' style='cursor:pointer;margin:-2px -4px 6px;padding:7px 9px;border-radius:8px;background:"
+    +col.replace("1)","0.12)")+";border:1px solid "+col.replace("1)","0.4)")+"'>"
+    +"<div style='font-size:13.5px;font-weight:800;color:"+col+";display:flex;justify-content:space-between;align-items:center;gap:8px;line-height:1.3'>"
+    +"<span>\uD83C\uDF19 Tonight: sleep comfort "+avg+" \u2014 "+scoreInfo(avg).label+"</span><span style='white-space:nowrap'>\u203A</span></div>"
+    +"<div style='font-size:11.5px;font-weight:700;color:var(--text-muted);margin-top:2px'>"+sleepFmt(SLEEP_FROM)+" \u2013 "+sleepFmt(SLEEP_TO)+" \u00B7 "+deg(tHi)+" falling to "+deg(tLo)
+    +(worst.s<avg-5?" \u00B7 hardest at "+sleepFmt(worst.m)+" ("+worst.s+")":"")+"</div></div>";
+}
 // Reopens the hour popup a hazard or UV popup was opened from
 function hourBack(){var h=window._hourBack;if(h)show7DayHourSlot(h.idx,h.di,h.t);}
 function show7DayHourSlot(idx,di,timeStr){
@@ -814,7 +847,7 @@ function show7DayHourSlot(idx,di,timeStr){
   var rain2h=(precips[idx]||0)+(precips[idx+1]||0);
   var uvVal=(fc.hourly.uv_index||[])[idx]||0;
     var uvSun=uvVal>=3?(uvVal<6?"UV "+Math.round(uvVal)+" \u2014 Sun protection recommended \uD83D\uDD76\uFE0F":uvVal<8?"UV "+Math.round(uvVal)+" \u2014 Sunscreen + hat recommended \uD83E\uDDF4":uvVal<11?"UV "+Math.round(uvVal)+" \u2014 Sunscreen, hat & shade essential \uD83E\uDDF4":"UV "+Math.round(uvVal)+" \u2014 Avoid direct sun \u2620\uFE0F"):null;
-  var r=calc(t,dp,w,precips[idx]),si=scoreInfo(r.score),s=gs();
+  var r=calc(t,dp,w,precips[idx],fcMin(fc.hourly.time[idx])),si=scoreInfo(r.score),s=r.sleep?gsSleep():gs();
   var wxCode=(fc.hourly.weather_code||[])[idx];
   if(wxCode===undefined)wxCode=null;
   var nc=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
@@ -841,7 +874,7 @@ var dispLayers=(hasRain||hasWindRain)?Math.max(0,baseDispLayers-1):baseDispLayer
   var outerLine=justGetWet?"Honestly, just get wet \uD83C\uDF27\uFE0F":hasWindRain?"+ 1 wind/rainproof jacket":hasRain?"+ 1 rain jacket":"";
   var rainStr=rain2h>=0.05?rain2h.toFixed(1)+"mm":"—";
   var body="<div class='washing-reason'>"
-    +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" \u2014 "+si.label+"</div>"
+    +"<div style='font-size:15px;font-weight:800;color:"+nc+";margin-bottom:6px'>"+r.score+" \u2014 "+si.label+(r.sleep?" <span style='font-size:12px;color:var(--text-muted)'>\uD83C\uDF19 sleep comfort</span>":"")+"</div>"
     +"<div style='margin-bottom:8px'>\uD83C\uDF21\uFE0F "+toDisp(t).toFixed(1)+unitSym()+" &nbsp;\u00B7&nbsp; \uD83D\uDCA7 DP "+toDisp(dp).toFixed(1)+unitSym()+" &nbsp;\u00B7&nbsp; \uD83D\uDCA8 "+Math.round(w)+" km/h &nbsp;\u00B7&nbsp; \uD83C\uDF27\uFE0F "+rainStr+"</div>"
     +(annHtml?"<div style='margin-bottom:10px'>"+annHtml+"</div>":"")
                 +"<div style='border-top:1px solid var(--divider);padding-top:10px'>"
@@ -1174,6 +1207,7 @@ function show7DaySlot(di){
       +hwLine
       +cwLine
       +anLine
+      +sleepTonightLine(fc,dateKey,di)
       +wbLine
       +wcLine
       +hypoLine
@@ -1195,13 +1229,13 @@ function show7DaySlot(di){
     var localHr=parseInt(new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"2-digit",hour12:false}).format(new Date(sl.utcMs)));
     if(localHr%2!==0)continue;
     var timeStr=new Intl.DateTimeFormat("en-AU",{timeZone:tz,hour:"numeric",hour12:true}).format(new Date(sl.utcMs)).toLowerCase().replace(" ","");
-    var r=calc(sl.temp,sl.dp,sl.wind,sl.rain);
+    var r=calc(sl.temp,sl.dp,sl.wind,sl.rain,fcMin(fc.hourly.time[sl.idx]));
         var scoreCol=SBANDS[bandForScore(r.score)].col.replace("0.92","1");
     var rowBg=SBANDS[bandForScore(r.score)].col.replace("0.92","0.10");
     var rain2h=(hourlyPrecip[sl.idx]||0)+(hourlyPrecip[sl.idx+1]||0);
     var rainStr=rain2h>=0.05?rain2h.toFixed(1):"—";
         tblRows+="<tr style='border-top:1px solid var(--divider);background:"+rowBg+";cursor:pointer' onclick='show7DayHourSlot("+sl.idx+","+di+",\""+timeStr+"\")'>"
-            +"<td style='padding:5px 8px 5px 6px;font-weight:800;color:var(--text);white-space:nowrap;border-right:1px solid var(--divider);border-left:2px solid var(--divider)'>"+timeStr+"</td>"
+            +"<td style='padding:5px 8px 5px 6px;font-weight:800;color:var(--text);white-space:nowrap;border-right:1px solid var(--divider);border-left:2px solid var(--divider)'>"+timeStr+(r.sleep?" \uD83C\uDF19":"")+"</td>"
       +"<td style='padding:5px 4px'>"+toDisp(sl.temp).toFixed(1)+unitSym()+"</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+toDisp(sl.dp).toFixed(1)+unitSym()+"</td>"
       +"<td style='padding:5px 4px;color:var(--text-muted)'>"+Math.round(sl.wind)+"</td>"

@@ -318,6 +318,7 @@ function setUnit(unit){
   if(window._LW)renderChips(window._LW.temp,window._LW.effDP,window._LW.rh,window._LW.wind);
   reRenderAll();
   initTempPrefs();
+  initSleepPrefs();
   ["heat","hot","winter","cold","dp"].forEach(function(d){if(document.getElementById("sl-liv-"+d))onLivBand(d);});
   livUnitText();
   if(window._currentLat!=null&&document.getElementById("clim-card").style.display==="block")showClimCard(window._currentLat,window._currentLon);
@@ -591,6 +592,87 @@ function rainPenalty(temp,wind,rain,s){
 }
 function onRainPref(){localStorage.setItem("pref_rain",document.getElementById("pref-rain").checked?"1":"0");scheduleRender();}
 function initRainPref(){var el=document.getElementById("pref-rain");if(el)el.checked=localStorage.getItem("pref_rain")==="1";}
+// ── Sleep comfort ──────────────────────────────────────────────────────────
+// Optional (Preferences → Sleep comfort). During your sleep hours, at the place's local time,
+// the score judges conditions for sleeping rather than being out and about: your own
+// too-cold and too-warm limits for sleeping, a steeper penalty for warmth (it builds over
+// 12° above your limit instead of up to 45°C), a gentler one for cold (blankets help),
+// wind only as a breeze through an open window on a warm night, and no rain.
+var SLEEP_ON=false,SLEEP_FROM=21*60,SLEEP_TO=7*60,SLEEP_TLO=12,SLEEP_THI=20;
+var SLEEP_INFO="Turn this on and, during your sleep hours, the score judges the weather for sleeping instead of for being out and about. 23\u00B0C is lovely in the afternoon but warm for sleeping.\n\nSleep hours: type the times you\u2019re usually asleep, such as 9 pm and 7 am (21:00 and 07:00 work too). They follow the local time of the place you\u2019re looking at.\n\nToo warm and too cold to sleep: your own limits for sleeping. Points come off faster for warmth than in the daytime score, because a warm night is hard to escape, and more gently for cold, because blankets help. Humidity still counts. Wind counts only as a breeze through an open window on a warm night, and rain doesn\u2019t count at all.\n\nWhere it shows: the main score during your sleep hours (marked \uD83C\uDF19), the overnight hours in each day\u2019s table and hour popups, and a \u201CTonight\u201D line in each day popup. The day tiles\u2019 best and worst scores use your waking hours only.";
+// A typed time: "21:00", "2100", "21", "9pm", "9:30 pm" → minutes after midnight, or null
+function sleepParse(t){
+  var m=/^(\d{1,2})(?::?(\d{2}))?(am|pm|a|p)?$/.exec(String(t||"").trim().toLowerCase().replace(/[\s.]+/g,""));
+  if(!m)return null;
+  var h=+m[1],mi=m[2]?+m[2]:0;
+  if(mi>59)return null;
+  if(m[3]){if(h<1||h>12)return null;h=h%12+(m[3].charAt(0)==="p"?12:0);}
+  else if(h>24)return null;
+  return(h%24)*60+mi;
+}
+function sleepFmt(min){
+  var h=Math.floor(min/60),mi=min%60,ap=h<12?"am":"pm",h12=h%12||12;
+  return h12+(mi?":"+(mi<10?"0":"")+mi:"")+" "+ap;
+}
+function inSleep(min){
+  if(!SLEEP_ON||min==null||isNaN(min)||SLEEP_FROM===SLEEP_TO)return false;
+  return SLEEP_FROM<SLEEP_TO?(min>=SLEEP_FROM&&min<SLEEP_TO):(min>=SLEEP_FROM||min<SLEEP_TO);
+}
+// Minutes after midnight of a forecast hour ("2026-11-24T21:00", already local to the place)
+function fcMin(timeStr){return timeStr?sleepParse(String(timeStr).slice(11,16)):null;}
+// The time now at the place: the forecast's UTC offset, or this device's clock (fc false or none)
+function placeMinNow(fc){
+  if(fc!==false)fc=fc||window._FC;
+  var off=fc&&fc.utc_offset_seconds!=null?fc.utc_offset_seconds:-new Date().getTimezoneOffset()*60;
+  return((Math.floor((Date.now()/1000+off)/60)%1440)+1440)%1440;
+}
+function gsSleep(){
+  var s=gs();
+  s.tlo=SLEEP_TLO;s.thi=SLEEP_THI;s.hceil=SLEEP_THI+12;
+  s.coldfloor=SLEEP_TLO-25;s.coldmax=s.coldmax*0.6;
+  s.coolmax=Math.max(8,Math.min(25,Math.round((18-SLEEP_TLO)*0.8)));
+  s.rainOn=false;s.sleep=true;
+  return s;
+}
+function sleepTempsShow(){
+  var u=unitSym(),f=function(c){return Math.round(useFahrenheit?toDisp(c):c);};
+  var a=document.getElementById("sleep-thi"),b=document.getElementById("sleep-tlo");
+  if(a)a.value=f(SLEEP_THI);if(b)b.value=f(SLEEP_TLO);
+  ["sleep-thi-unit","sleep-tlo-unit"].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=u;});
+}
+function initSleepPrefs(){
+  try{
+    SLEEP_ON=localStorage.getItem("sleep_on")==="1";
+    var f=parseInt(localStorage.getItem("sleep_from")),t=parseInt(localStorage.getItem("sleep_to"));
+    var lo=parseFloat(localStorage.getItem("sleep_tlo")),hi=parseFloat(localStorage.getItem("sleep_thi"));
+    if(!isNaN(f))SLEEP_FROM=f;if(!isNaN(t))SLEEP_TO=t;if(!isNaN(lo))SLEEP_TLO=lo;if(!isNaN(hi))SLEEP_THI=hi;
+  }catch(e){}
+  var on=document.getElementById("pref-sleep");if(on)on.checked=SLEEP_ON;
+  var opts=document.getElementById("sleep-opts");if(opts)opts.style.display=SLEEP_ON?"":"none";
+  var a=document.getElementById("sleep-from"),b=document.getElementById("sleep-to");
+  if(a)a.value=sleepFmt(SLEEP_FROM);if(b)b.value=sleepFmt(SLEEP_TO);
+  sleepTempsShow();
+}
+function onSleepPref(){
+  SLEEP_ON=document.getElementById("pref-sleep").checked;
+  document.getElementById("sleep-opts").style.display=SLEEP_ON?"":"none";
+  var a=document.getElementById("sleep-from"),b=document.getElementById("sleep-to");
+  var f=sleepParse(a.value),t=sleepParse(b.value);
+  if(f===null||t===null)showToast("Type a time like 9 pm or 21:00");
+  if(f!==null)SLEEP_FROM=f;if(t!==null)SLEEP_TO=t;
+  a.value=sleepFmt(SLEEP_FROM);b.value=sleepFmt(SLEEP_TO);
+  var hi=parseFloat(document.getElementById("sleep-thi").value),lo=parseFloat(document.getElementById("sleep-tlo").value);
+  if(!isNaN(hi))SLEEP_THI=Math.round((useFahrenheit?fromDisp(hi):hi)*2)/2;
+  if(!isNaN(lo))SLEEP_TLO=Math.round((useFahrenheit?fromDisp(lo):lo)*2)/2;
+  if(SLEEP_TLO>=SLEEP_THI)SLEEP_TLO=SLEEP_THI-3;   // too cold must sit below too warm
+  sleepTempsShow();
+  try{
+    localStorage.setItem("sleep_on",SLEEP_ON?"1":"0");
+    localStorage.setItem("sleep_from",SLEEP_FROM);localStorage.setItem("sleep_to",SLEEP_TO);
+    localStorage.setItem("sleep_tlo",SLEEP_TLO);localStorage.setItem("sleep_thi",SLEEP_THI);
+  }catch(e){}
+  scheduleRender();
+}
 // Rain over the hour to now, from the forecast's hourly data (located by date and hour)
 function hourRainNow(fc){
   if(!fc||!fc.hourly||!fc.hourly.precipitation)return null;
@@ -599,11 +681,12 @@ function hourRainNow(fc){
   for(var i=0;i<fc.hourly.time.length;i++)if(fc.hourly.time[i].slice(0,10)===day&&parseInt(fc.hourly.time[i].slice(11,13))===h)return fc.hourly.precipitation[i];
   return null;
 }
-function calc(temp,dp,wind,rain){
-  var s=gs();
+// hr: minutes after midnight at the place, for sleep comfort; leave it out for the daytime score
+function calc(temp,dp,wind,rain,hr){
+  var sl=inSleep(hr),s=sl?gsSleep():gs();
   var tP=0;
 if(temp>=s.thi){
-  tP=Math.min(1,(temp-s.thi)/Math.max(1,45-s.thi))*s.tmax*s.hw;
+  tP=Math.min(1,(temp-s.thi)/Math.max(1,(s.hceil||45)-s.thi))*s.tmax*s.hw;
 } else if(temp>=s.tlo){
   tP=0;
 } else if(s.tlo>=0){
@@ -648,8 +731,10 @@ tP=Math.min(s.tmax,tP);
   if(temp<s.wchill_thresh){var cf2=Math.min(1,(s.wchill_thresh-temp)/Math.max(1,s.wchill_thresh-s.coldfloor));wChill=cf2*Math.min(1,wind/50)*s.wmax*s.cws;}
   var evap=(temp>s.thi&&dp<s.dp)?Math.min(3,(temp-s.thi)/5*(s.dp-dp)/5):0;
   var wP=Math.max(-5,Math.min(s.wmax*2.5,wBase+wChill-evap));
+  // Asleep indoors: no wind chill or gusts, only a breeze through an open window when it's warm
+  if(sl)wP=temp>s.thi?-Math.min(4,(wind||0)*0.2):0;
   var rP=rainPenalty(temp,wind,rain,s);
-  return{score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP-rP))),tP:tP,hP:hP,iP:iP,wP:wP,rP:rP};
+  return{score:Math.min(100,Math.max(0,Math.round(100-tP-hP-iP-wP-rP))),tP:tP,hP:hP,iP:iP,wP:wP,rP:rP,sleep:sl};
 }
 
 // ── Display ────────────────────────────────────────────────────────────────

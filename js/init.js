@@ -11,6 +11,7 @@ initLivFeature();
 initLivPrefs();
 applySliderLock();
 initTempPrefs();
+initSleepPrefs();
 viewFromAddress();
 (function(){
   var p=new URLSearchParams(window.location.search);

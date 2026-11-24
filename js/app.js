@@ -3,10 +3,10 @@
 // ── Share ──────────────────────────────────────────────────────────────────
 function shareScore(){
   if(!window._LW)return;
-  var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain),si=scoreInfo(res.score);
+  var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain,window._currentWU?placeMinNow(false):placeMinNow()),si=scoreInfo(res.score);
   var loc=document.getElementById("live-locname").textContent;
   // TODO: update URL below once comfortscore.joshburton.au is live
-  var text=loc+" right now: "+res.score+" \u2014 "+si.label+" "+si.emoji+"\n"+toDisp(w.temp).toFixed(1)+unitSym()+" | DP "+toDisp(w.effDP).toFixed(1)+unitSym()+" | Wind "+Math.round(w.wind)+" km/h\ncomfortscore.joshburton.au";
+  var text=loc+" right now"+(res.sleep?" (sleep comfort)":"")+": "+res.score+" \u2014 "+si.label+" "+si.emoji+"\n"+toDisp(w.temp).toFixed(1)+unitSym()+" | DP "+toDisp(w.effDP).toFixed(1)+unitSym()+" | Wind "+Math.round(w.wind)+" km/h\ncomfortscore.joshburton.au";
   if(navigator.share){navigator.share({title:"Comfort Score",text:text}).catch(function(){});}
   else{navigator.clipboard.writeText(text).then(function(){showPop("Copied!","Score copied to clipboard.");}).catch(function(){showPop("Share",text);});}
 }
@@ -23,7 +23,7 @@ function refreshWeather(){
 // ── Re-render ──────────────────────────────────────────────────────────────
 function reRenderLive(){
   if(!window._LW)return;
-  var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain);
+  var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain,window._currentWU&&!window._FC?placeMinNow(false):placeMinNow());
   window._LW.res=res;
   renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode,w.rain);
 }
@@ -497,7 +497,7 @@ function fetchWeatherWithCb(lat,lon,label,cb,elevHint){
     window._AQ=aq;
     var cur=d.current,temp=cur.temperature_2m,effDP=cur.dew_point_2m,rh=cur.relative_humidity_2m,wind=cur.wind_speed_10m,wxCode=cur.weather_code;
     var rain=hourRainNow(d);
-    var res=calc(temp,effDP,wind,rain);
+    var res=calc(temp,effDP,wind,rain,placeMinNow(d));
     window._LW={temp:temp,effDP:effDP,rh:rh,wind:wind,gust:cur.wind_gusts_10m,rain:rain,res:res,wxCode:wxCode};
     document.getElementById("live-status").textContent="";
     document.getElementById("live-result").style.display="block";
@@ -538,7 +538,7 @@ function fetchWU(stationId,apiKey,label,cb){
     if(!d.observations||!d.observations.length)throw new Error("No data returned");
     var obs=d.observations[0],m=obs.metric,temp=m.temp,rh=obs.humidity,wind=m.windSpeed,dew=m.dewpt;
     var rain=m.precipRate!=null?m.precipRate:null;
-    var res=calc(temp,dew,wind,rain);
+    var res=calc(temp,dew,wind,rain,placeMinNow(false));
     window._LW={temp:temp,effDP:dew,rh:rh,wind:wind,gust:m.windGust,rain:rain,res:res,wxCode:null};
     window._currentLat=obs.lat;window._currentLon=obs.lon;window._currentLabel=lbl;
     window._currentWU={stationId:sid,apiKey:key,label:lbl};window._FC=null;
@@ -585,7 +585,7 @@ function fetchForecastOnly(lat,lon){
     gdacsCheck(window._currentLat,window._currentLon);
     renderForecast(d); // sets window._FC first
     if(window._LW){
-      var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain);
+      var w=window._LW,res=calc(w.temp,w.effDP,w.wind,w.rain,placeMinNow(d));
       // Re-render live score after _FC and _AQ are both set
       renderScore("live-score-area","gauge-live",res,w.temp,w.effDP,w.wind,w.wxCode!==undefined?w.wxCode:null,w.rain);
     }

@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<link rel="stylesheet" href="app.css?v=4"/>
+<link rel="stylesheet" href="app.css?v=5"/>
 </head>
 <body class="view-forecast">
 <div class="app">
@@ -206,6 +206,29 @@
       <button class="slider-lock-btn" id="slider-lock-btn" onclick="event.stopPropagation();toggleSliderLock()">&#128275; Unlocked</button>
     </div>
     <div class="s-panel" id="pref-panel">
+      <div class="sleep-box">
+        <div class="liv-hardfail-row" style="margin-top:0">
+          <input type="checkbox" id="pref-sleep" onchange="onSleepPref()"/>
+          <label for="pref-sleep" style="flex:1;font-size:clamp(13px,3.5vw,15px);font-weight:800;color:var(--text-head)">&#x1F319; Sleep comfort</label>
+          <div class="ibtn" onclick="showPop('Sleep comfort',SLEEP_INFO)">i</div>
+        </div>
+        <div id="sleep-opts" style="display:none">
+          <div class="temp-input-row sleep-hours">
+            <label for="sleep-from">Sleep hours</label>
+            <span class="sleep-times"><input type="text" id="sleep-from" value="9 pm" autocomplete="off" aria-label="Sleep from" onchange="onSleepPref()"/><span class="temp-input-unit">to</span><input type="text" id="sleep-to" value="7 am" autocomplete="off" aria-label="Sleep until" onchange="onSleepPref()"/></span>
+          </div>
+          <div class="temp-input-row">
+            <label for="sleep-thi">Too warm to sleep above</label>
+            <input type="number" id="sleep-thi" value="20" step="1" onchange="onSleepPref()"/>
+            <span class="temp-input-unit" id="sleep-thi-unit">&#176;C</span>
+          </div>
+          <div class="temp-input-row">
+            <label for="sleep-tlo">Too cold to sleep below</label>
+            <input type="number" id="sleep-tlo" value="12" step="1" onchange="onSleepPref()"/>
+            <span class="temp-input-unit" id="sleep-tlo-unit">&#176;C</span>
+          </div>
+        </div>
+      </div>
       <div class="temp-input-row" style="margin-top:10px">
         <label>I feel hot above</label>
         <input type="number" id="pref-thi" value="28" step="1" onchange="onTempPref()"/>
@@ -469,11 +492,11 @@
   </div>
 </div>
 
-<script src="js/core.js?v=3" defer></script>
-<script src="js/hazards.js?v=2" defer></script>
-<script src="js/app.js?v=3" defer></script>
-<script src="js/forecast.js?v=2" defer></script>
+<script src="js/core.js?v=4" defer></script>
+<script src="js/hazards.js?v=3" defer></script>
+<script src="js/app.js?v=4" defer></script>
+<script src="js/forecast.js?v=3" defer></script>
 <script src="js/climate.js?v=5" defer></script>
-<script src="js/init.js?v=2" defer></script>
+<script src="js/init.js?v=3" defer></script>
 </body>
 </html>
