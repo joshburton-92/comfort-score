@@ -518,49 +518,87 @@ function showClimCard(lat,lon,elev){
 // summer days = the warmest month's average day; hottest days = the hottest day of a typical
 // year; winter days = the coolest month's average day; coldest nights = the coldest night of
 // a typical year. Example places are from the climate data, in the band they belong to.
+// Notches every 2° (every 200 mm for rainfall). Example places are from the climate data, in the band
+// they belong to: for an "Up to" notch, places above the notch below and at or under this one.
 var LIV_HEAT_BANDS=[
-  {label:"Up to 20°C",max:20,sub:"e.g. Dublin, Edinburgh, Bergen"},
-  {label:"Up to 25°C",max:25,sub:"e.g. Hobart, Wellington, Auckland"},
-  {label:"Up to 30°C",max:30,sub:"e.g. Adelaide, Melbourne, Lisbon"},
-  {label:"Up to 33°C",max:33,sub:"e.g. Perth, Brisbane, Singapore"},
-  {label:"Up to 35°C",max:35,sub:"e.g. Darwin, Cairo, Hanoi"},
-  {label:"Up to 38°C",max:38,sub:"e.g. Alice Springs, Bangkok, Dallas"},
-  {label:"Up to 42°C+",max:42,sub:"e.g. Phoenix, New Delhi, Tucson"}
+  {max:20,sub:"e.g. Dunedin, Dublin, Edinburgh"},
+  {max:22,sub:"e.g. Wellington, Cardiff, Burnie"},
+  {max:24,sub:"e.g. Albany, Christchurch, Queenstown NZ"},
+  {max:26,sub:"e.g. Launceston, Mount Gambier, Berlin"},
+  {max:28,sub:"e.g. Port Lincoln, Orange, Nairobi"},
+  {max:30,sub:"e.g. Adelaide, Lisbon, Seoul"},
+  {max:32,sub:"e.g. Cairns, Townsville, Hong Kong"},
+  {max:34,sub:"e.g. Darwin, Mildura, Singapore"},
+  {max:36,sub:"e.g. Broome, Athens, Cairo"},
+  {max:38,sub:"e.g. Alice Springs, Dallas, Chiang Mai"},
+  {max:40,sub:"e.g. Marble Bar, New Delhi, Phoenix"}
 ];
 var LIV_HOT_BANDS=[
-  {label:"Up to 25°C",max:25,sub:"e.g. Dublin, Edinburgh, Wellington"},
-  {label:"Up to 30°C",max:30,sub:"e.g. Auckland, Christchurch, Oslo"},
-  {label:"Up to 33°C",max:33,sub:"e.g. Hobart, London, Cape Town"},
-  {label:"Up to 36°C",max:36,sub:"e.g. Sydney, Brisbane, Darwin"},
-  {label:"Up to 39°C",max:39,sub:"e.g. Melbourne, Canberra, Bangkok"},
-  {label:"Up to 42°C",max:42,sub:"e.g. Adelaide, Perth, Alice Springs"},
-  {label:"Up to 45°C",max:45,sub:"e.g. Mildura, Cairo, Las Vegas"},
-  {label:"Any heat",max:99,sub:"e.g. Marble Bar, Phoenix, New Delhi"}
+  {max:24,sub:"e.g. Punta Arenas, Ushuaia, Stanley"},
+  {max:26,sub:"e.g. Wellington, Dublin, Edinburgh"},
+  {max:28,sub:"e.g. Dunedin, Bergen, Addis Ababa"},
+  {max:30,sub:"e.g. Christchurch, Queenstown NZ, Oslo"},
+  {max:32,sub:"e.g. Johannesburg, Toronto, Mexico City"},
+  {max:34,sub:"e.g. Launceston, Albany, Berlin"},
+  {max:36,sub:"e.g. Darwin, Cairns, Singapore"},
+  {max:38,sub:"e.g. Mount Gambier, Port Lincoln, Lisbon"},
+  {max:40,sub:"e.g. Adelaide, Broome, Athens"},
+  {max:42,sub:"e.g. Alice Springs, La Paz, Dallas"},
+  {max:44,sub:"e.g. Mildura, Cairo, Tucson"},
+  {max:46,sub:"e.g. New Delhi, Las Vegas, Tunis"},
+  {max:99,sub:"e.g. Marble Bar, Phoenix, Khartoum"}
 ];
 var LIV_WINTER_BANDS=[
-  {label:"Down to 25°C",min:25,sub:"e.g. Darwin, Singapore, Honolulu"},
-  {label:"Down to 20°C",min:20,sub:"e.g. Brisbane, Miami, Nairobi"},
-  {label:"Down to 15°C",min:15,sub:"e.g. Sydney, Perth, Adelaide"},
-  {label:"Down to 10°C",min:10,sub:"e.g. Melbourne, Hobart, Canberra"},
-  {label:"Down to 5°C",min:5,sub:"e.g. London, Edinburgh, Shanghai"},
-  {label:"Down to 0°C",min:0,sub:"e.g. Berlin, Seoul, New York"},
-  {label:"Any winter",min:-99,sub:"e.g. Helsinki, Chicago, Harbin"}
+  {min:26,sub:"e.g. Darwin, Broome, Bangkok"},
+  {min:24,sub:"e.g. Cairns, Townsville, Miami"},
+  {min:22,sub:"e.g. Rockhampton, São Paulo, Nouméa"},
+  {min:20,sub:"e.g. New Delhi, Hanoi, Nairobi"},
+  {min:18,sub:"e.g. Alice Springs, Cairo, Hong Kong"},
+  {min:16,sub:"e.g. Port Lincoln, Esperance, Cape Town"},
+  {min:14,sub:"e.g. Adelaide, Mildura, Lisbon"},
+  {min:12,sub:"e.g. Mount Gambier, Athens, Las Vegas"},
+  {min:10,sub:"e.g. Launceston, Ballarat, Wellington"},
+  {min:8,sub:"e.g. Orange, Dunedin, Dublin"},
+  {min:6,sub:"e.g. Queenstown NZ, Edinburgh, Vancouver"},
+  {min:4,sub:"e.g. Bergen, Punta Arenas, Ushuaia"},
+  {min:2,sub:"e.g. Berlin, Beijing, Seoul"},
+  {min:0,sub:"e.g. Oslo, Warsaw, Halifax"},
+  {min:-2,sub:"e.g. Helsinki, Toronto, Chicago"},
+  {min:-4,sub:"e.g. Moscow, Saint Petersburg, Fredericton"},
+  {min:-6,sub:"e.g. Edmonton, Montréal, Ottawa"},
+  {min:-99,sub:"e.g. Harbin, Yakutsk, Winnipeg"}
 ];
 var LIV_COLD_BANDS=[
-  {label:"Down to 15°C",min:15,sub:"e.g. Singapore, Bangkok, Honolulu"},
-  {label:"Down to 10°C",min:10,sub:"e.g. Darwin, Cairns, Cancún"},
-  {label:"Down to 5°C",min:5,sub:"e.g. Townsville, Hong Kong, Miami"},
-  {label:"Down to 0°C",min:0,sub:"e.g. Sydney, Adelaide, Melbourne"},
-  {label:"Down to −5°C",min:-5,sub:"e.g. London, Launceston, Alice Springs"},
-  {label:"Down to −10°C",min:-10,sub:"e.g. Canberra, Berlin, Atlanta"},
-  {label:"Any cold",min:-99,sub:"e.g. Oslo, Helsinki, Chicago"}
+  {min:16,sub:"e.g. Bangkok, Singapore, Manila"},
+  {min:14,sub:"e.g. Weipa, Honolulu, Dakar"},
+  {min:12,sub:"e.g. Darwin, Cairns, Nouméa"},
+  {min:10,sub:"e.g. Port Douglas, Naha, Key West"},
+  {min:8,sub:"e.g. Townsville, Broome, Hong Kong"},
+  {min:6,sub:"e.g. Marble Bar, Casablanca, São Paulo"},
+  {min:4,sub:"e.g. Port Lincoln, Lisbon, Cairo"},
+  {min:2,sub:"e.g. Adelaide, Albany, New Delhi"},
+  {min:0,sub:"e.g. Mount Gambier, Wellington, Athens"},
+  {min:-2,sub:"e.g. Mildura, Ballarat, Tokyo"},
+  {min:-4,sub:"e.g. Alice Springs, Dunedin, Dublin"},
+  {min:-6,sub:"e.g. Launceston, Christchurch, Edinburgh"},
+  {min:-8,sub:"e.g. Queenstown NZ, Armidale, Hamburg"},
+  {min:-10,sub:"e.g. Cooma, Berlin, Punta Arenas"},
+  {min:-12,sub:"e.g. Seoul, Munich, Sapporo"},
+  {min:-14,sub:"e.g. Beijing, Lhasa, Salt Lake City"},
+  {min:-99,sub:"e.g. Oslo, Helsinki, Moscow"}
 ];
 var LIV_RAIN_BANDS=[
-  {label:"Any",min:0,sub:"0mm+ · e.g. Phoenix, Riyadh, Alice Springs"},
-  {label:"Dry",min:300,sub:"300mm+ · e.g. Perth, Madrid, Cape Town"},
-  {label:"Moderate",min:600,sub:"600mm+ · e.g. Sydney, Bordeaux, Buenos Aires"},
-  {label:"Wet",min:900,sub:"900mm+ · e.g. Auckland, Vancouver, Galway"},
-  {label:"Very wet",min:1400,sub:"1400mm+ · e.g. Bergen, Cairns, Osaka"}
+  {label:"Any",min:0,sub:"e.g. Cairo, Phoenix, Las Vegas"},
+  {label:"200 mm+",min:200,sub:"e.g. Alice Springs, Mildura, Los Angeles"},
+  {label:"400 mm+",min:400,sub:"e.g. Adelaide, Port Lincoln, Christchurch"},
+  {label:"600 mm+",min:600,sub:"e.g. Launceston, Broome, Queenstown NZ"},
+  {label:"800 mm+",min:800,sub:"e.g. Albany, Orange, Nairobi"},
+  {label:"1,000 mm+",min:1000,sub:"e.g. Townsville, Wellington, Boston"},
+  {label:"1,200 mm+",min:1200,sub:"e.g. Shanghai, Vancouver, Addis Ababa"},
+  {label:"1,400 mm+",min:1400,sub:"e.g. Tokyo, Seoul, Busan"},
+  {label:"1,600 mm+",min:1600,sub:"e.g. Darwin, Bangkok, Hanoi"},
+  {label:"1,800 mm+",min:1800,sub:"e.g. Cairns, Bali, Salvador"},
+  {label:"2,000 mm+",min:2000,sub:"e.g. Bergen, Singapore, Hong Kong"}
 ];
 var LIV_SUN_BANDS=[
   {label:"Any",min:0,sub:"0hrs+ · e.g. Reykjavik, Bergen, Juneau"},
@@ -570,11 +608,15 @@ var LIV_SUN_BANDS=[
   {label:"Very sunny",min:2800,sub:"2800hrs+ · e.g. Phoenix, Dubai, Alice Springs"}
 ];
 var LIV_DP_BANDS=[
-  {label:"Very low (≤14°C)",max:14,sub:"e.g. desert climates, inland Australia, Patagonia"},
-  {label:"Low (≤17°C)",max:17,sub:"e.g. Mediterranean, coastal California, South Africa"},
-  {label:"Moderate (≤20°C)",max:20,sub:"e.g. Sydney, southern Europe, New Zealand"},
-  {label:"High (≤23°C)",max:23,sub:"e.g. Florida, coastal Brazil, northern Australia dry season"},
-  {label:"Any humidity",max:99,sub:"e.g. Singapore, Bangkok, Amazon basin"}
+  {label:"Very dry (≤10°C)",max:10,sub:"e.g. Alice Springs, Las Vegas, Denver"},
+  {label:"Very low (≤12°C)",max:12,sub:"e.g. Adelaide, Launceston, Christchurch"},
+  {label:"Low (≤14°C)",max:14,sub:"e.g. Port Lincoln, Orange, Wellington"},
+  {label:"Fairly low (≤16°C)",max:16,sub:"e.g. Albany, Esperance, Lisbon"},
+  {label:"Moderate (≤18°C)",max:18,sub:"e.g. Athens, Chicago, Boston"},
+  {label:"Fairly high (≤20°C)",max:20,sub:"e.g. Marble Bar, São Paulo, Harbin"},
+  {label:"High (≤22°C)",max:22,sub:"e.g. Beijing, Tokyo, Casablanca"},
+  {label:"Very high (≤24°C)",max:24,sub:"e.g. Cairns, Townsville, Seoul"},
+  {label:"Any humidity",max:99,sub:"e.g. Darwin, Broome, New Delhi"}
 ];
 var LIV_SNOW_BANDS=[
   {label:"None",max:0,sub:"0cm · e.g. most of Australia, southern Spain, Canary Islands"},
@@ -583,6 +625,19 @@ var LIV_SNOW_BANDS=[
   {label:"Any amount",max:9999,sub:"e.g. Hokkaido, Quebec, Tromsø"}
 ];
 
+var LIV_BANDS={heat:LIV_HEAT_BANDS,hot:LIV_HOT_BANDS,winter:LIV_WINTER_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
+// The notches before 24 Nov 2026. Settings saved then (no bv:2) move to the nearest new notch.
+var LIV_OLD_NOTCHES={heat:[20,25,30,33,35,38,42],hot:[25,30,33,36,39,42,45,99],winter:[25,20,15,10,5,0,-99],
+  cold:[15,10,5,0,-5,-10,-99],dp:[14,17,20,23,99],rain:[0,300,600,900,1400]};
+// The notch nearest a value; on a tie, the more lenient one (higher for an "up to" limit, lower for a "down to" one)
+function livNotch(dim,val){
+  var b=LIV_BANDS[dim],key=b[0].max!==undefined?"max":"min",best=0;
+  for(var i=1;i<b.length;i++){
+    var d=Math.abs(b[i][key]-val),bd=Math.abs(b[best][key]-val);
+    if(d<bd||(d===bd&&(key==="max"?b[i][key]>b[best][key]:b[i][key]<b[best][key])))best=i;
+  }
+  return best;
+}
 function toggleLivPref(){
   var panel=document.getElementById("liv-pref-panel");
   var tog=document.getElementById("liv-pref-tog");
@@ -613,8 +668,7 @@ function livUnitText(){
   if(lc)lc.textContent="Winter must be cool (coldest month <"+livDeg(18)+" avg max)";
 }
 function onLivBand(dim){
-  var bands={heat:LIV_HEAT_BANDS,hot:LIV_HOT_BANDS,winter:LIV_WINTER_BANDS,cold:LIV_COLD_BANDS,dp:LIV_DP_BANDS,rain:LIV_RAIN_BANDS,sun:LIV_SUN_BANDS,snow:LIV_SNOW_BANDS};
-  var b=bands[dim];
+  var b=LIV_BANDS[dim];
   var v=parseInt(document.getElementById("sl-liv-"+dim).value);
   document.getElementById("liv-"+dim+"-val").textContent=livBandLabel(dim,b[v],v===b.length-1);
   document.getElementById("liv-"+dim+"-sub").textContent=b[v].sub;
@@ -630,7 +684,7 @@ function onLivSens(id){
   renderLivScore();
 }
 function saveLivPrefs(){
-  var p={
+  var p={bv:2,
     heat:parseInt(document.getElementById("sl-liv-heat").value),
     hot:parseInt(document.getElementById("sl-liv-hot").value),
     winter:parseInt(document.getElementById("sl-liv-winter").value),
@@ -659,21 +713,32 @@ function loadLivPrefs(){
   var p=JSON.parse(localStorage.getItem("liv_prefs")||"{}");
   function sv(id,val){var el=document.getElementById(id);if(el)el.value=val;}
   function sc(id,val){var el=document.getElementById(id);if(el)el.checked=val;}
-  sv("sl-liv-heat",p.heat!==undefined?p.heat:2);
-  var cold=p.cold!==undefined?p.cold+(p.coldV===2?0:2):4; // before coldV:2 the scale started at 5°C
+  // The number of notches comes from the band lists, not the page, so the two can't disagree
+  for(var d in LIV_BANDS){var el=document.getElementById("sl-liv-"+d);if(el)el.max=LIV_BANDS[d].length-1;}
+  // A saved notch, or the default value's notch. Settings from before bv:2 count the old notches.
+  var oldNotches=p.bv!==2;
+  function notch(dim,saved,def){
+    if(saved===undefined||saved===null)return livNotch(dim,def);
+    if(!oldNotches||!LIV_OLD_NOTCHES[dim])return saved;
+    var ov=LIV_OLD_NOTCHES[dim][Math.max(0,Math.min(saved,LIV_OLD_NOTCHES[dim].length-1))];
+    return livNotch(dim,ov);
+  }
+  sv("sl-liv-heat",notch("heat",p.heat,30));
+  var oldCold=p.cold!==undefined?p.cold+(p.coldV===2?0:2):undefined; // before coldV:2 the scale started at 5°C
+  var cold=notch("cold",oldCold,-5);
   sv("sl-liv-cold",cold);
   // Hottest days and winter days were once worked out from the other two sliders. For settings
   // saved before they had their own, start them at the typical gaps in the climate data: the
   // hottest day runs about 6° above the warmest month's average day, and the coolest month's
   // average day about 15° above the coldest night.
   function near(bands,v,key){var bi=0;for(var i=0;i<bands.length;i++)if(Math.abs(bands[i][key]-v)<Math.abs(bands[bi][key]-v))bi=i;return bi;}
-  var heatMax=LIV_HEAT_BANDS[p.heat!==undefined?p.heat:2].max,coldMin=LIV_COLD_BANDS[cold].min;
-  sv("sl-liv-hot",p.hot!==undefined?p.hot:near(LIV_HOT_BANDS,heatMax+6,"max"));
-  sv("sl-liv-winter",p.winter!==undefined?p.winter:coldMin<=-99?LIV_WINTER_BANDS.length-1:near(LIV_WINTER_BANDS,coldMin+15,"min"));
-  sv("sl-liv-rain",p.rain!==undefined?p.rain:2);
+  var heatMax=LIV_HEAT_BANDS[notch("heat",p.heat,30)].max,coldMin=LIV_COLD_BANDS[cold].min;
+  sv("sl-liv-hot",p.hot!==undefined?notch("hot",p.hot):near(LIV_HOT_BANDS,heatMax+6,"max"));
+  sv("sl-liv-winter",p.winter!==undefined?notch("winter",p.winter):coldMin<=-99?LIV_WINTER_BANDS.length-1:near(LIV_WINTER_BANDS,coldMin+15,"min"));
+  sv("sl-liv-rain",notch("rain",p.rain,600));
   sv("sl-liv-sun",p.sun!==undefined?p.sun:2);
   sv("sl-liv-snow",p.snow!==undefined?p.snow:0);
-  sv("sl-liv-dp",p.dp!==undefined?p.dp:2);
+  sv("sl-liv-dp",notch("dp",p.dp,20));
   sv("sl-liv-tsens",p.tsens!==undefined?p.tsens:50);
   sv("sl-liv-hsens",p.hsens!==undefined?p.hsens:50);
   sv("sl-liv-lsens",p.lsens!==undefined?p.lsens:50);
@@ -714,13 +779,21 @@ function getLivPrefs(){
     hfSun:document.getElementById("hf-liv-sun").checked,
     hfSnow:document.getElementById("hf-liv-snow").checked,
     reqSummerWarm:document.getElementById("req-summer-warm").checked,
-    reqWinterCool:document.getElementById("req-winter-cool").checked
+    reqWinterCool:document.getElementById("req-winter-cool").checked,
+    windT:(function(el){return el?parseInt(el.value)/100:0.5;})(document.getElementById("sl-wind"))
   };
 }
 // One place's liveability, worked out once: the figures it's scored on, the 0–100 score for
 // each of the nine parts, and the total. calcLiveability(), the summary line, the rule-out
 // list and the breakdown popup all read from here, so they can't disagree.
 var LIV_WEIGHTS=[15,10,15,10,20,10,10,7,3]; // summer, hottest days, winter, coldest nights, humidity, rain, sun, wind, snow
+// Wind preference also sets how much wind counts: 20 points at Hate wind, 7 at Neutral (the
+// weights above), 3 at Love wind. The other eight parts share the rest in the same proportions.
+function livWeights(p){
+  var t=p&&p.windT!=null?p.windT:0.5;
+  var ww=t<=0.5?20-26*t:7-8*(t-0.5),k=(100-ww)/(100-LIV_WEIGHTS[7]);
+  return LIV_WEIGHTS.map(function(w,i){return i===7?ww:w*k;});
+}
 function livCompute(entry,p){
   p=p||getLivPrefs();
   var M=entry.monthly;
@@ -770,7 +843,12 @@ function livCompute(entry,p){
     }
     return 100;
   }
-  var windCeil=20+((1-p.lsens)*20);
+  // Wind: the limit comes from Wind preference (the slider the comfort score uses), set against
+  // yearly average wind: Hate wind 10 km/h, Neutral 17, Love wind 24. Most places average 10–15 km/h;
+  // only the windiest 5% (Wellington, Esperance, Punta Arenas) average 20 or more. Lifestyle
+  // sensitivity sets how fast the score falls past the limit: about 9 points a km/h at Moderate.
+  var windCeil=Math.round(10+(p.windT!=null?p.windT:0.5)*14);
+  function scoreWind(val,ceil,sens){return val<=ceil?100:Math.max(0,100-(val-ceil)*sens*5);}
   var s=[
     scoreCeil(st,p.heatMax,ts,p.hfHeat),           // summer heat
     scoreCeil(hotmaxMax,p.hotMax,ts,p.hfHot),      // hottest days
@@ -779,17 +857,18 @@ function livCompute(entry,p){
     scoreCeil(peakDp,p.dpMax,hs,p.hfDp),           // peak humidity
     scoreRain(totalPrecip,p.rainMin,p.rainMax,ls,p.hfRain), // rainfall (total precipitation)
     scoreFloor(sun,p.sunMin,ls,p.hfSun),           // sunshine
-    scoreCeil(wind,windCeil,ls,false),             // wind
+    scoreWind(wind,windCeil,ls),                   // wind
     scoreCeil(totalSnow,p.snowMax,ls,p.hfSnow)     // snowfall
   ];
   // Hard fail check — any triggered hard fail zeros the whole score
   var hard=(p.hfHeat&&st>p.heatMax)||(p.hfHot&&hotmaxMax>p.hotMax)||(p.hfWinter&&wt<p.winterMin)||(p.hfCold&&coldtminMin<p.coldMin)||
     (p.hfDp&&peakDp>p.dpMax)||(p.hfRain&&totalPrecip<p.rainMin)||(p.hfSun&&sun<p.sunMin)||
     (p.hfSnow&&totalSnow>p.snowMax)||(p.reqSummerWarm&&st<18)||(p.reqWinterCool&&wt>=18);
-  var raw=Math.round(s[0]*0.15+s[1]*0.10+s[2]*0.15+s[3]*0.10+s[4]*0.20+s[5]*0.10+s[6]*0.10+s[7]*0.07+s[8]*0.03);
+  var W=livWeights(p);
+  var raw=Math.round(s.reduce(function(t,v,i){return t+v*W[i]/100;},0));
   raw=Math.max(0,Math.min(100,raw));
   return{p:p,st:st,wt:wt,peakDp:peakDp,hotmaxMax:hotmaxMax,coldtminMin:coldtminMin,totalRain:totalRain,totalSnow:totalSnow,
-    totalPrecip:totalPrecip,sun:sun,wind:wind,windCeil:windCeil,mon:mon,s:s,hard:!!hard,raw:raw,score:hard?0:raw};
+    totalPrecip:totalPrecip,sun:sun,wind:wind,windCeil:windCeil,mon:mon,s:s,w:W,hard:!!hard,raw:raw,score:hard?0:raw};
 }
 function calcLiveability(entry){
   if(!entry||!entry.monthly||entry.monthly.length<12)return null;
@@ -887,7 +966,7 @@ function livScoreAnnotations(entry){
     },
     {
       score:S[7],
-      pos:"calm and sheltered",
+      pos:L.wind<10?"calm and sheltered":"wind suits you",
       mild_neg:"occasionally breezy",
       neg:"frequently windy",
       bad:"persistently windy"
@@ -978,14 +1057,14 @@ function showLivBreakdown(){
   var noCold=p.coldMin<=-99;
   var rows=[];
   function row(i,icon,name,fig,feel){
-    var w=LIV_WEIGHTS[i],lost=(100-s[i])*w/100;
+    var w=L.w[i],lost=(100-s[i])*w/100;
     rows.push({i:i,lost:lost,html:function(col){
       var r=Math.round(lost),ok=r===0;
       return"<div style='padding:7px 0;border-bottom:1px solid var(--divider)'>"
         +"<div style='display:flex;justify-content:space-between;align-items:baseline;gap:8px'>"
         +"<span style='font-size:13.5px;font-weight:800;color:var(--text)'>"+icon+" "+name+"</span>"
         +"<span style='font-size:14px;font-weight:800;color:var(--text);white-space:nowrap'>"
-        +(ok?"<span style='color:#1a7a3a'>✓</span>":"−"+r+" <span style='font-size:10px;color:var(--text-muted)'>of "+w+"</span>")+"</span></div>"
+        +(ok?"<span style='color:#1a7a3a'>✓</span>":"−"+r+" <span style='font-size:10px;color:var(--text-muted)'>of "+Math.round(w)+"</span>")+"</span></div>"
         +"<div style='font-size:11.5px;font-weight:600;color:var(--text-muted);margin-top:1px'>"+fig+"</div>"
         +"<div style='font-size:12.5px;font-weight:600;color:var(--text);margin-top:3px;line-height:1.45'>"+feel+"</div>"
         +(ok?"":"<div style='height:5px;border-radius:3px;background:var(--range-bg);margin-top:5px;overflow:hidden'><div style='height:100%;width:"+Math.max(3,Math.min(100,100-s[i]))+"%;border-radius:3px;background:"+climScoreCol(s[i])+"'></div></div>")
@@ -1022,7 +1101,7 @@ function showLivBreakdown(){
      "A little greyer than you’d like.","Often grey — less sun than you want.","Persistently grey and overcast for you."][lvl(s[6])]);
   // 8 — Wind
   if(entry.wind==null)row(7,"💨","Wind","No wind figure for this place","Not counted against it.");
-  else row(7,"💨","Wind","Averages "+n(L.wind)+" km/h · comfortable up to "+n(L.windCeil)+" km/h for you",
+  else row(7,"💨","Wind","Averages "+n(L.wind)+" km/h · your limit "+n(L.windCeil)+" km/h, from Wind preference",
     [L.wind<10?"Generally calm.":"Breezy at times, but within what you like.","Breezier than you’d like.","Frequently windy for you.","Persistently windy."][lvl(s[7])]);
   // 9 — Snow
   row(8,"☃️","Snow",(L.totalSnow<0.05?"No snow":cm(L.totalSnow)+" cm a year")+(p.snowMax>=9999?" · any amount suits you":p.snowMax===0?" · you’d prefer none":" · your limit "+p.snowMax+" cm"),

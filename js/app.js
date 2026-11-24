@@ -164,7 +164,7 @@ var thi=parseFloat(localStorage.getItem("pref_thi"))||_thi||22;
   // Recalibrate cold zone to match saved threshold
   onTempPref();
 }
-function onSlider(key){var el=document.getElementById("sl-"+key);if(!el)return;var pos=parseInt(el.value),t=pos/100;SLIDER_MAPS[key].apply(t);document.getElementById(key+"-val").textContent=sliderLabel(key,pos);updateTrack("sl-"+key,pos);saveSettings();scheduleRender();}
+function onSlider(key){var el=document.getElementById("sl-"+key);if(!el)return;var pos=parseInt(el.value),t=pos/100;SLIDER_MAPS[key].apply(t);document.getElementById(key+"-val").textContent=sliderLabel(key,pos);updateTrack("sl-"+key,pos);saveSettings();scheduleRender();if(key==="wind"&&typeof renderLivScore==="function")renderLivScore();}
 
 function advToSlider(key){
   function gv(id,def){var el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
