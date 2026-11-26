@@ -20,8 +20,9 @@ var LEARN_FACTS={
 };
 var LEARN_SETS=[
   {id:"basics",title:"The basics",blurb:"Weather, climate and how to read a place’s climate.",lessons:["weather-climate","what-shapes-climate","reading-climate"]},
+  {id:"weather",title:"How weather works",blurb:"Temperature, humidity, pressure, wind and rain, and the storms they build — how each is measured and what the numbers mean.",lessons:["temperature","humidity","pressure","wind","rain","thunderstorms","hail","tornadoes","tropical-cyclones","tornado-vs-cyclone","fog-frost-snow"]},
   {id:"drivers",title:"Climate drivers",blurb:"The ocean and air patterns that push a season wetter, drier, hotter or colder.",lessons:["drivers-intro","enso","iod","sam","mjo","ridge","monsoon","itcz","jet","nao","ao","pdo","amv","amoc"]},
-  {id:"warming",title:"Global warming in "+LEARN_FACTS.year,blurb:"Climate through deep time, what is changing now, how fast, and where we stand.",lessons:["deep-time","greenhouse","state-now","oceans-ice","tipping"]},
+  {id:"warming",title:"Global warming in "+LEARN_FACTS.year,blurb:"Climate through deep time, where we stand now, what each degree means and where different paths lead.",lessons:["deep-time","greenhouse","state-now","warming-levels","pathways","oceans-ice","tipping"]},
   {id:"extremes",title:"Extremes",blurb:"Heat, rain, drought and fire in a warming world.",lessons:["heatwaves","humid-heat","rain-floods","drought-fire"]},
   {id:"you",title:"What it means for you",blurb:"The hazards where you live, and what you can do about them.",lessons:["for-me","what-you-can-do"]}
 ];
@@ -227,6 +228,153 @@ var LEARN={
 <h3>If it did collapse</h3>
 <p>North-west Europe would face much colder winters even in a warmer world, sea level would rise faster along North America’s east coast, and tropical rain belts would shift south — disrupting the monsoons of West Africa and South Asia.</p>`,
   sources:[["Met Office — The Atlantic Meridional Overturning Circulation in a changing climate","https://www.metoffice.gov.uk/blog/2024/the-atlantic-meridional-overturning-circulation-in-a-changing-climate"],["Met Office — Climate change: AMOC likely to withstand future warming (2025)","https://www.metoffice.gov.uk/about-us/news-and-media/media-centre/weather-and-climate-news/2025/climate-change-amoc-likely-to-withstand-future-warming"],["Carbon Brief — AMOC explainer","https://interactive.carbonbrief.org/amoc-explainer/"],["Yale Environment 360 — The AMOC and climate change","https://e360.yale.edu/features/amoc-climate-change"]]},
+
+/* ── How weather works ──────────────────────────────────────────────────── */
+"temperature":{title:"Temperature and how it’s measured",mins:3,
+  lead:"The temperature in a forecast is the air in the shade at about chest height, measured the same way around the world so readings can be compared.",
+  body:`<h3>Where the thermometer sits</h3>
+<p>Official thermometers sit inside a <b>Stevenson screen</b>: a white, louvred box that shades them from the sun and rain while letting air flow through. The screen stands over grass, away from buildings, trees and paving, which soak up and give off heat.</p>
+<p>The thermometer is about 1.2 m above the ground (1.25 m in the UK). Height matters: on a still night the air at ground level can be several degrees colder than at screen height. Australia’s Bureau of Meteorology notes that on many nights {t:2} at the screen is roughly {t:0} at the ground — which is why you can get frost when the forecast low is above freezing.</p>
+<h3>From mercury to electronics</h3>
+<p>For more than a century, observers read mercury and alcohol thermometers, including special ones that record the day’s highest and lowest. Today most stations are automatic and use electronic sensors (platinum resistance thermometers) that report every minute. The sensor responds over tens of seconds, so a single reading smooths out the brief flickers of a gusty day.</p>
+<h3>Highs, lows and the official day</h3>
+<p>Weather services record a maximum and minimum for each day, but “day” can mean different things. In Australia’s climate records, the maximum covers the 24 hours from 9 am and the minimum the 24 hours to 9 am, so a day’s low usually comes from the night before. Other countries use midnight to midnight or other windows, so be careful comparing records.</p>
+<h3>Why it can feel hotter or colder</h3>
+<ul><li><b>Sun:</b> standing in direct sunshine can feel several degrees hotter than the shade temperature.</li><li><b>Wind:</b> wind carries heat away from your skin, so cold, windy days feel colder.</li><li><b>Humidity:</b> on hot days, moist air stops sweat cooling you.</li><li><b>Cities:</b> concrete, asphalt and buildings store heat, so cities stay warmer than the countryside, especially at night.</li></ul>
+<p>A car dashboard, a phone or a thermometer on a sunny wall will often read well above the official temperature. The Comfort Score starts from the official-style air temperature and then adds humidity, wind and sun.</p>`,
+  sources:[["Bureau of Meteorology — Observation of air temperature","https://www.bom.gov.au/climate/cdo/about/airtemp-measure.shtml"],["Bureau of Meteorology — Ask the Bureau: How is temperature measured?","https://media.bom.gov.au/social/blog/916/ask-bom-how-is-temperature-measured"],["Bureau of Meteorology — Definitions for temperature","https://www.bom.gov.au/climate/cdo/about/definitionstemp.shtml"],["Bureau of Meteorology — Notes to accompany daily weather observations","https://www.bom.gov.au/clim_data/dwodata/IDCJDW0000.shtml"],["Met Office — How is temperature measured?","https://www.metoffice.gov.uk/blog/2025/how-does-the-met-office-measure-temperature"]]},
+"humidity":{title:"Humidity and dew point",mins:2,
+  lead:"Humidity is the water vapour in the air. Dew point tells you how much there is; relative humidity tells you how close the air is to full.",
+  body:`<h3>Two ways of saying it</h3>
+<p><b>Relative humidity</b> is how full the air is compared with the most vapour it could hold at that temperature. Warm air can hold far more vapour than cold air, so the same moisture gives a high percentage on a cool morning and a low one on a hot afternoon. That’s why relative humidity is usually highest around dawn and lowest mid-afternoon.</p>
+<p>The <b>dew point</b> is the temperature the air would have to cool to before dew forms. It measures the actual amount of moisture, so it changes far less through the day — and it tracks how sticky the air feels much better.</p>
+<h3>A rough guide to dew point</h3>
+<ul><li>Below {t:10}: dry and crisp.</li><li>{t:10} to {t:16}: comfortable.</li><li>{t:16} to {t:20}: noticeably humid.</li><li>Above {t:20}: muggy; above {t:24}, oppressive.</li></ul>
+<h3>How it’s measured</h3>
+<p>The classic method uses two thermometers side by side in the screen, one kept wet. Evaporation cools the wet one, and the drier the air, the bigger the gap between them; tables or a formula turn that gap into humidity. Automatic stations now use small electronic sensors, at the same height as the thermometer.</p>
+<h3>Dew, fog and cloud</h3>
+<p>When air cools to its dew point, vapour condenses: on grass as dew, near the ground as fog, and higher up as cloud. See <a href="#learn/fog-frost-snow" onclick="learnGo('fog-frost-snow');return false;">Fog, frost and snow</a>, and <a href="#learn/humid-heat" onclick="learnGo('humid-heat');return false;">Humid heat and your body</a> for why it matters on hot days.</p>`,
+  sources:[["Met Office — How do we measure the weather?","https://www.metoffice.gov.uk/learning/weather-for-kids/how-to-measure-the-weather"],["Royal Meteorological Society — Weather measurements: a guide","https://www.rmets.org/sites/default/files/inline-files/simweameasurements.pdf"],["Met Office — The UK land observation network","https://www.metoffice.gov.uk/blog/2025/the-uk-land-observation-network-what-is-it"]]},
+"pressure":{title:"Air pressure, highs, lows and fronts",mins:3,
+  lead:"Air has weight. Differences in its pressure drive the wind and decide whether a day is settled or stormy.",
+  body:`<h3>What pressure is</h3>
+<p>Air pressure is the weight of the column of air above you. It’s measured in hectopascals (hPa), and averages about 1013 hPa at sea level. Pressure falls as you climb — roughly 1 hPa for every 10 m near the ground — so weather maps adjust each station’s reading to sea level, letting places at different heights be compared.</p>
+<h3>Highs and lows</h3>
+<p>There’s no fixed number that makes a system high or low: what matters is the pressure compared with its surroundings.</p>
+<ul><li><b>Highs</b> (anticyclones) are areas of sinking air. Sinking air warms and dries, so highs usually bring settled, dry weather and light winds. In winter their clear skies bring cold nights, frost and fog; in summer a slow high can trap heat for days.</li><li><b>Lows</b> (depressions) are areas of rising air. Rising air cools and its moisture condenses, so lows bring cloud, rain and wind.</li></ul>
+<h3>Isobars and wind</h3>
+<p>On a weather map, isobars join places with the same pressure. Wind blows from high towards low pressure, but Earth’s spin turns it so it flows almost along the isobars. The closer together they are, the stronger the wind. In the Southern Hemisphere wind circulates clockwise around lows and anticlockwise around highs; in the Northern Hemisphere it’s the other way round.</p>
+<h3>Fronts</h3>
+<p>A front is the boundary between two air masses.</p>
+<ul><li><b>Cold fronts</b> bring a sharp change: the wind shifts, a band of showers or storms passes and the temperature drops. In southern Australia the summer “cool change” after hot northerly winds is a cold front.</li><li><b>Warm fronts</b> slide warm air up over cooler air, bringing a wide band of layered cloud and steadier rain. They’re common in the Northern Hemisphere’s mid-latitudes.</li></ul>`,
+  sources:[["Bureau of Meteorology — Highs and lows: the systems that drive weather patterns (2026)","https://www.bom.gov.au/news-and-media/highs-and-lows-the-systems-that-drive-weather-patterns"],["Bureau of Meteorology — The art of the chart: how to read a weather map","https://media.bom.gov.au/social/blog/2391/the-art-of-the-chart-how-to-read-a-weather-map/"],["Met Office — High and low pressure","https://weather.metoffice.gov.uk/learn-about/weather/how-weather-works/high-and-low-pressure"],["Met Office — Synoptic weather charts","https://weather.metoffice.gov.uk/learn-about/weather/how-weather-works/synoptic-weather-chart"],["Royal Geographical Society — A guide to collecting weather data","https://www.rgs.org/media/fccobjkh/aguidetocollectingweatherdata.pdf"]]},
+"wind":{title:"Wind",mins:2,
+  lead:"Wind is air moving from high pressure towards low pressure. Forecasts give the average speed 10 m up, plus the gusts.",
+  body:`<h3>How it’s measured</h3>
+<p>Wind is measured by an anemometer — usually spinning cups, sometimes an ultrasonic sensor — and a wind vane on a mast 10 m above open ground. Direction is always where the wind comes <b>from</b>: a northerly blows from the north.</p>
+<h3>Average wind and gusts</h3>
+<p>The wind in a forecast is an average, often over 10 minutes. Gusts are brief bursts well above it, and they do most of the damage. As a guide from Australia’s Bureau of Meteorology, gusts of 90–100 km/h break large branches and lift roof tiles, and gusts over about 100–120 km/h cause widespread damage, uproot trees and push vehicles off roads.</p>
+<h3>The Beaufort scale</h3>
+<p>The Beaufort scale names winds from calm (0) to hurricane force (12), based on what you can see them do. This app uses it in its wind pills: a gentle breeze from about 12 km/h, a fresh breeze from about 29 km/h, and hurricane force from 118 km/h.</p>
+<h3>Local winds</h3>
+<ul><li><b>Sea breezes</b> blow in from the water on warm afternoons as the land heats; at night a gentler land breeze can blow back out.</li><li><b>Valleys and slopes</b> funnel and speed up wind, and cold air drains downhill on still nights.</li><li><b>Ahead of cold fronts</b>, hot, dry, gusty winds can drive dangerous fire weather.</li></ul>`,
+  sources:[["Met Office — What is wind and how do we measure it?","https://www.metoffice.gov.uk/blog/2025/what-is-wind-and-how-do-we-measure-it"],["Met Office — How wind speeds are measured","https://www.metoffice.gov.uk/blog/2025/why-do-we-measure-wind-at-less-than-500m"],["Bureau of Meteorology — Storm Spotters’ Handbook: what to report","https://www.bom.gov.au/storm_spotters/handbook/what_to_report.shtml"],["Bureau of Meteorology — About the Storm Confirmation Service","https://www.bom.gov.au/climate/storms/about/"]]},
+"rain":{title:"Rain, and how it’s measured",mins:3,
+  lead:"Rain forms when rising air cools and its vapour condenses into drops heavy enough to fall. It’s measured in millimetres: 1 mm is about a litre on every square metre.",
+  body:`<h3>Why air rises</h3>
+<ul><li><b>Heating from below:</b> sun-warmed air rises in bubbles, building heaped clouds, showers and thunderstorms.</li><li><b>Hills and mountains:</b> wind pushes air up the slopes, so the windward side is wetter and the far side sits in a drier “rain shadow”.</li><li><b>Fronts and lows:</b> whole layers of air are lifted, bringing widespread, steadier rain.</li></ul>
+<h3>Drizzle, showers and rain</h3>
+<p>Drizzle is fine drops from low, grey cloud. Showers come from heaped clouds and start and stop quickly, with clear breaks between. Rain is steadier, from layered cloud.</p>
+<h3>How it’s measured</h3>
+<p>A standard rain gauge is a funnel 203 mm across leading into a measuring tube, with its top about 0.3 m above the ground. Automatic stations use a tipping bucket that records each 0.2 mm. In Australia, daily rainfall is the total for the 24 hours to 9 am. Snow and hail are melted and counted as water: about 1 cm of fresh snow makes 1 mm. Radar fills in between gauges by estimating how hard it is raining.</p>
+<h3>Reading a forecast</h3>
+<p>The chance of rain is the chance that at least a small amount falls at a given place during the period — not the share of the day or the area that will be wet. A rain amount, such as 5–15 mm, is a range because showers are patchy.</p>
+<p>For how heavy rain is changing, see <a href="#learn/rain-floods" onclick="learnGo('rain-floods');return false;">Heavy rain and floods</a>.</p>`,
+  sources:[["Bureau of Meteorology — About rainfall data","https://www.bom.gov.au/climate/cdo/about/about-rain-data.shtml"],["Bureau of Meteorology — Observation of rainfall","https://www.bom.gov.au/climate/cdo/about/rain-measure.shtml"],["Bureau of Meteorology — Flood, river and rain gauges","https://www.bom.gov.au/resources/learn-and-explore/radar-and-equipment-knowledge-centre/flood-river-and-rain-gauges"],["Bureau of Meteorology — Rain forecasting","https://www.bom.gov.au/resources/learn-and-explore/forecasting-knowledge-centre/rain-forecasting"]]},
+"thunderstorms":{title:"Thunderstorms and lightning",mins:3,
+  lead:"Every thunderstorm needs moisture, unstable air and something to lift it. Most are brief; a few become severe.",
+  body:`<h3>Three ingredients</h3>
+<p>Thunderstorms need <b>moisture</b>, <b>unstable air</b> — air that keeps rising once it’s nudged up — and <b>lift</b> to start it rising: daytime heating, a front, hills, or sea breezes meeting. Organised severe storms also need wind that changes speed and direction with height (wind shear).</p>
+<h3>Types of storm</h3>
+<ul><li><b>Single cells</b> grow, rain and collapse, often in under an hour.</li><li><b>Multicells and squall lines</b> are clusters or lines of cells, each new one forming where the last one’s outflow lifts the air.</li><li><b>Supercells</b> have a deep, rotating updraft called a mesocyclone. They can last for hours and produce the most dangerous hail, winds and tornadoes.</li></ul>
+<h3>Lightning and thunder</h3>
+<p>Collisions between ice particles in the cloud separate electric charge until it discharges as lightning. The flash heats the air to about {t:27700} — around five times hotter than the Sun’s surface — and the air expands so fast it makes the bang we hear as thunder. Count the seconds from flash to bang and divide by 3 for the distance in kilometres.</p>
+<p>Lightning can strike more than 15 km from the storm, so if you can hear thunder, you’re within reach. Go indoors or into a hard-topped car, and wait 30 minutes after the last thunder.</p>
+<h3>When is a storm severe?</h3>
+<p>Definitions vary by country. Australia’s Bureau of Meteorology calls a storm severe if it brings hail 2 cm or larger, wind gusts of 90 km/h or more, tornadoes, or heavy rain that could cause flash flooding. It calls a storm “very dangerous” for giant hail of 5 cm or more, destructive gusts of 125 km/h or more, tornadoes, or intense, life-threatening rain.</p>
+<p>Much storm damage comes from <b>downbursts</b>: rain- and hail-cooled air plunging out of the storm and spreading along the ground as straight-line winds.</p>`,
+  sources:[["NOAA JetStream — Ingredients for a thunderstorm","https://www.noaa.gov/jetstream/thunderstorms/ingredients-for-thunderstorm"],["US National Weather Service — Thunderstorm ingredients (spotter guide)","https://www.weather.gov/spotterguide/ingredients"],["Bureau of Meteorology — Severe thunderstorms: what you need to know","https://www.bom.gov.au/news-and-media/severe-thunderstorms-what-you-need-to-know"],["Bureau of Meteorology — Thunderstorms knowledge centre","https://www.bom.gov.au/resources/learn-and-explore/severe-weather-knowledge-centre/thunderstorms"],["US National Weather Service — Understanding thunder","https://www.weather.gov/safety/lightning-science-thunder"],["NOAA JetStream — Lightning safety","https://www.noaa.gov/jetstream/lightning-safety"]]},
+"hail":{title:"Hail",mins:2,
+  lead:"Hail is ice that grows inside a thunderstorm’s updraft. The stronger the updraft, the bigger the stones.",
+  body:`<h3>How it forms</h3>
+<p>A thunderstorm’s updraft carries raindrops and ice high above the freezing level, where the cloud is full of supercooled water — droplets still liquid below {t:0}. They freeze onto any piece of ice they touch, and the stone grows for as long as the updraft can hold it up. When it gets too heavy, or the updraft weakens, it falls.</p>
+<p>Cut a big hailstone open and you’ll often see layers of clear and milky ice. They record the different temperatures and amounts of water the stone passed through as it drifted around the updraft.</p>
+<h3>How big</h3>
+<p>Small hail needs an updraft of about 10–15 m a second; softball-sized hail needs updrafts of 50 m a second or more, found in supercells. In Australia, hail of 2 cm or more makes a storm severe, and 5 cm or more is called giant hail. Most hail high in a storm melts before it lands. In the tropics the freezing level is higher, so even less reaches the ground.</p>
+<h3>Hail, sleet and graupel</h3>
+<p>Ice pellets (called sleet in the United States) are raindrops that freeze as they fall, with no updraft involved. Graupel is soft, crumbly snow pellets. In the UK and Australia, “sleet” usually means a mix of rain and snow.</p>
+<h3>In a warming climate</h3>
+<p>Hail is hard to measure, so long-term trends are uncertain. Warmer, moister air gives storms more energy and can build bigger stones; a higher melting level means more small hail melts on the way down. A 2021 international review expected hail to become more severe in most regions, and more frequent in Australia and Europe, but less frequent in East Asia.</p>`,
+  sources:[["NOAA National Severe Storms Laboratory — Hail basics","https://nssl.noaa.gov/education/svrwx101/hail"],["NOAA National Severe Storms Laboratory — Hail forecasting","https://nssl.noaa.gov/education/svrwx101/hail/forecasting"],["Penn State METEO 3 — Hail","https://courses.ems.psu.edu/meteo3/node/2029"],["Bureau of Meteorology — Severe thunderstorms: your questions answered","https://media.bom.gov.au/social/blog/1966/severe-thunderstorms-your-questions-answered"],["UNSW Sydney — How will climate change affect hailstorms? (Raupach et al., 2021)","https://www.unsw.edu.au/newsroom/news/2021/03/how-will-climate-change-affect-hailstorms-"]]},
+"tornadoes":{title:"Tornadoes",mins:2,
+  lead:"A tornado is a violently rotating column of air reaching from a thunderstorm to the ground: small, short-lived, and home to the most violent winds on Earth.",
+  body:`<h3>How they form</h3>
+<p>Most strong tornadoes come from supercells, where wind changing with height sets the updraft rotating. Weaker ones form along squall lines and in the outer bands of tropical cyclones as they come ashore. Over water they’re called waterspouts.</p>
+<h3>Size and life</h3>
+<p>Most tornadoes last less than 10 minutes, though some last more than an hour. Most are tens to a few hundred metres wide; the widest recorded was about 4 km. A tornado’s size or shape says nothing about its strength.</p>
+<h3>How they’re rated</h3>
+<p>Tornado winds are rarely measured directly, so they’re rated afterwards from the damage, on the Enhanced Fujita (EF) scale:</p>
+<table class="learn-tbl"><thead><tr><th>Rating</th><th>Estimated gusts</th></tr></thead><tbody>
+<tr><td>EF0</td><td>105–137 km/h</td></tr><tr><td>EF1</td><td>138–177 km/h</td></tr><tr><td>EF2</td><td>178–217 km/h</td></tr><tr><td>EF3</td><td>218–266 km/h</td></tr><tr><td>EF4</td><td>267–322 km/h</td></tr><tr><td>EF5</td><td>over 322 km/h</td></tr></tbody></table>
+<h3>Where they happen</h3>
+<p>The United States gets about 1,200 a year, more than anywhere else. Argentina and Bangladesh also have many; New Zealand reports about 20 a year; the UK has many for its size, mostly weak. Australia gets tornadoes too, mostly weak, but they have killed people.</p>
+<h3>Staying safe</h3>
+<p>Go to the lowest floor, into a small inner room away from windows, and cover your head. Don’t open windows — even the strongest tornado doesn’t make a house explode from low pressure. A car or caravan is not safe shelter.</p>`,
+  sources:[["NOAA National Severe Storms Laboratory — Tornado basics","https://nssl.noaa.gov/education/svrwx101/tornadoes"],["NOAA National Severe Storms Laboratory — Tornado FAQ","https://nssl.noaa.gov/education/svrwx101/tornadoes/faq"],["NOAA Storm Prediction Center — The Enhanced Fujita Scale","https://www.spc.noaa.gov/efscale/"],["Britannica — Tornado","https://www.britannica.com/science/tornado"],["Bureau of Meteorology — Storm Spotters’ Handbook","https://www.bom.gov.au/storm_spotters/handbook/introduction.shtml"]]},
+"tropical-cyclones":{title:"Tropical cyclones, hurricanes and typhoons",mins:3,
+  lead:"One kind of storm, three names. Fuelled by warm ocean water, tropical cyclones are the biggest and most destructive storms on Earth.",
+  body:`<h3>One storm, three names</h3>
+<p>They’re called <b>hurricanes</b> in the North Atlantic and north-east Pacific, <b>typhoons</b> in the north-west Pacific, and <b>tropical cyclones</b> in the South Pacific and Indian Ocean, including around Australia.</p>
+<h3>How they form</h3>
+<p>They need sea water of at least {t:26.5}, which is the storm’s fuel, plus moist air, light winds aloft and Earth’s spin. A cluster of thunderstorms around a tropical low starts to rotate — clockwise in the Southern Hemisphere, anticlockwise in the Northern. Around a calm, clear eye, a ring of storms called the eyewall holds the strongest winds. A tropical cyclone can be hundreds of kilometres across and last for days or even weeks.</p>
+<h3>Categories</h3>
+<p>Australia rates them from 1 to 5 by their strongest gusts: category 1 up to 125 km/h, category 2 125–164 km/h, and category 5 280 km/h or more. Category 3 and above are “severe” tropical cyclones. The US Saffir–Simpson scale uses a different wind measure, so the numbers don’t line up: an Australian category 3 is roughly a US category 2.</p>
+<p>The category describes wind only. A category 1 can bring worse flooding than a category 5.</p>
+<h3>The real dangers</h3>
+<ul><li><b>Storm surge</b>, the sea pushed ashore by the wind, often causes the most deaths.</li><li><b>Flooding rain</b>, sometimes hundreds of millimetres, can reach far inland as the system weakens.</li><li><b>Destructive winds</b>, huge waves, and tornadoes as the cyclone comes ashore.</li></ul>
+<p>Australia’s season runs from November to April. The north-west coast of Western Australia, between Broome and Exmouth, is the most cyclone-prone part of the country.</p>
+<h3>In a warming climate</h3>
+<p>The IPCC expects peak winds, the share of category 4–5 storms and cyclone rainfall to increase with warming, even if the total number of cyclones stays the same or falls. Higher seas make every storm surge reach further.</p>`,
+  sources:[["Bureau of Meteorology — What is a tropical cyclone?","https://www.bom.gov.au/resources/learn-and-explore/tropical-cyclone-knowledge-centre/what-is-a-tropical-cyclone"],["Bureau of Meteorology — Tropical cyclone categories","https://www.bom.gov.au/resources/learn-and-explore/tropical-cyclone-knowledge-centre/tropical-cyclone-categories"],["Bureau of Meteorology — Understanding tropical cyclones (video)","https://www.bom.gov.au/video/understanding-tropical-cyclones"],["Geoscience Australia — Tropical cyclone and severe wind","https://www.ga.gov.au/education/natural-hazards/tropical-cyclone-and-severe-wind"],["IPCC AR6 WGI — Sectoral fact sheet (tropical cyclones)","https://www.ipcc.ch/report/ar6/wg1/downloads/factsheets/IPCC_AR6_WGI_Sectoral_Fact_Sheet_Tourism.pdf"],["NOAA GFDL — Climate change is probably increasing the intensity of tropical cyclones","https://www.gfdl.noaa.gov/?p=80297"]]},
+"tornado-vs-cyclone":{title:"Tornado or cyclone: what’s the difference?",mins:2,
+  lead:"Both are spinning storms, but a tropical cyclone is about a thousand times wider than a tornado and lasts days instead of minutes.",
+  body:`<table class="learn-tbl"><thead><tr><th></th><th>Tornado</th><th>Tropical cyclone</th></tr></thead><tbody>
+<tr><th>Size</th><td>Usually tens to hundreds of metres</td><td>Hundreds of kilometres</td></tr>
+<tr><th>Lasts</th><td>Minutes; rarely more than an hour</td><td>Days to weeks</td></tr>
+<tr><th>Forms</th><td>Under one thunderstorm, usually over land</td><td>From clusters of storms over warm tropical sea</td></tr>
+<tr><th>Strongest winds</th><td>Over 322 km/h in the worst (EF5), along a narrow path</td><td>280 km/h or more in a category 5, over a wide area</td></tr>
+<tr><th>Warning time</th><td>Minutes</td><td>Days</td></tr>
+<tr><th>Main dangers</th><td>Extreme wind and flying debris</td><td>Storm surge, flooding rain and wind</td></tr>
+<tr><th>Rated by</th><td>Damage, on the EF scale</td><td>Wind, on national scales (1–5 in Australia, Saffir–Simpson in the US)</td></tr></tbody></table>
+<h3>Why the names get mixed up</h3>
+<p>To a meteorologist, “cyclone” means any large system of winds circling a low — so the everyday lows and storms of the mid-latitudes are “extratropical cyclones”. The word was once used for tornadoes too. Today, “cyclone” on its own in Australia, the Pacific and South Asia almost always means a tropical cyclone.</p>
+<h3>They can come together</h3>
+<p>A tropical cyclone coming ashore often spawns tornadoes in its outer rain bands.</p>
+<h3>Not a tornado</h3>
+<p>Dust devils (willy-willies in Australia) form under clear skies as hot ground sets a column of air spinning. They aren’t attached to a storm cloud and are usually harmless, though the strongest can lift light objects.</p>`,
+  sources:[["NASA — What is the difference between a tornado and a hurricane?","https://gpm.nasa.gov/resources/faq/what-difference-between-tornado-and-hurricane"],["NOAA National Severe Storms Laboratory — Tornado basics","https://nssl.noaa.gov/education/svrwx101/tornadoes"],["NOAA Storm Prediction Center — The Enhanced Fujita Scale","https://www.spc.noaa.gov/efscale/"],["Bureau of Meteorology — Tropical cyclone categories","https://www.bom.gov.au/resources/learn-and-explore/tropical-cyclone-knowledge-centre/tropical-cyclone-categories"]]},
+"fog-frost-snow":{title:"Fog, frost and snow",mins:2,
+  lead:"Clear, still nights and cold air bring their own weather: fog in the valleys, frost on the ground, and in the mountains, snow.",
+  body:`<h3>Fog</h3>
+<p>Fog is cloud at ground level: officially, visibility below 1,000 m. <b>Radiation fog</b> forms on clear, calm nights as the ground loses heat and cools the air above it to its dew point. It gathers in valleys and usually clears soon after sunrise. <b>Advection fog</b> forms when warm, moist air drifts over a cooler surface such as a cold sea, and it can blanket coasts for days.</p>
+<h3>Frost</h3>
+<p>Frost forms when surfaces cool below {t:0} and moisture freezes onto them. On clear, still nights the ground cools far faster than the air at thermometer height, so frost often forms when the official low is a degree or two above freezing. Cold air drains downhill, so frost is worst in hollows and valley floors.</p>
+<h3>Snow</h3>
+<p>Snow forms in clouds well below freezing. It reaches the ground as snow when the air near the surface is close to freezing; a little warmer and it melts into sleet or rain. Air cools as you climb — this app allows about {d:-0.65} for every 100 m you climb — so a front that brings rain to the valley can bring snow to the ranges. For rainfall records, about 1 cm of fresh snow equals 1 mm of rain.</p>
+<h3>Freezing rain and black ice</h3>
+<p>Sometimes rain falls through a shallow layer of freezing air and stays liquid until it hits the ground, where it freezes into a clear glaze. It’s rare in Australia but common in parts of North America and Europe, and very dangerous on roads.</p>`,
+  sources:[["Met Office — What is fog?","https://weather.metoffice.gov.uk/learn-about/weather/types-of-weather/fog"],["Bureau of Meteorology — Fog (aviation hazards)","https://www.bom.gov.au/aviation/data/education/hwp-fog.pdf"],["Bureau of Meteorology — Definitions for temperature","https://www.bom.gov.au/climate/cdo/about/definitionstemp.shtml"],["Bureau of Meteorology — Observation of rainfall (snow)","https://www.bom.gov.au/climate/cdo/about/rain-measure.shtml"]]},
+
 /* ── Global warming (year-specific figures come from LEARN_FACTS) ──────────── */
 "deep-time":{title:"Climate through deep time",mins:3,
   lead:"Earth’s climate has swung between ice ages and hothouses. What is different now is the speed.",
@@ -270,6 +418,16 @@ var LEARN={
 <p>The strong El Niño that built through 2026 releases extra ocean heat into the air, so scientists gave 2027 a real chance of breaking 2024’s record. Strong El Niño years, and the year after them, have tended to set new records.</p>
 <div class="learn-tip"><a href="#learn/for-me" onclick="learnGo('for-me');return false;">What does it mean for me?</a> — the main hazards where you live.</div>`,
   sources:[S.wmoConf,S.wmo25,S.c3s,S.scripps,["Eos — Climate change may have killed 16,469 people in Europe this summer (2025)","https://eos.org/articles/climate-change-may-have-killed-16469-people-in-europe-this-summer"]]},
+"warming-levels":{title:"What each degree of warming means",mins:4,
+  lead:"Every extra tenth of a degree makes heat, heavy rain and drought worse. Pick a level of warming to see what the science expects.",
+  bodyFn:function(){return learnWLBody();},
+  sourcesFn:function(){return LEARN_WL_SRC;},
+  body:"",sources:[]},
+"pathways":{title:"The road ahead: how fast we cut emissions",mins:4,
+  lead:"How hot it gets depends on how fast the world cuts emissions. Pick a path to see where it leads, how long it takes, and what keeps changing after emissions stop.",
+  bodyFn:function(){return learnPathBody();},
+  sourcesFn:function(){return LEARN_WL_SRC;},
+  body:"",sources:[]},
 "oceans-ice":{title:"Oceans, ice and sea level",mins:3,yr:1,
   lead:"The ocean has absorbed most of the extra heat. It is now hotter, higher and more acidic than ever measured.",
   body:`<h3>Ocean heat</h3>
@@ -359,6 +517,110 @@ var LEARN={
 <p>Every tenth of a degree avoided means fewer extreme days, and heat–health warning systems already save lives where they are used. The biggest tenths will come from the people and companies with the most power — and from ordinary people, together, making them act.</p>`,
   sources:[["Oxfam — Richest 1% emit as much planet-heating pollution as two-thirds of humanity (Climate Equality, 2023)","https://www.oxfam.org/en/node/23495"],["Oxfam and Stockholm Environment Institute — Climate Equality: A planet for the 99% (full report)","https://www.oxfamnovib.nl/Files/rapporten/2023/Climate%20Equality_Oxfam_NOVEMBER%202023.pdf"],["CBS News — World’s richest 1% emitting enough carbon to cause 1.3 million heat deaths","https://www.cbsnews.com/news/worlds-richest-carbon-emissions-climate-change-report"],["Institute for New Economic Thinking, Oxford — Only 57 producers are responsible for 80% of fossil fuel and cement CO₂ since 2016 (Carbon Majors)","https://www.inet.ox.ac.uk/news/only-57-producers-are-responsible-for-80-of-all-fossil-fuel-and-cement-co2-emissions-since-2016-new-report"],["Inside Climate News — Half of fossil fuel carbon emissions in 2024 came from 32 companies (2026)","https://insideclimatenews.org/news/21012026/half-of-fossil-fuel-carbon-emissions-in-2024-came-from-32-companies/"],["IPCC AR6 WGIII — Chapter 5: Demand, services and social aspects of mitigation","https://www.ipcc.ch/report/ar6/wg3/chapter/chapter-5/"],["US EPA — Benefits of trees and vegetation (heat islands)","https://epa.gov/heatislands/benefits-trees-and-vegetation"],["University of Waterloo — Planting native trees and greenery can cool off your backyard","https://uwaterloo.ca/stories/news/planting-native-trees-greenery-can-cool-your-backyard"],["Congressional Management Foundation (via PPG Buffalo) — Most effective ways of contacting lawmakers","https://ppgbuffalo.org/news-and-events/news/article:03-15-2017-12-00am-congressional-management-foundation-releases-report-outlining-the-most-effective-ways-of-contacting-congress/"],["Yale Program on Climate Change Communication — Discussing global warming leads to greater acceptance of climate science","https://climatecommunication.yale.edu/publications/discussing-global-warming-leads-to-greater-acceptance-of-climate-science/"],S.wmoHeat,["WMO — COP31: Protecting health in an era of extreme heat","https://wmo.int/ar/node/39254"]]}
 };
+
+// ── Pickers: buttons that swap panels inside a lesson (warming levels, pathways) ─────
+var _learnPickSel={};
+function learnPick(b,grp,i){
+  var w=b.closest(".learn-pick");if(!w)return;_learnPickSel[grp]=i;
+  w.querySelectorAll(".learn-pick-b").forEach(function(x,j){x.classList.toggle("on",j===i);x.setAttribute("aria-pressed",j===i?"true":"false");});
+  w.querySelectorAll(".learn-pick-p").forEach(function(x,j){x.hidden=j!==i;});
+}
+function learnPicker(grp,items,def){
+  var sel=_learnPickSel[grp]!=null?_learnPickSel[grp]:def;
+  return"<div class='learn-pick'><div class='learn-pick-bs' role='group'>"+items.map(function(it,j){
+      return"<button type='button' class='learn-pick-b"+(j===sel?" on":"")+"' aria-pressed='"+(j===sel)+"' onclick=\"learnPick(this,'"+grp+"',"+j+")\">"+it.b+"</button>";}).join("")
+    +"</div>"+items.map(function(it,j){return"<div class='learn-pick-p'"+(j===sel?"":" hidden")+">"+it.h+"</div>";}).join("")+"</div>";
+}
+function learnRows(rows){return"<div class='learn-wl'>"+rows.filter(function(r){return r&&r[1];}).map(function(r){return"<div class='learn-wl-r'><b>"+r[0]+"</b><span>"+r[1]+"</span></div>";}).join("")+"</div>";}
+
+// Warming levels, all compared with 1850–1900. Extremes are over land (IPCC AR6 WGI Figure SPM.6):
+// a "once-a-decade" event is one that happened about once in 10 years before industrialisation.
+var LEARN_WL=[
+ {d:"1",note:"About where the world was in the 2010s. For comparison.",
+  heat:"2.8 times as often, and {d:1.2} hotter",heat50:"4.8 times as often, {d:1.2} hotter",
+  rain:"1.3 times as often, and about 7% heavier",drought:"1.7 times as often"},
+ {d:"1.5",note:"The Paris Agreement’s lower limit. The world’s long-term average is expected to pass it within about the next decade.",
+  heat:"4.1 times as often, and {d:1.9} hotter",heat50:"8.6 times as often, {d:2.0} hotter",
+  rain:"1.5 times as often, and about 10% heavier",drought:"2 times as often",
+  people:"About 14% of the world’s people face a severe heatwave at least once every five years",
+  reefs:"70–90% of warm-water coral reefs lost",ice:"An ice-free Arctic Ocean in September about once a century",
+  nature:"6% of insects, 8% of plants and 4% of vertebrates lose more than half their range",
+  sea:"About 2–3 m over the next 2,000 years"},
+ {d:"2",note:"The Paris Agreement’s upper limit (“well below 2 degrees”).",
+  heat:"5.6 times as often, and {d:2.6} hotter",heat50:"13.9 times as often, {d:2.7} hotter",
+  rain:"1.7 times as often, and about 14% heavier",drought:"2.4 times as often",
+  people:"About 37% of the world’s people face a severe heatwave at least once every five years",
+  reefs:"More than 99% of warm-water coral reefs lost",ice:"An ice-free Arctic Ocean in September about once a decade",
+  nature:"18% of insects, 16% of plants and 8% of vertebrates lose more than half their range",
+  sea:"About 2–6 m over the next 2,000 years"},
+ {d:"3",note:"Close to where today’s policies lead — about 2.8 degrees this century. The last time Earth stayed 2.5 degrees or more above pre-industrial levels was over 3 million years ago.",
+  heat:"Between the 2 and 4 degree figures — far more often and hotter than at 2 degrees",
+  rain:"Between the 2 and 4 degree figures",drought:"Between the 2 and 4 degree figures",
+  reefs:"Warm-water coral reefs as we know them gone",
+  sea:"Many metres over the coming centuries and millennia — more than the 2–6 m expected at 2 degrees"},
+ {d:"4",note:"Where very high emissions lead by 2100.",
+  heat:"9.4 times as often, and {d:5.1} hotter",heat50:"39 times as often, {d:5.3} hotter",
+  rain:"2.7 times as often, and about 30% heavier",drought:"4.1 times as often",
+  reefs:"Warm-water coral reefs as we know them gone",
+  sea:"Many metres; at 5 degrees, about 19–22 m over 2,000 years"}
+];
+var LEARN_WL_SRC=[
+ ["IPCC AR6 WGI — Summary for Policymakers (2021)","https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/"],
+ ["IPCC AR6 WGI — Figure SPM.6: extremes at 1, 1.5, 2 and 4 °C","https://www.ipcc.ch/report/ar6/wg1/figures/summary-for-policymakers/figure-spm-6"],
+ ["IPCC AR6 WGI — Headline statements","https://www.ipcc.ch/report/ar6/wg1/resources/spm-headline-statements"],
+ ["IPCC — Global Warming of 1.5 °C: Summary for Policymakers (2018)","https://ipcc.ch/sr15/chapter/spm/"],
+ ["World Resources Institute — Half a degree and a world apart: 1.5 °C versus 2 °C","https://www.wri.org/blog/2018/10/half-degree-and-world-apart-difference-climate-impacts-between-15-and-2-c-warming"],
+ ["IPCC AR6 Synthesis Report — Figure 3.4: sea level rise to 2100, 2150 and 2300","https://www.ipcc.ch/report/ar6/syr/figures/figure-3-4"],
+ ["Hong Kong Observatory — Global climate projections from IPCC AR6 (temperature and sea level)","https://www.hko.gov.hk/en/climate_change/proj_global_sea_level.htm"],
+ ["UNEP — Emissions Gap Report 2025: Off target","https://www.unep.org/en/publications/report/emissions-gap-report-2025"],
+ ["UNEP — The world is likely to exceed a key global warming target soon. Now what?","https://www.unep.org/news-and-stories/story/world-likely-exceed-key-global-warming-target-soon-now-what"]
+];
+function learnWLBody(){
+  var items=LEARN_WL.map(function(L){
+    return{b:"{d:"+L.d+"}",h:"<p class='learn-pick-h'>{d:"+L.d+"} of global warming</p><p>"+L.note+"</p>"+learnRows([
+      ["Hot days",L.heat?"A heat extreme that came once a decade: "+L.heat+(L.heat50?". Once-in-50-year heat: "+L.heat50:""):""],
+      ["Heavy rain",L.rain?"A once-a-decade downpour: "+L.rain:""],
+      ["Drought",L.drought?"A once-a-decade drought in drying regions: "+L.drought:""],
+      ["People",L.people],["Coral reefs",L.reefs],["Arctic sea ice",L.ice],["Nature",L.nature],["Sea level",L.sea]])};
+  });
+  return"<p>The figures below are for warming levels, not dates: they apply whenever the world reaches that level. Extremes are over land, compared with 1850–1900, from the IPCC’s 2021 and 2018 assessments.</p>"
+    +learnPicker("wl",items,2)
+    +"<h3>Why half a degree matters</h3><p>The step from 1.5 to 2 degrees nearly triples the share of people facing severe heatwaves, and takes coral reefs from badly damaged to almost entirely gone. Every increment counts: the IPCC found that even an extra half a degree makes measurable differences to extremes.</p>"
+    +"<h3>The global number hides the local one</h3><p>Land warms faster than the ocean, and the hottest days warm fastest of all. In the mid-latitudes, the IPCC expects the hottest days to warm by up to about {d:3} at 1.5 degrees of global warming, and about {d:4} at 2 degrees. To see what this means where you live, read <a href='#learn/for-me' onclick=\"learnGo('for-me');return false;\">What does it mean for me?</a></p>"
+    +"<div class='learn-tip'>See how quickly each level could be reached in <a href='#learn/pathways' onclick=\"learnGo('pathways');return false;\">The road ahead</a>.</div>";
+}
+
+// IPCC AR6 scenarios. Warming = best estimate (very likely range) for 2081–2100 vs 1850–1900.
+// Sea level = likely range by 2100 vs 1995–2014.
+var LEARN_PATH=[
+ {b:"Very low",id:"SSP1-1.9",em:"Emissions fall steeply. CO₂ reaches net zero around 2050, then goes net negative (more removed than released).",
+  w:"1.4",lo:"1.0",hi:"1.8",peak:"Peaks just above {d:1.5} around mid-century, then falls slowly.",sea:"0.28–0.55 m",late:""},
+ {b:"Low",id:"SSP1-2.6",em:"Emissions fall fast. CO₂ reaches net zero in the second half of the century.",
+  w:"1.8",lo:"1.3",hi:"2.4",peak:"Stays below 2 degrees in the middle estimate.",sea:"0.32–0.62 m",late:"0.3–3.1 m by 2300"},
+ {b:"Middle",id:"SSP2-4.5",em:"Emissions stay around today’s levels until about 2050, then fall slowly but don’t reach net zero this century. Closest to the path today’s policies point to.",
+  w:"2.7",lo:"2.1",hi:"3.5",peak:"Still rising in 2100.",sea:"0.44–0.76 m",late:""},
+ {b:"High",id:"SSP3-7.0",em:"Little new climate policy. CO₂ emissions roughly double from today’s levels by 2100.",
+  w:"3.6",lo:"2.8",hi:"4.6",peak:"Still rising fast in 2100.",sea:"0.55–0.90 m",late:""},
+ {b:"Very high",id:"SSP5-8.5",em:"Fossil fuel use keeps growing. CO₂ emissions roughly double from today’s levels by 2050.",
+  w:"4.4",lo:"3.3",hi:"5.7",peak:"Still rising fast in 2100.",sea:"0.63–1.01 m (and up to about 1.6 m if ice sheets break up faster; low confidence)",late:"1.7–6.8 m by 2300"}
+];
+function learnPathBody(){
+  var items=LEARN_PATH.map(function(P){
+    return{b:P.b+"<small>"+P.id+"</small>",h:"<p class='learn-pick-h'>"+P.b+" emissions <span class='learn-pick-id'>"+P.id+"</span></p>"+learnRows([
+      ["Emissions",P.em],
+      ["Warming by 2081–2100","About {d:"+P.w+"} (likely between {d:"+P.lo+"} and {d:"+P.hi+"})"],
+      ["Over time",P.peak],
+      ["Sea level by 2100",P.sea+" higher than 1995–2014"],
+      ["Sea level later",P.late]])};
+  });
+  return"<div class='learn-now'><div class='learn-now-h'>Where the world is heading</div><p>The UN Environment Programme’s <b>Emissions Gap Report 2025</b> found that today’s policies lead to about <b>{d:2.8}</b> of warming this century. If every country fully delivers its pledges, about {d:2.3} to {d:2.5}. The long-term average is likely to pass 1.5 degrees within the next decade.</p></div>"
+    +"<p>The IPCC compared five paths for emissions. All of them warm until at least the middle of the century; what happens after that is up to us.</p>"
+    +learnPicker("path",items,2)
+    +"<h3>How long it takes</h3><ul><li><b>Warming follows the total.</b> Global temperature rises roughly in step with the total CO₂ ever emitted, so every tonne adds to it.</li><li><b>It stops when CO₂ stops.</b> When CO₂ emissions reach net zero, warming from CO₂ is expected to roughly level off — it doesn’t keep climbing for decades afterwards.</li><li><b>The benefit shows up fast.</b> Deep, sustained cuts would make a noticeable difference to the warming trend within about 20 years.</li></ul>"
+    +"<h3>What keeps changing after emissions stop</h3><p>Stopping warming isn’t the same as undoing it. The IPCC found many changes are irreversible for centuries to millennia:</p><ul><li><b>Temperature stays high.</b> Bringing it back down would need CO₂ to be pulled out of the air on a huge scale, for decades.</li><li><b>The sea keeps rising</b> for centuries to thousands of years as the deep ocean warms and ice sheets melt: about 2–3 m over 2,000 years if warming stops at 1.5 degrees, 2–6 m at 2 degrees, and 19–22 m at 5 degrees.</li><li><b>Glaciers keep shrinking</b> for decades, and the deep ocean keeps warming and stays more acidic for centuries.</li><li><b>Lost species and reefs don’t come back</b> on any human timescale.</li></ul>"
+    +"<p>That’s why the speed of cuts matters as much as the destination: every year of delay adds warming and sea-level rise that our grandchildren’s grandchildren will still live with.</p>"
+    +"<div class='learn-tip'>See what each level means in <a href='#learn/warming-levels' onclick=\"learnGo('warming-levels');return false;\">What each degree of warming means</a>.</div>";
+}
 
 // ── Your drivers: chosen from where home is ─────────────────────────────────
 function learnHome(){
@@ -531,12 +793,16 @@ function learnDrivers(){
     +"<a class='learn-forme' href='#learn/for-me' onclick=\"learnGo('for-me');return false;\">What does climate change mean for me? \u203A</a></div>";
 }
 function learnHomeHTML(){
-  var s="<div class='learn-intro'><h1>Learn</h1><p>Short lessons on how weather and climate work, what drives your seasons, and where global warming stands in "+LEARN_FACTS.year+". Each takes two or three minutes, with sources at the end.</p></div>"+learnDrivers();
+  var s="<div class='learn-intro'><h1>Learn</h1><p>Short lessons on how weather works, what drives your seasons, and where global warming stands in "+LEARN_FACTS.year+". Each takes two or three minutes, with sources at the end.</p></div>"+learnDrivers();
+  var open=learnSetsOpen();
   s+=LEARN_SETS.map(function(set){
-    return"<section class='card learn-set'><h2>"+learnEsc(set.title)+"</h2><p class='learn-sub'>"+learnEsc(set.blurb)+"</p><div class='learn-list'>"+set.lessons.map(function(id){return learnLink(id);}).join("")+"</div></section>";
+    return"<details class='card learn-set' data-set='"+set.id+"'"+(open[set.id]?" open":"")+" ontoggle='learnSetToggle(this)'><summary><span class='learn-set-h'><h2>"+learnEsc(set.title)+"</h2><span class='learn-sub'>"+learnEsc(set.blurb)+"</span></span><span class='learn-set-n'>"+set.lessons.length+" lessons</span></summary><div class='learn-list'>"+set.lessons.map(function(id){return learnLink(id);}).join("")+"</div></details>";
   }).join("");
   return s;
 }
+// Lesson groups on the home page fold up; which are open is remembered on this device
+function learnSetsOpen(){try{return JSON.parse(localStorage.getItem("learn_sets_open")||"{}")||{};}catch(e){return{};}}
+function learnSetToggle(d){var o=learnSetsOpen();if(d.open)o[d.getAttribute("data-set")]=1;else delete o[d.getAttribute("data-set")];try{localStorage.setItem("learn_sets_open",JSON.stringify(o));}catch(e){}}
 function learnOrder(){var a=[];LEARN_SETS.forEach(function(s){a=a.concat(s.lessons);});return a;}
 function learnLessonHTML(id){
   var L=LEARN[id],order=learnOrder(),i=order.indexOf(id),set=LEARN_SETS.filter(function(s){return s.lessons.indexOf(id)!==-1;})[0];
