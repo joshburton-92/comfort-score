@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<link rel="stylesheet" href="app.css?v=7"/>
+<link rel="stylesheet" href="app.css?v=8"/>
 </head>
 <body class="view-forecast">
 <div class="app">
@@ -444,8 +444,9 @@
   <div class="footer-row">
     <button class="share-btn" onclick="showHowItWorks()">How it works &#9432;</button>
     <button class="share-btn" onclick="shareScore()">Share &#8599;</button>
-    <a class="share-btn" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
+    <a class="share-btn tip-link" href="https://buymeacoffee.com/joshburton" target="_blank" rel="noopener" style="text-decoration:none">Buy me a coffee &#9749;</a>
   </div>
+  <p class="footer-note">Climate data in Comfort Score is synthesised from real records published by national weather services and the WMO, compiled with Claude (Anthropic&rsquo;s AI) to Comfort Score&rsquo;s own proprietary scope and methods. A guide only &mdash; not official forecasts or warnings. <a href="#" onclick="showHowItWorks();return false;">More in How it works</a></p>
 </div>
 </div>
 
@@ -496,9 +497,9 @@
   </div>
 </div>
 
-<script src="js/core.js?v=4" defer></script>
+<script src="js/core.js?v=5" defer></script>
 <script src="js/hazards.js?v=3" defer></script>
-<script src="js/app.js?v=5" defer></script>
+<script src="js/app.js?v=6" defer></script>
 <script src="js/forecast.js?v=4" defer></script>
 <script src="js/climate.js?v=5" defer></script>
 <script src="js/init.js?v=3" defer></script>

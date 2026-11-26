@@ -510,6 +510,10 @@ function hiwCollapse(wrap){
     h.remove();
   }
 }
+// In the Google Play app (a Trusted Web Activity, opened with an android-app:// referrer) the
+// external tip link is hidden: Play's payments policy doesn't allow links to outside payments.
+(function(){try{if(document.referrer.indexOf("android-app://")===0)sessionStorage.setItem("cs_play","1");
+  if(sessionStorage.getItem("cs_play"))document.documentElement.classList.add("in-play");}catch(e){}})();
 function showHowItWorks(){
   var body="<div class='washing-reason pop-body-scroll'>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>The Comfort Score</div>"
@@ -547,8 +551,10 @@ function showHowItWorks(){
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Heatwaves & coldwaves 🌡️❄️</div>"
     +"<div style='margin-bottom:12px'>Both use the Excess Heat and Excess Cold Factor methods developed by Nairn and Fawcett, which compare each three-day spell with the local climate and with the month before it — so what counts as a heatwave or coldwave depends on where you are and what you've become used to. Thresholds come from this app's own climate data for the location, so they only appear where it has a climate profile within about 50 km, adjusted for height the same way. Intensity is shown out of 10: 1–3 low, 4–7 severe, 8–10 extreme. Heatwaves rated 1/10 — the faintest, and the most common — aren't shown. Low-intensity cold spells are called cold snaps. When a spell is unusually cool for the place but still mild — an average of 18°C or more across day and night, as in the tropics — it's shown as a “Cooler spell” from 4/10 up, and not shown below that. Both are independent calculations, not official warnings.</div>"
     +"<div style='margin-bottom:12px'><b>Warmer or cooler than usual</b> compares each forecast day\u2019s high and low with the normal for that date at that place, from the same climate data. How far counts as unusual depends on the place \u2014 it\u2019s worked out from how much temperatures there normally swing, so a few degrees above average is ordinary in Adelaide in summer but rare in Singapore. It shows as warmer or cooler, or \u201Cmuch\u201D warmer or cooler, and only on days with no heatwave or coldwave.</div>"
+    +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>About the data, and AI</div>"
+    +"<div style='margin-bottom:12px'>The climate profiles behind Climate Explorer, the Liveability Score and the heatwave, coldwave and warmer/cooler checks are synthesised from real data: published records from national weather services and the World Meteorological Organization. They were compiled with the help of Claude, Anthropic\u2019s AI model, to Comfort Score\u2019s own proprietary scope \u2014 which places are included, which stations and periods are used, how gaps are filled and how the figures are combined. Where a figure isn\u2019t recorded it has been estimated, so treat values as approximate. The Learn lessons were also written with Claude\u2019s help and checked against the sources listed with each one. Live forecasts, air quality, tropical cyclones and climate-driver readings come straight from the agencies below; the app only does its own calculations on them. Comfort Score is a guide only: for official forecasts and warnings, always follow your national weather service and emergency services.</div>"
     +"<div style='font-size:13px;font-weight:800;color:var(--text-head);margin-bottom:4px'>Data sources</div>"
-    +"<div>Weather data: Open-Meteo (open-meteo.com); backup forecasts from MET Norway (CC BY 4.0) · Geocoding: Nominatim / OpenStreetMap · Personal weather stations: Weather Underground API. All data fetched live. Settings stored locally on your device only.</div>"
+    +"<div>Weather and air quality: Open-Meteo (open-meteo.com); backup forecasts from MET Norway (CC BY 4.0) · Tropical cyclones: GDACS (UN and European Commission) · Climate drivers and CO\u2082 in Learn: Bureau of Meteorology and NOAA · Geocoding: Nominatim / OpenStreetMap · Map: \u00a9 OpenStreetMap contributors, with Leaflet · Personal weather stations: Weather Underground API. Forecasts are fetched live. Settings stored locally on your device only.</div>"
     +"</div>";
   document.getElementById("pop-ttl").textContent="How it works";
   document.getElementById("pop-body").innerHTML=body;

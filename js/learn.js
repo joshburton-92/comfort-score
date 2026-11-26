@@ -3,10 +3,25 @@
 // Lessons are plain HTML. {t:25} is a temperature and {d:1.5} a temperature change: both follow the °C/°F switch.
 // Images live in img/learn/. A missing image hides itself, so a lesson still reads well without it.
 var LEARN_ASOF="24 November 2026";   // date of the "right now" driver status below
+// ── Year facts: everything in the lessons that changes from one year to the next ──────
+// Titles, the "Where we are" stats and the CO₂ figures all come from here, written into
+// lessons as {F:name}. To roll over to a new year, update this block. After `review`, the
+// lessons marked yr:1 show a notice that newer full-year figures are out, so nothing
+// out of date passes as current. The CO₂ peak updates itself from NOAA via /api/drivers.
+var LEARN_FACTS={
+  year:"2026",                  // the year "Global warming in …" and "Where we are in …" describe
+  asof:"24 November 2026",      // when the figures below were last checked
+  review:"2027-01-20",          // from this date the update notice shows (full-year figures are out)
+  lastYear:"2025",              // latest complete year with confirmed global figures
+  lastAnom:"1.44",              // its global temperature above 1850–1900, °C (WMO)
+  run:"2015–2025",run_n:"11",   // the run of years that are the warmest on record
+  past12:"Nov 2025–Oct 2026",past12Anom:"1.51",  // latest 12 months (Copernicus)
+  co2Peak:"432",co2PeakDate:"May 2026",co2Rise:"1.8"  // Mauna Loa annual peak, ppm
+};
 var LEARN_SETS=[
   {id:"basics",title:"The basics",blurb:"Weather, climate and how to read a place’s climate.",lessons:["weather-climate","what-shapes-climate","reading-climate"]},
   {id:"drivers",title:"Climate drivers",blurb:"The ocean and air patterns that push a season wetter, drier, hotter or colder.",lessons:["drivers-intro","enso","iod","sam","mjo","ridge","monsoon","itcz","jet","nao","ao","pdo","amv","amoc"]},
-  {id:"warming",title:"Global warming in 2026",blurb:"Climate through deep time, what is changing now, how fast, and where we stand.",lessons:["deep-time","greenhouse","state-2026","oceans-ice","tipping"]},
+  {id:"warming",title:"Global warming in "+LEARN_FACTS.year,blurb:"Climate through deep time, what is changing now, how fast, and where we stand.",lessons:["deep-time","greenhouse","state-now","oceans-ice","tipping"]},
   {id:"extremes",title:"Extremes",blurb:"Heat, rain, drought and fire in a warming world.",lessons:["heatwaves","humid-heat","rain-floods","drought-fire"]},
   {id:"you",title:"What it means for you",blurb:"The hazards where you live, and what you can do about them.",lessons:["for-me","what-you-can-do"]}
 ];
@@ -94,7 +109,7 @@ var LEARN={
 <p>Drivers move the weather around a baseline. Global warming is moving the baseline itself, so a “cool” La Niña year now is warmer than an average year was a few decades ago.</p>`,
   sources:[S.bomDrivers,["Bureau of Meteorology — Factors in Australia’s weather and climate","https://www.bom.gov.au/resources/learn-and-explore/climate-knowledge-centre/climate-factors"],S.enosFaq]},
 
-"enso":{title:"El Niño and La Niña",mins:3,now:"enso",
+"enso":{yr:1,title:"El Niño and La Niña",mins:3,now:"enso",
   lead:"A see-saw of warm and cool water across the tropical Pacific that shifts rain and heat around much of the world.",
   body:`<p>The El Niño–Southern Oscillation (ENSO) has three states. It changes the trade winds, the temperature of the tropical Pacific and where the big tropical storm clouds form.</p>
 <figure class="learn-fig" data-img="enso-neutral.jpg"><figcaption><b>Neutral.</b> Trade winds blow east to west, piling warm water near Indonesia and Australia, where air rises and rain falls. <span class="learn-credit">NOAA Climate.gov drawing by Fiona Martin</span></figcaption></figure>
@@ -103,8 +118,8 @@ var LEARN={
 <h3>Typical effects</h3>
 <ul><li><b>El Niño:</b> often drier in eastern Australia, Indonesia, southern Africa and India’s monsoon; often wetter in Peru, Ecuador and the southern United States. Global temperatures tend to spike during and just after it.</li><li><b>La Niña:</b> roughly the reverse. Often wetter in eastern Australia and South-East Asia; often drier in the southern United States and the Horn of Africa.</li></ul>
 <p>Events usually build from the middle of the year, peak around December and fade by the following March–May. They come every two to seven years.</p>
-<h3>2026: an exceptional El Niño</h3>
-<p>Copernicus reported the central Pacific in October 2026 at its warmest on record, {d:3.21} above average. NOAA rated a <b>historically strong event</b> (stronger than any since 1950) as likely by late 2026. Because El Niño releases ocean heat into the air, 2027 is at real risk of becoming the hottest year on record.</p>`,
+<h3>2026–27: an exceptional El Niño</h3>
+<p>Copernicus reported the central Pacific in October 2026 at its warmest on record, {d:3.21} above average. NOAA rated a <b>historically strong event</b> (stronger than any since 1950) as likely by late 2026. Because El Niño releases ocean heat into the air, scientists warned that 2027 was at real risk of becoming the hottest year on record.</p>`,
   sources:[S.enosFaq,S.bomNow,S.cpc,S.c3s]},
 
 "iod":{title:"Indian Ocean Dipole",mins:2,now:"iod",
@@ -166,7 +181,7 @@ var LEARN={
 <p>The jet is strongest in winter, when the gap between pole and tropics is biggest, and moves towards the pole in summer. Each hemisphere has its own.</p>`,
   sources:[S.metJet,["Met Office — What is the jet stream and how does it affect our weather?","https://www.metoffice.gov.uk/blog/2025/what-is-the-jet-stream-and-how-does-it-affect-our-weather"],S.circ]},
 
-"nao":{title:"North Atlantic Oscillation",mins:2,
+"nao":{title:"North Atlantic Oscillation",mins:2,now:"nao",
   lead:"A pressure see-saw between Iceland and the Azores that sets the tone of Europe’s winters.",
   body:`<figure class="learn-fig" data-img="nao.jpg"><figcaption>How pressure near Iceland (low) and the Azores (high) changes between the two phases. <span class="learn-credit">Schematic adapted from AIRMAP by Ned Gardiner and David Herring, NOAA</span></figcaption></figure>
 <p>The NAO measures the difference in air pressure between the Icelandic Low and the Azores High. That difference controls how strongly the westerly winds blow across the Atlantic into Europe.</p>
@@ -174,7 +189,7 @@ var LEARN={
 <p>The NAO is strongest in winter and can flip within weeks. Unlike ENSO, it can’t usually be predicted more than a week or two ahead, although seasonal forecasts have some skill.</p>`,
   sources:[["NOAA Climate.gov — Climate variability: North Atlantic Oscillation","https://climate.gov/news-features/understanding-climate/climate-variability-north-atlantic-oscillation"],["Met Office — The North Atlantic Oscillation","https://www.metoffice.gov.uk/research/climate/seasonal-to-decadal/gpc-outlooks/ens-mean/nao-description"],["Deutscher Wetterdienst (via wetterdienst.de) — Die Nordatlantische Oszillation und ihr Einfluss auf den Winter","https://www.wetterdienst.de/Deutschlandwetter/Thema_des_Tages/477/die-nordatlantische-oszillation-und-ihr-einfluss-auf-den-winter"],["NOAA NCEI — North Atlantic Oscillation","https://www.ncei.noaa.gov/access/monitoring/nao/"]]},
 
-"ao":{title:"Arctic Oscillation and the polar vortex",mins:2,
+"ao":{title:"Arctic Oscillation and the polar vortex",mins:2,now:"ao",
   lead:"How tightly the coldest air is locked up over the Arctic — and what happens when it escapes.",
   body:`<figure class="learn-fig" data-img="polar-vortex.jpg"><figcaption>A strong vortex keeps the coldest air in the Arctic. When it weakens or splits, the jet stream turns wavy and polar air can sink south. <span class="learn-credit">NOAA Climate.gov graphic, adapted from original by NOAA</span></figcaption></figure>
 <p>Every winter a ring of strong westerly winds forms about 16–48 km above the North Pole: the <b>polar vortex</b>. It sits far above the weather, but it influences the jet stream below.</p>
@@ -212,7 +227,7 @@ var LEARN={
 <h3>If it did collapse</h3>
 <p>North-west Europe would face much colder winters even in a warmer world, sea level would rise faster along North America’s east coast, and tropical rain belts would shift south — disrupting the monsoons of West Africa and South Asia.</p>`,
   sources:[["Met Office — The Atlantic Meridional Overturning Circulation in a changing climate","https://www.metoffice.gov.uk/blog/2024/the-atlantic-meridional-overturning-circulation-in-a-changing-climate"],["Met Office — Climate change: AMOC likely to withstand future warming (2025)","https://www.metoffice.gov.uk/about-us/news-and-media/media-centre/weather-and-climate-news/2025/climate-change-amoc-likely-to-withstand-future-warming"],["Carbon Brief — AMOC explainer","https://interactive.carbonbrief.org/amoc-explainer/"],["Yale Environment 360 — The AMOC and climate change","https://e360.yale.edu/features/amoc-climate-change"]]},
-/* ── Global warming in 2026 ─────────────────────────────────────────────── */
+/* ── Global warming (year-specific figures come from LEARN_FACTS) ──────────── */
 "deep-time":{title:"Climate through deep time",mins:3,
   lead:"Earth’s climate has swung between ice ages and hothouses. What is different now is the speed.",
   body:`<h3>How we know</h3>
@@ -226,36 +241,36 @@ var LEARN={
 <p>The real difference is speed. Coming out of the last ice age, the world warmed about 6 degrees over roughly 10,000 years. We have added about 1.5 degrees in around 150 years. Humans are releasing carbon about ten times faster than during the Paleocene–Eocene event, the fastest natural release in 66 million years. It took more than two million years for CO₂ to fall naturally from Pliocene levels to pre-industrial ones — we brought it back in about a century and a half.</p>
 <p>Ecosystems and ice sheets respond slowly, so much of the change from today’s CO₂ is still to come.</p>`,
   sources:[["NOAA NCEI — What is paleoclimatology?","https://www.ncei.noaa.gov/node/54"],["NOAA NCEI — Climate change in the context of paleoclimate","https://www.ncei.noaa.gov/news/climate-change-context-paleoclimate"],["University of Arizona — How cold was the ice age? (Tierney et al., Nature, 2020)","https://news.arizona.edu/news/how-cold-was-ice-age-researchers-now-know"],["UC Santa Cruz — Current rate of carbon emissions unprecedented in 66 million years","https://news.ucsc.edu/2016/03/carbon-emissions/"],["UCL — The Pliocene: the last time Earth had more than 400 ppm CO₂","https://discovery-pp.ucl.ac.uk/10079994/1/little%20AAM%20weather%20Pliocene%20meeting%20report-submitted.pdf"],["University of Arizona — Ancient plankton help researchers predict near-future climate","https://news.arizona.edu/news/ancient-plankton-help-researchers-predict-near-future-climate"]]},
-"greenhouse":{title:"Why the world is warming",mins:3,
+"greenhouse":{title:"Why the world is warming",mins:3,yr:1,
   lead:"Burning fossil fuels adds heat-trapping gases to the air faster than nature can remove them.",
   body:`<h3>The natural greenhouse effect</h3>
 <p>Sunlight warms the ground, which gives off heat. Gases such as water vapour, carbon dioxide (CO₂) and methane absorb some of that heat and send it back down. Without them, Earth would average about {t:-18} instead of about {t:15}.</p>
 <h3>The extra greenhouse effect</h3>
-<p>Burning coal, oil and gas, and clearing forests, has raised CO₂ by about 50% since 1750. In May 2026 it peaked at <b>432 parts per million</b> at Mauna Loa, Hawaii — 1.8 ppm higher than a year earlier, and the highest in at least 800,000 years. Methane and nitrous oxide are rising too.</p>
-<figure class="learn-fig" data-img="co2-mauna-loa.png"><figcaption>Monthly CO₂ at Mauna Loa since 1958, to November 2026. The red line rises and falls with the seasons as Northern Hemisphere plants grow and die back. <span class="learn-credit">NOAA Global Monitoring Laboratory and Scripps Institution of Oceanography</span></figcaption></figure>
+<p>Burning coal, oil and gas, and clearing forests, has raised CO₂ by about 50% since 1750. In {F:co2PeakDate} it peaked at <b>{F:co2Peak} parts per million</b> at Mauna Loa, Hawaii — {F:co2Rise} ppm higher than a year earlier, and the highest in at least 800,000 years. Methane and nitrous oxide are rising too.</p>
+<figure class="learn-fig" data-img="co2-mauna-loa.png"><figcaption>Monthly CO₂ at Mauna Loa since 1958. The red line rises and falls with the seasons as Northern Hemisphere plants grow and die back. <span class="learn-credit">NOAA Global Monitoring Laboratory and Scripps Institution of Oceanography</span></figcaption></figure>
 <h3>How we know it’s us</h3>
 <ul><li>The Sun’s output has been flat or slightly lower since the 1950s while temperatures climbed.</li><li>The lower atmosphere is warming while the upper atmosphere cools — the signature of trapped heat, not a brighter Sun.</li><li>The carbon added to the air carries the chemical fingerprint of fossil fuels.</li></ul>
 <p>The Earth is now taking in more energy than it gives out by the largest margin in 65 years of records. About 90% of that extra heat goes into the ocean.</p>`,
   sources:[S.nasaCauses,["NASA Earth Observatory — Global warming","https://earthobservatory.nasa.gov/features/GlobalWarming"],S.scripps,S.gml,S.wmo25]},
 
-"state-2026":{title:"Where we are in 2026",mins:3,
-  lead:"The world has warmed about 1.5 degrees and the last eleven years are the eleven hottest on record.",
+"state-now":{title:"Where we are in "+LEARN_FACTS.year,mins:3,yr:1,
+  lead:"The world has warmed about 1.5 degrees, and every year from "+LEARN_FACTS.run+" is among the warmest on record.",
   body:`<div class="learn-stats">
-<div class="learn-stat"><b>{d:1.44}</b><span>2025 above the 1850–1900 average (WMO)</span></div>
-<div class="learn-stat"><b>11 of 11</b><span>2015–2025: the eleven warmest years on record</span></div>
-<div class="learn-stat"><b>{d:1.51}</b><span>Nov 2025–Oct 2026, the past 12 months (Copernicus)</span></div>
-<div class="learn-stat"><b>432 ppm</b><span>CO₂ peak, May 2026</span></div></div>
+<div class="learn-stat"><b>{d:{F:lastAnom}}</b><span>{F:lastYear} above the 1850–1900 average (WMO)</span></div>
+<div class="learn-stat"><b>{F:run_n} of {F:run_n}</b><span>{F:run}: the {F:run_n} warmest years on record</span></div>
+<div class="learn-stat"><b>{d:{F:past12Anom}}</b><span>{F:past12}, 12 months (Copernicus)</span></div>
+<div class="learn-stat"><b>{F:co2Peak} ppm</b><span>CO₂ peak, {F:co2PeakDate}</span></div></div>
 <h3>Global temperature</h3>
-<p>2024 was the hottest year on record, about {d:1.55} above pre-industrial levels, and 2025 was second or third. 2026 is very likely to finish second, at about {d:1.6}. October 2026 was the warmest October ever measured, {d:1.75} above pre-industrial, and ocean surface temperatures set records for five months running.</p>
+<p>2024 was the hottest year on record, about {d:1.55} above pre-industrial levels, and 2025 was second or third. As of late 2026, 2026 was on track to finish second, at about {d:1.6}. October 2026 was the warmest October ever measured, {d:1.75} above pre-industrial, and ocean surface temperatures set records for five months running.</p>
 <h3>Crossing 1.5</h3>
 <p>The Paris Agreement aims to limit warming to 1.5 degrees, measured as a 20-year average. Single years have now gone over it, and the average of 2023–2025 reached about {d:1.48}. Scientists now expect the long-term average to pass 1.5 degrees; the question is how far it overshoots and for how long.</p>
 <h3>Not the same everywhere</h3>
 <p>Land warms faster than the ocean, and the Arctic is warming several times faster than the world as a whole. Europe is the fastest-warming continent. So 1.5 degrees of global warming means more than 2 degrees over land, where people live — and much bigger jumps on the hottest days.</p>
 <h3>What comes next</h3>
-<p>The strong El Niño now underway is releasing extra ocean heat into the air. 2027 has a real chance of breaking 2024’s record.</p>
+<p>The strong El Niño that built through 2026 releases extra ocean heat into the air, so scientists gave 2027 a real chance of breaking 2024’s record. Strong El Niño years, and the year after them, have tended to set new records.</p>
 <div class="learn-tip"><a href="#learn/for-me" onclick="learnGo('for-me');return false;">What does it mean for me?</a> — the main hazards where you live.</div>`,
   sources:[S.wmoConf,S.wmo25,S.c3s,S.scripps,["Eos — Climate change may have killed 16,469 people in Europe this summer (2025)","https://eos.org/articles/climate-change-may-have-killed-16469-people-in-europe-this-summer"]]},
-"oceans-ice":{title:"Oceans, ice and sea level",mins:3,
+"oceans-ice":{title:"Oceans, ice and sea level",mins:3,yr:1,
   lead:"The ocean has absorbed most of the extra heat. It is now hotter, higher and more acidic than ever measured.",
   body:`<h3>Ocean heat</h3>
 <p>Ocean heat content hit a new record in 2025, and the ocean has warmed more than twice as fast over 2005–2025 as over 1960–2005. Warmer seas fuel heavier rain and stronger tropical cyclones, and cause marine heatwaves that kill kelp forests, fish and coral.</p>
@@ -324,21 +339,25 @@ var LEARN={
   bodyFn:function(){return learnForMeBody();},
   sourcesFn:function(){return learnForMeSources();},
   body:"",sources:[]},
-"what-you-can-do":{title:"What can I do?",mins:4,
-  lead:"The most useful things an ordinary person can do: get ready for the extremes already here, cut your own emissions, grow native plants and make your voice heard.",
-  body:`<p>No one person fixes climate change, and the biggest cuts depend on governments and industry. But personal choices add up — the IPCC found that changes in how we use buildings, transport and food could cut those sectors’ emissions by 40–70% by 2050 — and what you say and do shifts what the people around you, and the people who represent you, do next.</p>
+"what-you-can-do":{title:"What can I do?",mins:5,
+  lead:"Climate change is driven mostly by the richest people and the biggest companies, not by ordinary households. Here is where the real weight sits, and the things that are worth your energy.",
+  body:`<h3>Where the weight really sits</h3>
+<p>Responsibility for climate change is not shared equally. It follows wealth and power.</p>
+<ul><li><b>The richest 1% of people</b> — about 77 million — caused 16% of the world’s consumption emissions in 2019. That is as much as the poorest two-thirds of humanity, about 5 billion people. The richest 10% caused about half.</li><li><b>Billionaires</b> are in a league of their own. Oxfam estimated that someone in the bottom 99% would need about 1,500 years to produce what one of the richest billionaires emits in a single year — through private jets, superyachts and several homes, and through the polluting companies they own and invest in.</li><li><b>A small number of producers</b> sit at the top of the chain. Just 57 oil, gas, coal and cement producers — companies and state-owned firms — were linked to 80% of the world’s fossil fuel and cement CO₂ from 2016 to 2022. In 2024, 32 of them accounted for more than half.</li></ul>
+<p>The wealthiest also have the most say over what gets built, what gets sold and what governments decide. One private jet trip or one investment decision can outweigh a lifetime of an ordinary family’s careful choices.</p>
+<p><b>So the weight of fixing this does not rest on you.</b> If you can’t afford solar panels or an electric car, rent your home, or need to drive to work, that is not a personal failing. The things below are still worth doing — they keep you and the people around you safer, often save money, and add up across millions of households — but the biggest thing ordinary people have is numbers. Acting together, and pushing governments and companies to change, moves far more than any one household can.</p>
 <h3>1. Get ready for heat and extremes</h3>
 <ul><li>Watch the heatwave and “warmer than usual” alerts in the Forecast tab, and your national weather service’s warnings.</li><li>Plan the hottest days: shift activity to early morning, know a cool place you can get to, keep water handy.</li><li>Check on older neighbours, relatives and anyone living alone.</li><li>Know the signs of heat illness — dizziness, headache, nausea, confusion — and get help early.</li><li>Never drive or walk through floodwater. If you live near bush, forest or grassland, have a fire plan and know your local warning system.</li></ul>
-<h3>2. Grow native plants</h3>
-<ul><li>Plants that grow naturally in your area need less water once established, cope with the local climate and feed local insects, birds and other wildlife.</li><li>Trees and dense planting cool their surroundings through shade and evaporation. Urban forests average about {d:1.6} cooler than nearby bare areas, and restoring native plant communities has been measured cooling summer days by over 4 degrees in a decade.</li><li>Swap some lawn or paving for garden beds and trees, plant shade on the sunny side of your home, and let rain soak in rather than run off.</li><li>Join a local planting or bush-regeneration group, or your council’s tree-planting days. Your local council or nursery can tell you which species are native to your area.</li></ul>
-<h3>3. At home</h3>
-<ul><li><b>Keep the heat out:</b> shade windows from the outside, seal draughts, insulate the ceiling, and open up at night when it’s cooler outside than in.</li><li><b>Go electric:</b> heat pumps (reverse-cycle air conditioning) for heating and cooling, a heat-pump hot water system and induction cooking all use far less energy than gas or old electric heaters.</li><li><b>Clean power:</b> rooftop solar if you can, or a renewable-energy plan from your electricity retailer.</li><li><b>Waste less:</b> plan meals to cut food waste, eat more plant-based meals, and repair, borrow or buy second-hand before buying new.</li></ul>
-<h3>4. Getting around</h3>
-<ul><li>Walk, cycle or take public transport for shorter trips.</li><li>When you replace a car, consider an electric one or whether you need a second car at all.</li><li>Fly less, especially long-haul: for many people, flights are the largest single part of their footprint.</li></ul>
-<h3>5. Make your voice heard</h3>
-<ul><li><b>Contact your representatives</b> — local, state or provincial, and national. Surveys of political staff find that personal letters, emails and face-to-face visits from constituents sway undecided lawmakers far more than form letters or petitions. Say who you are, where you live and what you want them to do.</li><li><b>Have your say locally:</b> councils decide on tree cover, building rules, bike lanes and local planning. Make submissions and turn up to consultations.</li><li><b>Vote with climate in mind:</b> find out where candidates and parties stand on climate policy before every election.</li><li><b>Talk about it.</b> Most people who care about climate change rarely discuss it. Research shows conversations with friends and family help people understand the science and make action feel normal.</li><li><b>Follow your money:</b> ask your bank and your superannuation or pension fund how they invest, and move if you don’t like the answer.</li></ul>
-<p>Every tenth of a degree avoided means fewer extreme days, and heat–health warning systems already save lives where they are used.</p>`,
-  sources:[["IPCC AR6 WGIII — Chapter 5: Demand, services and social aspects of mitigation","https://www.ipcc.ch/report/ar6/wg3/chapter/chapter-5/"],["US EPA — Benefits of trees and vegetation (heat islands)","https://epa.gov/heatislands/benefits-trees-and-vegetation"],["University of Waterloo — Planting native trees and greenery can cool off your backyard","https://uwaterloo.ca/stories/news/planting-native-trees-greenery-can-cool-your-backyard"],["Congressional Management Foundation (via PPG Buffalo) — Most effective ways of contacting lawmakers","https://ppgbuffalo.org/news-and-events/news/article:03-15-2017-12-00am-congressional-management-foundation-releases-report-outlining-the-most-effective-ways-of-contacting-congress/"],["Yale Program on Climate Change Communication — Discussing global warming leads to greater acceptance of climate science","https://climatecommunication.yale.edu/publications/discussing-global-warming-leads-to-greater-acceptance-of-climate-science/"],S.wmoHeat,["WMO — COP31: Protecting health in an era of extreme heat","https://wmo.int/ar/node/39254"]]}
+<h3>2. Make your voice heard — together</h3>
+<ul><li><b>Contact your representatives</b> — local, state or provincial, and national. Surveys of political staff find that personal letters, emails and face-to-face visits from constituents sway undecided lawmakers far more than form letters or petitions. Say who you are, where you live and what you want them to do.</li><li><b>Join others:</b> community groups, unions, residents’ associations and climate groups carry far more weight than one voice. Many win changes locally — more trees, better buses, cleaner power for public housing.</li><li><b>Have your say locally:</b> councils decide on tree cover, building rules, bike lanes and local planning. Make submissions and turn up to consultations.</li><li><b>Vote with climate in mind:</b> find out where candidates and parties stand on climate policy before every election.</li><li><b>Talk about it.</b> Most people who care about climate change rarely discuss it. Research shows conversations with friends and family help people understand the science and make action feel normal.</li><li><b>Follow your money:</b> ask your bank and your superannuation or pension fund how they invest, and move if you don’t like the answer.</li></ul>
+<h3>3. Grow native plants</h3>
+<ul><li>Plants that grow naturally in your area need less water once established, cope with the local climate and feed local insects, birds and other wildlife.</li><li>Trees and dense planting cool their surroundings through shade and evaporation. Urban forests average about {d:1.6} cooler than nearby bare areas, and restoring native plant communities has been measured cooling summer days by over 4 degrees in a decade.</li><li>Swap some lawn or paving for garden beds and trees, plant shade on the sunny side of your home, and let rain soak in rather than run off. Pots work too if you rent.</li><li>Join a local planting or bush-regeneration group, or your council’s tree-planting days. Your local council or nursery can tell you which species are native to your area.</li></ul>
+<h3>4. At home, if you can</h3>
+<ul><li><b>Keep the heat out:</b> shade windows from the outside, seal draughts, and open up at night when it’s cooler outside than in. Renters can use removable blinds, curtains and draught stoppers, and ask the landlord about insulation and shading.</li><li><b>Go electric when things wear out:</b> heat pumps (reverse-cycle air conditioning) for heating and cooling, a heat-pump hot water system and induction cooking all use far less energy than gas or old electric heaters. Many governments offer rebates.</li><li><b>Clean power:</b> rooftop solar if you own your roof, or a renewable-energy plan from your electricity retailer.</li><li><b>Waste less:</b> plan meals to cut food waste, eat more plant-based meals, and repair, borrow or buy second-hand before buying new — it saves money too.</li></ul>
+<h3>5. Getting around</h3>
+<ul><li>Walk, cycle or take public transport where it works for you — and push for better services where it doesn’t.</li><li>When you replace a car, consider an electric one or whether you need a second car at all.</li><li>If you fly often, flying less — especially long-haul — is the biggest single cut most frequent flyers can make.</li></ul>
+<p>Every tenth of a degree avoided means fewer extreme days, and heat–health warning systems already save lives where they are used. The biggest tenths will come from the people and companies with the most power — and from ordinary people, together, making them act.</p>`,
+  sources:[["Oxfam — Richest 1% emit as much planet-heating pollution as two-thirds of humanity (Climate Equality, 2023)","https://www.oxfam.org/en/node/23495"],["Oxfam and Stockholm Environment Institute — Climate Equality: A planet for the 99% (full report)","https://www.oxfamnovib.nl/Files/rapporten/2023/Climate%20Equality_Oxfam_NOVEMBER%202023.pdf"],["CBS News — World’s richest 1% emitting enough carbon to cause 1.3 million heat deaths","https://www.cbsnews.com/news/worlds-richest-carbon-emissions-climate-change-report"],["Institute for New Economic Thinking, Oxford — Only 57 producers are responsible for 80% of fossil fuel and cement CO₂ since 2016 (Carbon Majors)","https://www.inet.ox.ac.uk/news/only-57-producers-are-responsible-for-80-of-all-fossil-fuel-and-cement-co2-emissions-since-2016-new-report"],["Inside Climate News — Half of fossil fuel carbon emissions in 2024 came from 32 companies (2026)","https://insideclimatenews.org/news/21012026/half-of-fossil-fuel-carbon-emissions-in-2024-came-from-32-companies/"],["IPCC AR6 WGIII — Chapter 5: Demand, services and social aspects of mitigation","https://www.ipcc.ch/report/ar6/wg3/chapter/chapter-5/"],["US EPA — Benefits of trees and vegetation (heat islands)","https://epa.gov/heatislands/benefits-trees-and-vegetation"],["University of Waterloo — Planting native trees and greenery can cool off your backyard","https://uwaterloo.ca/stories/news/planting-native-trees-greenery-can-cool-your-backyard"],["Congressional Management Foundation (via PPG Buffalo) — Most effective ways of contacting lawmakers","https://ppgbuffalo.org/news-and-events/news/article:03-15-2017-12-00am-congressional-management-foundation-releases-report-outlining-the-most-effective-ways-of-contacting-congress/"],["Yale Program on Climate Change Communication — Discussing global warming leads to greater acceptance of climate science","https://climatecommunication.yale.edu/publications/discussing-global-warming-leads-to-greater-acceptance-of-climate-science/"],S.wmoHeat,["WMO — COP31: Protecting health in an era of extreme heat","https://wmo.int/ar/node/39254"]]}
 };
 
 // ── Your drivers: chosen from where home is ─────────────────────────────────
@@ -439,9 +458,66 @@ function learnNav(cur){
       return"<a class='learn-nav-a"+(id===cur?" cur":"")+"' href='#learn/"+id+"' onclick=\"learnGo('"+id+"');return false;\""+(id===cur?" aria-current='page'":"")+">"+learnEsc(LEARN[id].title)+"</a>";}).join("")+"</div>";
   }).join("");
 }
+// ── Right now: live readings from /api/drivers (Worker), else the built-in text ─────
+// The Worker reads the agencies' data files and caches them for a few hours. The built-in
+// LEARN_NOW text is only shown while it's recent (LEARN_NOW_DAYS), so a dead feed can't
+// leave months-old "right now" text on screen.
+var LEARN_LIVE=null,LEARN_NOW_DAYS=45;
+var LEARN_LIVE_SRC={
+  enso:["Bureau of Meteorology — Climate driver update","https://www.bom.gov.au/climate/enso/"],
+  iod:["Bureau of Meteorology — Climate driver update","https://www.bom.gov.au/climate/enso/"],
+  sam:["NOAA Climate Prediction Center — Antarctic Oscillation (SAM)","https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/aao/aao.shtml"],
+  nao:["NOAA Climate Prediction Center — North Atlantic Oscillation","https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.shtml"],
+  ao:["NOAA Climate Prediction Center — Arctic Oscillation","https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/ao.shtml"]
+};
+function learnFetchLive(){
+  if(LEARN_LIVE!==null||!window.fetch)return;
+  LEARN_LIVE=false;
+  fetch("/api/drivers").then(function(r){return r.ok?r.json():null;}).then(function(j){
+    if(!j)return;LEARN_LIVE=j;
+    if(_learnShown!==null&&document.body.classList.contains("view-learn"))learnRender(_learnShown);
+  }).catch(function(){});
+}
+function learnDate(iso){
+  var d=new Date(iso+"T12:00:00Z");if(isNaN(d))return iso;
+  return d.getUTCDate()+" "+["January","February","March","April","May","June","July","August","September","October","November","December"][d.getUTCMonth()]+" "+d.getUTCFullYear();
+}
+function learnSigned(v){return(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(1);}
+// {phase, html, date} for a driver from the live feed, or null
+function learnLive(key){
+  var L=LEARN_LIVE&&LEARN_LIVE[key];if(!L||L.value==null||!isFinite(L.value))return null;
+  var v=+L.value,ch=L.prev4!=null?v-L.prev4:0,date=learnDate(L.date),ph,h;
+  if(key==="enso"){
+    ph=v>=0.8?"El Niño":v<=-0.8?"La Niña":"Neutral";
+    var a=Math.abs(v),str=a>=2?"very strong":a>=1.5?"strong":a>=1?"moderate":"weak";
+    h="<p><b>"+(ph==="Neutral"?"Neutral":ph+" levels ("+str+")")+".</b> The central Pacific was {d:"+v.toFixed(2)+"} "+(v>=0?"warmer":"cooler")+" than normal in the week to "+date
+      +". El Niño levels start at {d:0.8} and La Niña at {d:-0.8}"+(Math.abs(ch)>=0.2?"; it has "+(ch>0?"warmed":"cooled")+" by {d:"+Math.abs(ch).toFixed(2)+"} over the past month":"")+".</p>";
+    if(L.status)h+="<p>NOAA status: <b>"+learnEsc(L.status)+"</b>"+(L.issued?" ("+learnEsc(L.issued)+")":"")+"."+(L.synopsis?" "+learnEsc(L.synopsis):"")+"</p>";
+  }else if(key==="iod"){
+    ph=v>=0.4?"Positive":v<=-0.4?"Negative":"Neutral";
+    var tr=ph!=="Neutral"&&Math.abs(ch)>=0.2?((ch<0)===(v>0)?" and weakening":" and strengthening"):"";
+    h="<p><b>"+ph+tr+".</b> The IOD index was {d:"+v.toFixed(2)+"} in the week to "+date+". Positive IOD levels start at {d:0.4} and negative at {d:-0.4}.</p>";
+  }else{
+    var th=key==="sam"?1:0.5;
+    ph=v>=th?"Positive":v<=-th?"Negative":"Neutral";
+    var nm={sam:"SAM",nao:"NAO",ao:"AO"}[key];
+    h="<p><b>"+ph+".</b> The "+nm+" index averaged "+learnSigned(v)+" over the 7 days to "+date+" (latest day "+learnSigned(+L.daily)+"). It counts as positive above +"+th+" and negative below −"+th+".</p>";
+  }
+  return{phase:ph,html:h,date:date};
+}
+function learnNowPhase(key){
+  var l=learnLive(key);if(l)return l.phase;
+  var n=LEARN_NOW[key];return n&&learnNowFresh()?n.phase:null;
+}
+function learnNowFresh(){return(Date.now()-Date.parse("2026-11-24T00:00:00Z"))/864e5<LEARN_NOW_DAYS;}
 function learnNowBox(key){
-  var n=LEARN_NOW[key];if(!n)return"";
-  return"<div class='learn-now'><div class='learn-now-h'>Right now <span>as of "+LEARN_ASOF+"</span></div><p><b>"+learnEsc(n.phase)+".</b> "+learnEsc(n.txt)+"</p><a href='"+n.src[1]+"' target='_blank' rel='noopener'>Latest update ↗</a></div>";
+  var l=learnLive(key),src=LEARN_LIVE_SRC[key];
+  if(l)return"<div class='learn-now'><div class='learn-now-h'>Right now <span>as of "+l.date+"</span></div>"+l.html
+    +"<div class='learn-now-f'>Updates automatically from the Bureau of Meteorology and NOAA. <a href='"+src[1]+"' target='_blank' rel='noopener'>Latest update ↗</a></div></div>";
+  var n=LEARN_NOW[key];
+  if(n&&learnNowFresh())return"<div class='learn-now'><div class='learn-now-h'>Right now <span>as of "+LEARN_ASOF+"</span></div><p><b>"+learnEsc(n.phase)+".</b> "+learnEsc(n.txt)+"</p><a href='"+n.src[1]+"' target='_blank' rel='noopener'>Latest update ↗</a></div>";
+  if(!src)return"";
+  return"<div class='learn-now'><div class='learn-now-h'>Right now</div><p>The latest reading couldn’t be loaded. <a href='"+src[1]+"' target='_blank' rel='noopener'>See the latest update ↗</a></p></div>";
 }
 function learnDrivers(){
   var h=learnHome(),r=h?learnRegion(h.lat,h.lon):null;
@@ -449,13 +525,13 @@ function learnDrivers(){
   var sub=!h?"Set a home location (the ⌂ button next to a place’s name) and this shows the drivers that matter most where you live."
     :(r.name?"The patterns that most affect "+learnEsc(r.name)+(h.home?"":" (based on the place you’re viewing — set a home with ⌂ to keep it)")+".":"The main global drivers. Every driver is in the list below.");
   var ids=r?r.ids:["enso","jet","ridge"];
-  var chips=ids.map(function(id){var now=LEARN[id].now&&LEARN_NOW[LEARN[id].now];
-    return"<a class='learn-chip' href='#learn/"+id+"' onclick=\"learnGo('"+id+"');return false;\"><span>"+learnEsc(LEARN[id].title)+"</span>"+(now?"<em>Now: "+learnEsc(now.phase)+"</em>":"")+"</a>";}).join("");
+  var chips=ids.map(function(id){var now=LEARN[id].now&&learnNowPhase(LEARN[id].now);
+    return"<a class='learn-chip' href='#learn/"+id+"' onclick=\"learnGo('"+id+"');return false;\"><span>"+learnEsc(LEARN[id].title)+"</span>"+(now?"<em>Now: "+learnEsc(now)+"</em>":"")+"</a>";}).join("");
   return"<div class='card learn-drivers'><div class='learn-drivers-h'>"+head+"</div><p class='learn-sub'>"+sub+"</p><div class='learn-chips'>"+chips+"</div>"
     +"<a class='learn-forme' href='#learn/for-me' onclick=\"learnGo('for-me');return false;\">What does climate change mean for me? \u203A</a></div>";
 }
 function learnHomeHTML(){
-  var s="<div class='learn-intro'><h1>Learn</h1><p>Short lessons on how weather and climate work, what drives your seasons, and where global warming stands in 2026. Each takes two or three minutes, with sources at the end.</p></div>"+learnDrivers();
+  var s="<div class='learn-intro'><h1>Learn</h1><p>Short lessons on how weather and climate work, what drives your seasons, and where global warming stands in "+LEARN_FACTS.year+". Each takes two or three minutes, with sources at the end.</p></div>"+learnDrivers();
   s+=LEARN_SETS.map(function(set){
     return"<section class='card learn-set'><h2>"+learnEsc(set.title)+"</h2><p class='learn-sub'>"+learnEsc(set.blurb)+"</p><div class='learn-list'>"+set.lessons.map(function(id){return learnLink(id);}).join("")+"</div></section>";
   }).join("");
@@ -467,9 +543,10 @@ function learnLessonHTML(id){
   var prev=order[i-1],next=order[i+1];
   var s="<a class='learn-back' href='#learn' onclick=\"learnGo('');return false;\">‹ All lessons</a>";
   s+="<article class='card learn-lesson'><div class='learn-kicker'>"+learnEsc(set.title)+" · "+L.mins+" min read</div><h1>"+learnEsc(L.title)+"</h1><p class='learn-lead'>"+learnEsc(L.lead)+"</p>";
+  s+=learnUpdBox(L);
   if(L.now)s+=learnNowBox(L.now);
   s+="<div class='learn-body'>"+(L.bodyFn?L.bodyFn():L.body)+"</div>";
-  s+="<div class='learn-src'><div class='learn-src-h'>Sources</div><ol>"+(L.sourcesFn?L.sourcesFn():L.sources).map(function(x){return"<li><a href='"+learnEsc(x[1])+"' target='_blank' rel='noopener'>"+learnEsc(x[0])+"</a></li>";}).join("")+"</ol></div></article>";
+  s+="<div class='learn-src'><div class='learn-src-h'>Sources</div><p class='learn-ai'>Written with the help of Claude, Anthropic’s AI, and checked against these sources.</p><ol>"+(L.sourcesFn?L.sourcesFn():L.sources).map(function(x){return"<li><a href='"+learnEsc(x[1])+"' target='_blank' rel='noopener'>"+learnEsc(x[0])+"</a></li>";}).join("")+"</ol></div></article>";
   s+="<nav class='learn-pn'>"+(prev?"<a href='#learn/"+prev+"' onclick=\"learnGo('"+prev+"');return false;\"><small>Previous</small>"+learnEsc(LEARN[prev].title)+"</a>":"<span></span>")
     +(next?"<a class='nx' href='#learn/"+next+"' onclick=\"learnGo('"+next+"');return false;\"><small>Next</small>"+learnEsc(LEARN[next].title)+"</a>":"<span></span>")+"</nav>";
   return s;
@@ -483,15 +560,35 @@ function learnFigs(root){
     img.src="img/learn/"+name;f.insertBefore(img,f.firstChild);
   });
 }
+// {F:name} → the LEARN_FACTS value, with the live NOAA CO₂ peak when /api/drivers has it
+function learnFactVals(){
+  var f={},k;for(k in LEARN_FACTS)f[k]=LEARN_FACTS[k];
+  var c=LEARN_LIVE&&LEARN_LIVE.co2;
+  if(c&&c.peak>300&&c.peakDate&&c.peakDate.slice(0,4)>=LEARN_FACTS.co2PeakDate.slice(-4)){
+    f.co2Peak=String(Math.round(c.peak));f.co2PeakDate=learnMonth(c.peakDate);
+    if(c.prevPeak>300)f.co2Rise=(c.peak-c.prevPeak).toFixed(1);
+  }
+  return f;
+}
+function learnMonth(ym){var p=String(ym).split("-");return["January","February","March","April","May","June","July","August","September","October","November","December"][(+p[1]||1)-1]+" "+p[0];}
+function learnFacts(h){var f=learnFactVals();return h.replace(/\{F:(\w+)\}/g,function(m,k){return f[k]!==undefined?f[k]:m;});}
+// After LEARN_FACTS.review, lessons with yr:1 say newer full-year figures are out
+function learnUpdBox(L){
+  if(!L.yr||Date.now()<Date.parse(LEARN_FACTS.review+"T00:00:00Z"))return"";
+  return"<div class='learn-upd'><b>Newer figures are out.</b> The figures in this lesson were checked on "+LEARN_FACTS.asof+". Full-year figures for "+LEARN_FACTS.year
+    +" have since been published, so some numbers here may have changed. <a href='https://wmo.int/topics/climate' target='_blank' rel='noopener'>Latest from the WMO ↗</a></div>";
+}
 function learnRender(id){
+  if(id==="state-2026")id="state-now";   // old address
   if(id&&!LEARN[id])id="";
   var el=document.getElementById("learn-page");if(!el)return;
   var main=id?learnLessonHTML(id):learnHomeHTML();
-  el.innerHTML="<aside class='learn-side' aria-label='Lessons'><a class='learn-side-home"+(id?"":" cur")+"' href='#learn' onclick=\"learnGo('');return false;\">All lessons</a>"+learnNav(id)+"</aside><div class='learn-main'>"+learnUnits(main)+"</div>";
+  el.innerHTML="<aside class='learn-side' aria-label='Lessons'><a class='learn-side-home"+(id?"":" cur")+"' href='#learn' onclick=\"learnGo('');return false;\">All lessons</a>"+learnNav(id)+"</aside><div class='learn-main'>"+learnUnits(learnFacts(main))+"</div>";
   learnFigs(el);
   _learnShown=id;
   document.title=(id?LEARN[id].title+" · ":"")+"Learn · Comfort Score";
 }
 // Redraw when °C/°F changes so the numbers follow
 ["btn-c","btn-f"].forEach(function(b){var e=document.getElementById(b);if(e)e.addEventListener("click",function(){if(_learnShown!==null&&document.body.classList.contains("view-learn"))learnRender(_learnShown);});});
+learnFetchLive();
 window.LEARN_READY=true;

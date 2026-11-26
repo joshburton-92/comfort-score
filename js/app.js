@@ -113,7 +113,7 @@ function learnShow(lesson,y){
   if(box&&!box.innerHTML)box.innerHTML="<div class='card learn-loading'>Loading lessons\u2026</div>";
   if(_learnLoading){_learnLoading.push(draw);return;}
   _learnLoading=[draw];
-  var s=document.createElement("script");s.src="js/learn.js?v=1";
+  var s=document.createElement("script");s.src="js/learn.js?v=2";
   s.onload=function(){var q=_learnLoading;_learnLoading=null;q.forEach(function(f){f();});};
   s.onerror=function(){_learnLoading=null;if(box)box.innerHTML="<div class='card learn-loading'>Couldn\u2019t load the lessons. Check your connection and try again.</div>";};
   document.head.appendChild(s);
