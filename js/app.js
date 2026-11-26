@@ -57,38 +57,72 @@ function calcManual(){
 function toggleAdv(){document.getElementById("adv-tog").classList.toggle("open");document.getElementById("s-panel").classList.toggle("open");}
 function togglePref(){document.getElementById("pref-tog").classList.toggle("open");document.getElementById("pref-panel").classList.toggle("open");}
 // ── Views: Forecast / Climate ──────────────────────────────────────────────
-// One page with two views. Climate adds #climate to the address so it can be linked to, and
-// Back returns to Forecast. Each view keeps its own scroll position.
-var _view="forecast",_viewScroll={forecast:0,climate:0};
+// One page with three views. Climate adds #climate to the address and Learn adds #learn (or
+// #learn/<lesson>), so each can be linked to and Back steps between them. Each view keeps its own
+// scroll position. Learn's lessons live in js/learn.js, loaded the first time Learn opens.
+var _view="forecast",_viewScroll={forecast:0,climate:0,learn:0},_learnLesson="",_learnScroll={};
 if("scrollRestoration" in history)history.scrollRestoration="manual";   // setView() restores each view's scroll itself
-function setView(v,fromHistory){
-  v=v==="climate"?"climate":"forecast";
+function setView(v,fromHistory,lesson){
+  v=v==="climate"||v==="learn"?v:"forecast";
+  lesson=v==="learn"?(lesson||""):"";
   var body=document.body;
-  if(v===_view&&body.classList.contains("view-"+v))return;
+  if(v===_view&&body.classList.contains("view-"+v)){
+    if(v!=="learn"||lesson===_learnLesson)return;
+    // a different lesson inside Learn
+    _learnScroll[_learnLesson]=pageScrollY();
+    _learnLesson=lesson;
+    if(!fromHistory)history.pushState({view:"learn"},"","#learn"+(lesson?"/"+lesson:""));
+    learnShow(lesson,fromHistory?(_learnScroll[lesson]||0):0);
+    return;
+  }
   if(body.classList.contains("view-"+_view))_viewScroll[_view]=pageScrollY();
-  _view=v;
-  body.classList.toggle("view-forecast",v==="forecast");
-  body.classList.toggle("view-climate",v==="climate");
-  ["forecast","climate"].forEach(function(t){
+  var same=v==="learn"&&lesson===_learnLesson;
+  _view=v;if(v==="learn")_learnLesson=lesson;
+  ["forecast","climate","learn"].forEach(function(t){
+    body.classList.toggle("view-"+t,t===v);
     var el=document.getElementById("tab-"+t);if(!el)return;
     el.classList.toggle("active",t===v);
     if(t===v)el.setAttribute("aria-current","page");else el.removeAttribute("aria-current");
   });
+  if(v!=="forecast"&&document.getElementById("page-manual").classList.contains("active"))switchTab("live");
   if(v==="climate"){
-    if(document.getElementById("page-manual").classList.contains("active"))switchTab("live");
     if(!document.getElementById("clim-panel").classList.contains("open"))toggleClim();
     else setTimeout(function(){initLivMap();if(_livMap){_livMap.invalidateSize();livMapCentre();}},60);
   }else{
     livMapToggleExpand(false);
     climFullToggle(false);
   }
+  if(v!=="learn")document.title="Comfort Score";
   if(!fromHistory){
     if(v==="climate")history.pushState({view:"climate"},"","#climate");
+    else if(v==="learn")history.pushState({view:"learn"},"","#learn"+(lesson?"/"+lesson:""));
     else history.pushState({view:"forecast"},"",location.pathname+location.search);
   }
-  pageScrollTo(_viewScroll[v]||0);
+  if(v==="learn")learnShow(lesson,same?_viewScroll.learn:(_learnScroll[lesson]||0));
+  else pageScrollTo(_viewScroll[v]||0);
 }
-function viewFromAddress(){setView(location.hash==="#climate"?"climate":"forecast",true);}
+// Opens a lesson ("" for the list of lessons). Used by links inside the lessons.
+function learnGo(id){setView("learn",false,id||"");}
+// The Learn tab: back to the lesson you were reading, or to the list if you're already in Learn.
+function learnTab(){setView("learn",false,_view==="learn"?"":_learnLesson);}
+var _learnLoading=null;
+function learnShow(lesson,y){
+  var draw=function(){if(_view!=="learn"||_learnLesson!==lesson)return;learnRender(lesson);pageScrollTo(y||0);};
+  if(window.LEARN_READY){draw();return;}
+  var box=document.getElementById("learn-page");
+  if(box&&!box.innerHTML)box.innerHTML="<div class='card learn-loading'>Loading lessons\u2026</div>";
+  if(_learnLoading){_learnLoading.push(draw);return;}
+  _learnLoading=[draw];
+  var s=document.createElement("script");s.src="js/learn.js?v=1";
+  s.onload=function(){var q=_learnLoading;_learnLoading=null;q.forEach(function(f){f();});};
+  s.onerror=function(){_learnLoading=null;if(box)box.innerHTML="<div class='card learn-loading'>Couldn\u2019t load the lessons. Check your connection and try again.</div>";};
+  document.head.appendChild(s);
+}
+function viewFromAddress(){
+  var m=location.hash.match(/^#learn(?:\/([\w-]+))?$/);
+  if(m)setView("learn",true,m[1]||"");
+  else setView(location.hash==="#climate"?"climate":"forecast",true);
+}
 window.addEventListener("popstate",viewFromAddress);
 window.addEventListener("hashchange",viewFromAddress);
 // ── Sliders ────────────────────────────────────────────────────────────────

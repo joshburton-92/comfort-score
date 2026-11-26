@@ -72,6 +72,81 @@ body.view-climate #clim-tog svg{display:none}
   body.view-climate .app>.tb-sticky{width:100%}
   body.view-climate .clim-full-btn{display:none}
 }
+/* Learn: lessons on how climate works. Only the top bar, the lessons and the footer show. */
+.learn-page{display:none}
+body.view-learn .learn-page{display:block}
+body.view-learn #page-live,body.view-learn #page-manual,body.view-learn #clim-card,body.view-learn #pref-card,body.view-learn #settings-card,
+body.view-learn #live-status,body.view-learn #install-banner,body.view-learn #onboard-card,body.view-learn #liv-feature-card{display:none!important}
+body.view-learn .footer-row{margin-top:14px}
+.learn-side{display:none}
+.learn-loading{font-size:13px;font-weight:700;color:var(--text-muted)}
+.learn-intro{padding:2px 4px 10px}
+.learn-intro h1,.learn-lesson h1{font-size:clamp(22px,6vw,28px);font-weight:800;color:var(--text-head);line-height:1.15;margin:0 0 6px}
+.learn-intro p{font-size:14px;line-height:1.55;color:var(--text-sec);margin:0}
+.learn-sub{font-size:13px;line-height:1.5;color:var(--text-sec);margin:0 0 10px}
+.learn-set h2{font-size:17px;font-weight:800;color:var(--text-head);margin:0 0 4px}
+.learn-list{display:flex;flex-direction:column;border-top:1px solid var(--divider)}
+.learn-item{display:flex;align-items:baseline;gap:10px;padding:11px 2px;border-bottom:1px solid var(--divider);text-decoration:none;color:var(--text)}
+.learn-item:last-child{border-bottom:none}
+.learn-item-t{flex:1;font-size:15px;font-weight:700}
+.learn-item-t::after{content:" \203A";color:var(--text-muted)}
+.learn-item-m{font-size:11px;font-weight:700;color:var(--text-muted);white-space:nowrap}
+.learn-drivers-h{font-size:15px;font-weight:800;color:var(--text-head);margin-bottom:4px}
+.learn-chips{display:flex;flex-wrap:wrap;gap:8px}
+.learn-chip{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:12px;border:1px solid var(--card-border);background:var(--card-inner);text-decoration:none;color:var(--text-head);font-size:13px;font-weight:800}
+.learn-chip em{font-style:normal;font-size:11px;font-weight:700;color:var(--range-fill)}
+.learn-forme{display:block;margin-top:12px;padding-top:10px;border-top:1px solid var(--divider);font-size:14px;font-weight:800;color:var(--range-fill);text-decoration:none}
+.learn-hz{display:flex;flex-direction:column;gap:8px;margin:12px 0 6px}
+.learn-hz-i{padding:10px 12px;border-radius:12px;background:var(--card-inner);border:1px solid var(--card-border);box-shadow:inset 3px 0 0 rgba(205,60,15,0.7)}
+.learn-hz-i b{display:block;font-size:15px;color:var(--text-head);margin-bottom:2px}
+.learn-hz-i span{display:block;font-size:14px;line-height:1.5}
+.learn-back{display:inline-block;margin:0 0 8px 4px;font-size:13px;font-weight:800;color:var(--text-sec);text-decoration:none}
+.learn-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.learn-lead{font-size:16px;line-height:1.5;font-weight:600;color:var(--text-head);margin:0 0 14px}
+.learn-body{font-size:15px;line-height:1.65;color:var(--text)}
+.learn-body h3{font-size:16px;font-weight:800;color:var(--text-head);margin:20px 0 6px}
+.learn-body p{margin:0 0 10px}
+.learn-body ul{margin:0 0 10px;padding-left:20px}
+.learn-body li{margin-bottom:6px}
+.learn-body a,.learn-src a,.learn-now a{color:var(--range-fill);font-weight:700}
+.learn-tip{margin-top:14px;padding:10px 12px;border-radius:12px;background:var(--card-inner);border:1px solid var(--card-border);font-size:14px}
+.learn-fig{margin:14px 0}
+.learn-fig img{display:block;width:100%;max-width:640px;margin:0 auto;height:auto;border-radius:12px;border:1px solid var(--card-border);background:#fff}
+.learn-fig figcaption{font-size:13px;line-height:1.5;color:var(--text-sec);margin-top:6px}
+.learn-credit{display:block;font-size:11px;color:var(--text-muted);margin-top:2px}
+.learn-now{margin:0 0 14px;padding:10px 12px;border-radius:12px;background:var(--toggle-active);box-shadow:inset 3px 0 0 var(--range-fill);font-size:14px;line-height:1.5}
+.learn-now p{margin:4px 0}
+.learn-now-h{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-head)}
+.learn-now-h span{font-weight:700;letter-spacing:0;text-transform:none;color:var(--text-muted);margin-left:6px}
+.learn-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:4px 0 14px}
+.learn-stat{padding:10px;border-radius:12px;background:var(--card-inner);border:1px solid var(--card-border)}
+.learn-stat b{display:block;font-size:20px;font-weight:800;color:var(--text-head)}
+.learn-stat span{display:block;font-size:12px;line-height:1.35;color:var(--text-sec)}
+.learn-src{margin-top:20px;padding-top:12px;border-top:1px solid var(--divider)}
+.learn-src-h{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-sec);margin-bottom:6px}
+.learn-src ol{margin:0;padding-left:20px;font-size:13px;line-height:1.5}
+.learn-src li{margin-bottom:4px;overflow-wrap:anywhere}
+.learn-pn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.learn-pn a{display:block;padding:10px 12px;border-radius:12px;border:1px solid var(--card-border);background:var(--card);text-decoration:none;color:var(--text-head);font-size:13px;font-weight:800}
+.learn-pn a.nx{text-align:right}
+.learn-pn small{display:block;font-size:11px;font-weight:700;color:var(--text-muted)}
+/* Wide screens: lesson list down the side, lesson in a readable column */
+@media(min-width:900px){
+  body.view-learn .app{max-width:1240px}
+  body.view-learn .app>*:not(#learn-page){max-width:480px;margin-left:auto;margin-right:auto}
+  body.view-learn .app>.tb-sticky{width:100%}
+  .learn-page{grid-template-columns:260px minmax(0,800px);gap:28px;justify-content:center;align-items:start;min-height:calc(100vh - 140px)}
+  body.view-learn .learn-page{display:grid}
+  .learn-side{display:block;position:sticky;top:124px;max-height:calc(100vh - 230px);overflow-y:auto;padding:4px 4px 12px}
+  .learn-side-home,.learn-nav-a{display:block;padding:5px 10px;border-radius:8px;font-size:13px;font-weight:700;color:var(--text-sec);text-decoration:none;line-height:1.35}
+  .learn-side-home{font-weight:800;color:var(--text-head)}
+  .learn-side-home.cur,.learn-nav-a.cur{background:var(--toggle-active);color:var(--text-head)}
+  .learn-nav-h{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:14px 10px 4px}
+  .learn-lesson{padding:28px 36px}
+  .learn-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .learn-page .learn-set .learn-list{display:grid;grid-template-columns:1fr 1fr;column-gap:24px}
+  .learn-page .learn-set .learn-item:nth-last-child(2):nth-child(odd){border-bottom:none}
+}
 /* Climate comparison */
 :root{--cmp-a:#2a7fb4;--cmp-b:#d9771e}
 @media(prefers-color-scheme:dark){:root{--cmp-a:#3d8fc8;--cmp-b:#cc7a2e}}
